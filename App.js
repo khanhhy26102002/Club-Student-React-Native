@@ -8,15 +8,16 @@ import React from "react";
 import ProjectList from "./Components/Students/Projects/ProjectList";
 import ProjectDetail from "./Components/Students/Projects/ProjectDetail";
 import Feedback from "./Components/Students/Feedback/Feedback";
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
+    shouldPlaySound: true,
     shouldSetBadge: false,
-  }),
+    shouldShowBanner: true,
+    shouldShowList: true
+  })
 });
-const Stack = createNativeStackNavigator()
+const Stack = createNativeStackNavigator();
 export default function App() {
   React.useEffect(() => {
     registerForPushNotificationAsync();

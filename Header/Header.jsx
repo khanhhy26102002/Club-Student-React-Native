@@ -49,9 +49,8 @@ const Header = () => {
       <StatusBar barStyle="light-content" backgroundColor="#ff6600" />
       <View style={styles.row}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Ionicons name="menu" size={26} color="#333" />
+          <Ionicons name="menu" size={26} color="#fff" />
         </TouchableOpacity>
-
         <View style={styles.center}>
           <Image
             source={{
@@ -59,14 +58,14 @@ const Header = () => {
             }}
             style={styles.logo}
           />
-          <Text style={styles.title}>{t("title")}</Text>
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+            {t("title")}
+          </Text>
         </View>
-
         <View style={styles.actions}>
           <TouchableOpacity onPress={toggleLang} style={styles.language}>
             <Text style={styles.flag}>{lang === "vi" ? "🇻🇳" : "🇺🇸"}</Text>
           </TouchableOpacity>
-
           {user ? (
             <View style={styles.avatarWrapper}>
               <TouchableOpacity onPress={() => setDropdown(!dropdown)}>
@@ -89,73 +88,62 @@ const Header = () => {
                   >
                     <View style={styles.modalContainer}>
                       <View style={styles.dropdown}>
-                        <View style={styles.userBox}>
-                          <Text style={styles.helloRow}>
-                            👋 {t("hello")}:{" "}
-                            <Text style={styles.emailText}>{user.email}</Text>
+                        <Text style={styles.helloRow}>
+                          👋 {t("hello")}:{" "}
+                          <Text style={styles.emailText}>{user.email}</Text>
+                        </Text>
+
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleLogout}
+                        >
+                          <Text style={styles.logoutText}>
+                            🔓 {t("title88")}
                           </Text>
-                        </View>
-                        <View style={{ marginTop: -20 }}>
-                          <TouchableOpacity
-                            style={styles.dropdownItem}
-                            onPress={handleLogout}
-                          >
-                            <Text style={styles.logoutText}>
-                              🔓 {t("title88")}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setDropdown(false);
+                            navigation.navigate("Event", {
+                              screen: "FormClub"
+                            });
+                          }}
+                        >
+                          <View style={styles.dropdownRow}>
+                            <Ionicons
+                              name="add-circle-outline"
+                              size={18}
+                              color="#333"
+                              style={{ marginRight: 8 }}
+                            />
+                            <Text style={styles.dropdownText}>
+                              Tạo câu lạc bộ
                             </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.dropdownItem}
-                            onPress={() => {
-                              setDropdown(false);
-                              navigation.navigate("Event", {
-                                screen: "FormClub"
-                              });
-                            }}
-                          >
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center"
-                              }}
-                            >
-                              <Ionicons
-                                name="add-circle-outline"
-                                size={18}
-                                color="#333"
-                                style={{ marginRight: 8 }}
-                              />
-                              <Text style={styles.logoutText}>
-                                Tạo câu lạc bộ
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.dropdownItem}
-                            onPress={() =>
-                              navigation.navigate("Event", {
-                                screen: "FormRegister"
-                              })
-                            }
-                          >
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center"
-                              }}
-                            >
-                              <Ionicons
-                                name="person-add"
-                                size={18}
-                                color="#333"
-                                style={{ marginRight: 8 }}
-                              />
-                              <Text style={styles.logoutText}>
-                                Đăng kí câu lạc bộ
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        </View>
+                          </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={() =>
+                            navigation.navigate("Event", {
+                              screen: "FormRegister"
+                            })
+                          }
+                        >
+                          <View style={styles.dropdownRow}>
+                            <Ionicons
+                              name="person-add"
+                              size={18}
+                              color="#333"
+                              style={{ marginRight: 8 }}
+                            />
+                            <Text style={styles.dropdownText}>
+                              Đăng kí câu lạc bộ
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -164,10 +152,16 @@ const Header = () => {
             </View>
           ) : (
             <View style={styles.authButtons}>
-              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Login")}
+                style={styles.authBtn}
+              >
                 <Text style={styles.authText}>{t("login")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Register")}
+                style={[styles.authBtn, { backgroundColor: "#fff" }]}
+              >
                 <Text style={[styles.authText, { color: "#ff6600" }]}>
                   {t("register")}
                 </Text>
@@ -179,11 +173,13 @@ const Header = () => {
     </View>
   );
 };
+
 export default Header;
+
 const styles = StyleSheet.create({
   header: {
     backgroundColor: "#FF6600",
-    paddingTop: 42,
+    paddingTop: 12,
     paddingBottom: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
@@ -197,33 +193,37 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    marginLeft: -10
   },
   center: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: 10,
     gap: 8
   },
   logo: {
     width: 32,
     height: 32,
-    borderRadius: 6
+    borderRadius: 6,
+    marginRight: 6
   },
   title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333"
+    fontSize: 11,
+    color: "#fff",
+    marginLeft: -10,
+    fontWeight: "bold"
   },
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12
+    gap: 8
   },
   language: {
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 10,
-    borderRadius: 20,
-    backgroundColor: "#f5f5f5",
+    borderRadius: 16,
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#eee"
   },
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    borderColor: "#ff6600",
+    borderColor: "#fff",
     borderWidth: 2
   },
   modalOverlay: {
@@ -248,15 +248,15 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     paddingRight: 20
   },
+  modalContainer: {
+    width: 250
+  },
   dropdown: {
-    position: "absolute",
-    top: -15,
-    right: 0,
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ddd",
-    width: 250,
+    padding: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -264,56 +264,50 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 999
   },
-  userBox: {
-    marginBottom: 12,
-    padding: 12,
-    borderRadius: 10
-  },
-  helloText: {
+  helloRow: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 4
+    marginBottom: 8,
+    color: "#444"
   },
   emailText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#007AFF"
-  },
-  email: {
+    fontSize: 14,
     fontWeight: "600",
     color: "#007AFF"
   },
   dropdownItem: {
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 8,
-    backgroundColor: "#f6f6f6",
-    marginTop: 6,
-    width: "100%"
+    backgroundColor: "#f9f9f9",
+    marginTop: 6
   },
   logoutText: {
     color: "#d9534f",
     fontWeight: "600",
     fontSize: 15
   },
-  dropdownLabel: {
-    fontSize: 13,
+  dropdownText: {
+    fontSize: 15,
     fontWeight: "600",
-    marginTop: 10,
-    color: "#555"
+    color: "#333"
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#eee",
-    marginVertical: 10
+  dropdownRow: {
+    flexDirection: "row",
+    alignItems: "center"
   },
   authButtons: {
     flexDirection: "row",
-    gap: 12
+    gap: 8
+  },
+  authBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: "#fff"
   },
   authText: {
     fontSize: 14,
-    color: "#333",
-    fontWeight: "600"
+    fontWeight: "600",
+    color: "#333"
   }
 });
