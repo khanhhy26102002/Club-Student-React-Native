@@ -1,0 +1,69 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import DrawerNavigation from "./DrawerNavigation/DrawerNavigation";
+import Payment from "./Components/Students/Payment/Payment";
+import LoginPage from "./Components/Login/LoginPage";
+import RegisterPage from "./Components/Register/RegisterPage";
+import React from "react";
+import ProjectList from "./Components/Students/Projects/ProjectList";
+import ProjectDetail from "./Components/Students/Projects/ProjectDetail";
+import Feedback from "./Components/Students/Feedback/Feedback";
+import * as Notifications from 'expo-notifications';
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+const Stack = createNativeStackNavigator()
+export default function App() {
+  React.useEffect(() => {
+    registerForPushNotificationAsync();
+  }, []);
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Main">
+        <Stack.Screen
+          name="Main"
+          component={DrawerNavigation}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginPage}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterPage}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="Payment"
+          component={Payment}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen name="FeedBack" component={Feedback} />
+        <Stack.Screen name="ProjectList" component={ProjectList} />
+        <Stack.Screen name="ProjectDetail" component={ProjectDetail} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+async function registerForPushNotificationAsync() {
+  const { status } = await Notifications.requestPermissionsAsync();
+  if (status !== "granted") {
+    return;
+  }
+  const token = (await Notifications.getExpoPushTokenAsync()).data;
+  console.log("Expo token:", token);
+}
