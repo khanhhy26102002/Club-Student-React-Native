@@ -1,9 +1,6 @@
 import BlogId from "./BlogId";
 import Blog from "./Blog";
-const {
-  createNativeStackNavigator
-} = require("@react-navigation/native-stack");
-
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 const Stack = createNativeStackNavigator();
 const BlogStack = () => {
   return (
