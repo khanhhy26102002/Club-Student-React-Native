@@ -30,7 +30,7 @@ const LoginPage = ({ navigation }) => {
       });
 
       Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
-      const { token, roleName } = data;
+      const { token, roleName } = data.data;
       await AsyncStorage.setItem("jwt", token);
       await AsyncStorage.setItem("role", roleName);
       await AsyncStorage.setItem("email", email);
@@ -49,7 +49,7 @@ const LoginPage = ({ navigation }) => {
         const response = await fetchBaseResponse(`/majors`, {
           method: "GET"
         });
-        setData(response);
+        setData(response.data);
       } catch (error) {
         Alert.alert("Lỗi lấy ngành học:", error.message);
       }

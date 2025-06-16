@@ -38,8 +38,7 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem("jwt");
-    await AsyncStorage.removeItem("role");
+    localStorage.clear();
     setUser(null);
     setDropdown(false);
   };
