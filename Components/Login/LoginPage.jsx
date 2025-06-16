@@ -22,20 +22,19 @@ const LoginPage = ({ navigation }) => {
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
   const [data, setData] = React.useState([]);
+  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
   const handleLogin = async () => {
     try {
       const data = await fetchBaseResponse("/login", {
         method: "POST",
         data: { email, password }
       });
-
       Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
-      const { token, roleName } = data.data;
+      const { token, roleName } = data;
       await AsyncStorage.setItem("jwt", token);
       await AsyncStorage.setItem("role", roleName);
       await AsyncStorage.setItem("email", email);
       setRoleName(roleName);
-
       if (roleName === "MEMBER") {
         navigation.navigate("Main");
       }
@@ -49,7 +48,12 @@ const LoginPage = ({ navigation }) => {
         const response = await fetchBaseResponse(`/majors`, {
           method: "GET"
         });
-        setData(response.data);
+        if (!response || response.length === 0) {
+          Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
+          setData([]);
+        } else {
+          setData(response);
+        }
       } catch (error) {
         Alert.alert("Lỗi lấy ngành học:", error.message);
       }
@@ -146,20 +150,21 @@ const LoginPage = ({ navigation }) => {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Chọn ngành học</Text>
+              <Text style={styles.modalTitle}>🎓 Chọn ngành học</Text>
 
-              <ScrollView style={{ maxHeight: 300, width: "100%" }}>
+              <ScrollView style={styles.modalScroll}>
                 {data.map((major) => (
                   <TouchableOpacity
                     key={major.majorId}
                     style={styles.modalOption}
+                    activeOpacity={0.7}
                     onPress={() => {
                       setSelectedMajor(major);
                       setModalVisible(false);
                     }}
                   >
                     <Text style={styles.modalOptionText}>
-                      {major.majorName} - {major.department}
+                      📘 {major.majorName} - {major.department}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -169,7 +174,7 @@ const LoginPage = ({ navigation }) => {
                 style={styles.modalClose}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalCloseText}>Đóng</Text>
+                <Text style={styles.modalCloseText}>❌ Đóng</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -299,34 +304,56 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)"
+    paddingHorizontal: 20
   },
   modalContent: {
     backgroundColor: "#fff",
+    borderRadius: 20,
     padding: 20,
-    borderRadius: 12,
-    width: "80%",
-    alignItems: "center"
+    width: "100%",
+    maxHeight: "80%",
+    alignItems: "center",
+    elevation: 10, // Android shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 15,
+    color: "#333"
+  },
+  modalScroll: {
+    width: "100%",
+    maxHeight: 300,
+    marginBottom: 20
   },
   modalOption: {
-    paddingVertical: 10,
-    paddingHorizontal: 5
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    backgroundColor: "#f0f4ff",
+    borderRadius: 10,
+    marginBottom: 10
   },
   modalOptionText: {
     fontSize: 16,
-    textAlign: "center"
+    color: "#333"
+  },
+  modalClose: {
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    backgroundColor: "#ff6666",
+    borderRadius: 10
   },
   modalCloseText: {
-    marginTop: 15,
-    color: "red",
-    fontWeight: "500"
+    fontSize: 16,
+    color: "white",
+    fontWeight: "600"
   }
 });
 
