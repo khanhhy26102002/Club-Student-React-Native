@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import React from "react";
 import { useRoute } from "@react-navigation/native";
-import API from "../../../utils/api";
+import API, { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 const BlogId = () => {
   const route = useRoute();
@@ -20,10 +20,8 @@ const BlogId = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await API.get(`/blogs/${id}`, {
-          headers: {
-            "Content-Type": "application/json"
-          }
+        const response = await fetchBaseResponse(`/blogs/${id}`, {
+          method: "GET"
         });
         if (response.status >= 200 && response.status < 300) {
           setData(response.data);

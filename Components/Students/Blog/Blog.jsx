@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
-import API from "../../../utils/api";
+import API, { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 const formatDate = (isoString) => {
   const date = new Date(isoString);
@@ -28,7 +28,9 @@ const Blog = ({ navigation }) => {
       const fetchData = async () => {
         try {
           setLoading(true);
-          const response = await API.get(`/blogs`);
+          const response = await fetchBaseResponse(`/blogs`, {
+            method: "GET"
+          });
           if (response.status >= 200 && response.status < 300) {
             setData(response.data);
           } else {
@@ -37,7 +39,7 @@ const Blog = ({ navigation }) => {
         } catch (error) {
           Alert.alert("Lỗi lấy dữ liệu", error.message || "Không xác định");
         } finally {
-          setLoading(false); 
+          setLoading(false);
         }
       };
       fetchData();
