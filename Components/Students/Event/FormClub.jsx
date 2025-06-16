@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
-import API from "../../../utils/api";
+import API, { fetchBaseResponse } from "../../../utils/api";
 
 const FormClub = () => {
   const [clubName, setClubName] = useState("");
@@ -30,25 +30,24 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await API.post(
-        `/clubs/createClub`,
-        { clubName, description },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+      const response = await fetchBaseResponse(`/clubs/createClub`, {
+        method: "POST",
+        data: { clubName, description },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
-      );
+      });
 
-      if (response.status >= 200 && response.status < 300) {
+      console.log("📦 API Response:", response);
+      if (response.status === 200 && response.message === "Success") {
         Alert.alert("✅ Thành công", "Bạn đã tạo câu lạc bộ thành công!");
-        setClubName("");
-        setDescription("");
       } else {
-        throw new Error(`HTTP Status: ${response.status}`);
+        throw new Error(`Lỗi: ${response.message || "Không xác định"}`);
       }
     } catch (error) {
       Alert.alert("❌ Thất bại", "Không thể tạo câu lạc bộ: " + error.message);
+      console.error("❌ API Error:", error);
     } finally {
       setLoading(false);
     }
