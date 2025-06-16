@@ -38,9 +38,10 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    localStorage.clear();
-    setUser(null);
+    AsyncStorage.clear();
     setDropdown(false);
+    setUser(null);
+    navigate("/");
   };
 
   return (
