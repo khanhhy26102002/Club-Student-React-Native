@@ -9,47 +9,62 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  Modal
 } from "react-native";
-import API from "../../utils/api";
+import API, { fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginPage = ({ navigation }) => {
+  const [selectedMajor, setSelectedMajor] = React.useState(null);
+  const [isModalVisible, setModalVisible] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
-
+  const [data, setData] = React.useState([]);
   const handleLogin = async () => {
     try {
-      const response = await API.post(
-        `/login`,
-        { email, password },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      if (response.status >= 200 && response.status < 300 && response.data.token) {
-        Alert.alert("Bạn đăng nhập thành công", "Chào mừng bạn đến với trang chủ");
-        const { token, roleName } = response.data;
-        await AsyncStorage.setItem("jwt", token);
-        await AsyncStorage.setItem("role", roleName);
-        await AsyncStorage.setItem("email", email);
-        setRoleName(roleName);
-        if (roleName === "MEMBER") {
-          navigation.navigate("Main");
-        }
-      } else {
-        Alert.alert("Đăng nhập không thành công", "Kiểm tra lại thông tin đăng nhập");
+      const data = await fetchBaseResponse("/login", {
+        method: "POST",
+        data: { email, password }
+      });
+
+      Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
+      const { token, roleName } = data;
+      await AsyncStorage.setItem("jwt", token);
+      await AsyncStorage.setItem("role", roleName);
+      await AsyncStorage.setItem("email", email);
+      setRoleName(roleName);
+
+      if (roleName === "MEMBER") {
+        navigation.navigate("Main");
       }
-    } catch (error) {
-      Alert.alert("Lỗi đăng nhập", error.message);
+    } catch (err) {
+      Alert.alert("Đăng nhập thất bại", err.message);
     }
   };
-
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchBaseResponse(`/majors`, {
+          method: "GET"
+        });
+        setData(response);
+      } catch (error) {
+        Alert.alert("Lỗi lấy ngành học:", error.message);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : null}
       style={styles.flex}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.title}>Chào mừng bạn trở lại!</Text>
         <Text style={styles.subtitle}>Đăng nhập để tiếp tục</Text>
 
@@ -96,7 +111,10 @@ const LoginPage = ({ navigation }) => {
         <View style={styles.socialWrapper}>
           <Text style={styles.orText}>Hoặc đăng nhập bằng</Text>
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, styles.google]} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={[styles.socialButton, styles.google]}
+              activeOpacity={0.7}
+            >
               <FontAwesome
                 name="google"
                 size={24}
@@ -107,6 +125,55 @@ const LoginPage = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Ngành học</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={{ color: selectedMajor ? "#000" : "#a3a3a3" }}>
+              {selectedMajor
+                ? `${selectedMajor.majorName} - ${selectedMajor.department}`
+                : "Chọn ngành học"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          visible={isModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Chọn ngành học</Text>
+
+              <ScrollView style={{ maxHeight: 300, width: "100%" }}>
+                {data.map((major) => (
+                  <TouchableOpacity
+                    key={major.majorId}
+                    style={styles.modalOption}
+                    onPress={() => {
+                      setSelectedMajor(major);
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.modalOptionText}>
+                      {major.majorName} - {major.department}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <TouchableOpacity
+                style={styles.modalClose}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalCloseText}>Đóng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -119,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e6f0ff",
     paddingHorizontal: 28,
     justifyContent: "center",
-    paddingVertical: 40,
+    paddingVertical: 40
   },
   title: {
     fontSize: 28,
@@ -217,7 +284,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    elevation: 5
   },
   google: {
     backgroundColor: "#db4437"
@@ -229,6 +296,37 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 17,
     fontWeight: "700"
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)"
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    width: "80%",
+    alignItems: "center"
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10
+  },
+  modalOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 5
+  },
+  modalOptionText: {
+    fontSize: 16,
+    textAlign: "center"
+  },
+  modalCloseText: {
+    marginTop: 15,
+    color: "red",
+    fontWeight: "500"
   }
 });
 

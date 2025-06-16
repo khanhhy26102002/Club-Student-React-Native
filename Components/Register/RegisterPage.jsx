@@ -66,11 +66,14 @@ const RegisterPage = ({ navigation }) => {
         }
       );
 
-      if (response.status === 201) {
+      if (
+        response.status === 200 &&
+        response.data?.data?.message === "Registration successful"
+      ) {
         Alert.alert("Thành công", "Bạn đã đăng ký thành công");
         navigation.navigate("Login");
       } else {
-        Alert.alert("Lỗi", "Không đăng ký được");
+        Alert.alert("Lỗi", response.data?.message || "Không đăng ký được");
       }
     } catch (error) {
       if (error.response?.data?.message) {
