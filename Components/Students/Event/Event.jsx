@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
-import API from "../../../utils/api";
+import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
@@ -18,15 +18,14 @@ const Event = ({ navigation }) => {
     React.useCallback(() => {
       const fetchData = async () => {
         try {
-          const response = await API.get(`/events`, {
-            headers: {
-              "Content-Type": "application/json"
-            }
+          const response = await fetchBaseResponse(`/events`, {
+            method: "GET"
           });
-          if (response.status >= 200 && response.status < 300) {
-            setData(response.data);
+          if (!response || response.length === 0) {
+            Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
+            setData([]);
           } else {
-            throw new Error(`HTTP Status:${response.data}`);
+            setData(response);
           }
         } catch (error) {
           Alert.alert(

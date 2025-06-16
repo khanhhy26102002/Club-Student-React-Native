@@ -11,7 +11,7 @@ export async function fetchBaseResponse(url, config) {
     const { status, message, data } = response.data;
 
     if (status >= 200 && status < 300) {
-      return response.data;
+      return data;
     } else {
       throw new Error(message || "Đã có lỗi xảy ra");
     }
