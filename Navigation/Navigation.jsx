@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Homepage from "../Components/Students/Home/Homepage";
 import Contact from "../Components/Students/Contact/Contact";
-import About from "../Components/Students/About/About";
 import BlogStack from "../Components/Students/Blog/BlogStack";
 import EventStack from "../Components/Students/Event/EventStack";
+import AboutStack from "../Components/Students/About/AboutStack";
 const Tab = createBottomTabNavigator();
 const Navigation = () => {
   return (
@@ -58,7 +58,7 @@ const Navigation = () => {
       />
       <Tab.Screen
         name="About"
-        component={About}
+        component={AboutStack}
         options={{ headerShown: false }}
       />
       <Tab.Screen
