@@ -23,10 +23,11 @@ const BlogId = () => {
         const response = await fetchBaseResponse(`/blogs/${id}`, {
           method: "GET"
         });
-        if (response.status >= 200 && response.status < 300) {
-          setData(response.data);
+        if (!response || response.length === 0) {
+          Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
+          setData([]);
         } else {
-          throw new Error(`HTTP Status:${response.status}`);
+          setData(response);
         }
       } catch (error) {
         Alert.alert("Lỗi khi tải bài viết", error.message || "Đã xảy ra lỗi");

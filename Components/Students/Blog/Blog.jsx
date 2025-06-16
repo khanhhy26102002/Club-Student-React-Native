@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
-import API, { fetchBaseResponse } from "../../../utils/api";
+import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 const formatDate = (isoString) => {
   const date = new Date(isoString);
@@ -31,10 +31,11 @@ const Blog = ({ navigation }) => {
           const response = await fetchBaseResponse(`/blogs`, {
             method: "GET"
           });
-          if (response.status >= 200 && response.status < 300) {
-            setData(response.data);
+          if (!response || response.length === 0) {
+            Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
+            setData([]);
           } else {
-            throw new Error(`HTTP Status:${response.status}`);
+            setData(response);
           }
         } catch (error) {
           Alert.alert("Lỗi lấy dữ liệu", error.message || "Không xác định");
