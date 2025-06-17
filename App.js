@@ -9,6 +9,7 @@ import ProjectList from "./Components/Students/Projects/ProjectList";
 import ProjectDetail from "./Components/Students/Projects/ProjectDetail";
 import Feedback from "./Components/Students/Feedback/Feedback";
 import * as Notifications from "expo-notifications";
+import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -56,6 +57,7 @@ export default function App() {
         <Stack.Screen name="FeedBack" component={Feedback} />
         <Stack.Screen name="ProjectList" component={ProjectList} />
         <Stack.Screen name="ProjectDetail" component={ProjectDetail} />
+        <Stack.Screen name="Organizer" component={StudentOrganizer} />
       </Stack.Navigator>
     </NavigationContainer>
   );
