@@ -22,7 +22,6 @@ const LoginPage = ({ navigation }) => {
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
   const [data, setData] = React.useState([]);
-  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
   const handleLogin = async () => {
     try {
       const data = await fetchBaseResponse("/login", {
@@ -30,13 +29,16 @@ const LoginPage = ({ navigation }) => {
         data: { email, password }
       });
       Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
-      const { token, roleName } = data;
+      const token = data.token;
+      const roleName = data.roles?.[0]?.role || "GUEST";
       await AsyncStorage.setItem("jwt", token);
       await AsyncStorage.setItem("role", roleName);
       await AsyncStorage.setItem("email", email);
       setRoleName(roleName);
       if (roleName === "MEMBER") {
         navigation.navigate("Main");
+      } else if (roleName === "EVENT_ORGANZERS") {
+        navigation.navigate("Organizer");
       }
     } catch (err) {
       Alert.alert("Đăng nhập thất bại", err.message);
