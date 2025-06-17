@@ -78,78 +78,80 @@ const Contact = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#f0f4f8",
+    backgroundColor: "#f9fbfd",
     paddingBottom: 40,
     flexGrow: 1
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "800",
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: "center",
-    color: "#1e2a3a"
+    color: "#1f2937"
   },
   description: {
-    fontSize: 15,
-    color: "#5c6b7a",
+    fontSize: 16,
+    color: "#6b7280",
     lineHeight: 22,
     textAlign: "center",
-    marginBottom: 24
+    marginBottom: 28
   },
 
   infoSection: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     marginVertical: 6,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    alignSelf: "center",
-    width: "100%"
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2
   },
   infoText: {
-    fontSize: 15,
-    color: "#1e2a3a"
+    fontSize: 16,
+    color: "#374151",
+    marginLeft: 12
   },
   linkText: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#0077cc",
+    marginLeft: 12,
     textDecorationLine: "none"
   },
 
   subHeading: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    marginTop: 30,
-    marginBottom: 14,
-    color: "#1e2a3a",
+    marginTop: 36,
+    marginBottom: 16,
+    color: "#1e293b",
     textAlign: "center"
   },
 
   socials: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 24
+    gap: 28,
+    marginBottom: 24
   },
 
   button: {
     backgroundColor: "#0077cc",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     marginTop: 32,
     alignItems: "center",
     shadowColor: "#0077cc",
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "700"
   }
 });

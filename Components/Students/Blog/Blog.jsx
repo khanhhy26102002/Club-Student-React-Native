@@ -97,62 +97,70 @@ export default Blog;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#FAFAFA"
+    backgroundColor: "#f9fafb",
+    padding: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 16,
+    color: "#111827",
+    marginBottom: 20,
     textAlign: "center",
-    color: "#333"
   },
   card: {
-    padding: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 6,
-    color: "#007AFF"
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: 8,
   },
   meta: {
-    fontSize: 12,
-    color: "#999",
-    marginBottom: 10
+    fontSize: 14,
+    color: "#6b7280", // Gray-500
+    marginBottom: 10,
   },
   author: {
     fontWeight: "bold",
-    color: "#555"
+    color: "#2563eb", // Blue-600
   },
   description: {
-    fontSize: 14,
-    color: "#444",
-    marginBottom: 12
+    fontSize: 16,
+    color: "#374151", // Gray-700
+    lineHeight: 22,
+    marginBottom: 16,
   },
   button: {
     alignSelf: "flex-start",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#2563eb",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20
+    borderRadius: 20,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "600"
+    color: "#ffffff",
+    fontWeight: "500",
+    fontSize: 14,
+  },
+  loadingContainer: {
+    marginTop: 50,
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyText: {
     textAlign: "center",
-    color: "#999",
+    color: "#9ca3af",
     fontSize: 16,
-    marginTop: 20
-  }
+    marginTop: 20,
+  },
 });
+
