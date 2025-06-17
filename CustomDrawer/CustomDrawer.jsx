@@ -25,103 +25,82 @@ export const CustomDrawer = () => {
     <DrawerContentScrollView>
       <View style={styles.header}>
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        <Text style={styles.username}>
-          Xin chào, {user.name}
-        </Text>
+        <Text style={styles.username}>👋 Xin chào, {user.name}</Text>
       </View>
+
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.infoBox}>
-          <Text style={styles.labelTitle}>Năm học:</Text>
-          <Text style={styles.labelValue}>
-            {user.academicYear}
-          </Text>
+          <Text style={styles.labelTitle}>📘 Năm học:</Text>
+          <Text style={styles.labelValue}>{user.academicYear}</Text>
 
-          <Text style={styles.labelTitle}>Chuyên ngành:</Text>
-          <Text style={styles.labelValue}>
-            {user.major}
-          </Text>
+          <Text style={styles.labelTitle}>🎓 Chuyên ngành:</Text>
+          <Text style={styles.labelValue}>{user.major}</Text>
 
-          <Text style={styles.labelTitle}>Kỹ năng:</Text>
-          <Text style={styles.labelValue}>
-            {user.Skill}
-          </Text>
+          <Text style={styles.labelTitle}>🛠 Kỹ năng:</Text>
+          <Text style={styles.labelValue}>{user.Skill}</Text>
         </View>
+
         <View style={styles.actions}>
           <TouchableOpacity style={styles.actionButton}>
             <Ionicons
               name="person-circle-outline"
-              size={20}
+              size={22}
               color="#fff"
               style={styles.icon}
             />
-            <Text style={styles.actionText}>
-              {t("title87")}
-            </Text>
+            <Text style={styles.actionText}>{t("title87")}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.logoutButton]}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.logoutButton]}
+            onPress={() => navigation.navigate("Login")}
+          >
             <Ionicons
               name="log-out-outline"
-              size={20}
-              color="#ff3b30"
+              size={22}
+              color="#fff"
               style={styles.icon}
             />
-            <Text
-              style={[styles.actionText, styles.logoutText]}
-              onPress={() => navigation.navigate("Login")}
-            >
-              {t("title88")}
-            </Text>
+            <Text style={styles.logoutText}>{t("title88")}</Text>
           </TouchableOpacity>
         </View>
+
         <TouchableOpacity
           onPress={() => navigation.navigate("ProjectList")}
-          style={{
-            backgroundColor: "#4A90E2",
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-            borderRadius: 8,
-            alignItems: "center",
-            marginTop: 20,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 4,
-            elevation: 3
-          }}
+          style={styles.projectButton}
         >
-          <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
-            📂 Xem danh sách dự án
-          </Text>
+          <Text style={styles.projectButtonText}>📂 Xem danh sách dự án</Text>
         </TouchableOpacity>
       </ScrollView>
     </DrawerContentScrollView>
   );
 };
 const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: "#f9fafb"
+  },
   header: {
-    paddingVertical: 30,
-    backgroundColor: "#ff6600",
     alignItems: "center",
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20
+    paddingVertical: 24,
+    backgroundColor: "#2563eb", // Blue-600
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    marginBottom: 16
   },
   avatar: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#fff",
-    marginBottom: 10
+    marginBottom: 10,
+    backgroundColor: "#ccc"
   },
   username: {
-    color: "#fff",
     fontSize: 18,
-    fontWeight: "bold"
-  },
-  container: {
-    padding: 20,
-    backgroundColor: "#f9f9f9"
+    fontWeight: "600",
+    color: "#fff"
   },
   infoBox: {
     backgroundColor: "#fff",
@@ -131,84 +110,64 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1
+    shadowRadius: 6,
+    elevation: 2
   },
   labelTitle: {
+    fontWeight: "600",
     fontSize: 14,
-    color: "#888",
+    color: "#374151", // Gray-700
     marginTop: 10
   },
   labelValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333"
-  },
-  actions: {
-    gap: 12
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ff6600",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    justifyContent: "center"
-  },
-  buttonText: {
-    color: "#fff",
     fontSize: 15,
-    fontWeight: "600"
-  },
-  icon: {
-    marginRight: 8
-  },
-  logoutButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ff3b30"
-  },
-  logoutText: {
-    color: "#ff3b30"
+    color: "#6b7280", // Gray-500
+    marginBottom: 6
   },
   actions: {
-    marginTop: 30,
-    paddingHorizontal: 20,
-    gap: 12
+    marginTop: 10
   },
-
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ff6600",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2
+    backgroundColor: "#3b82f6", // Blue-500
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    marginBottom: 12
   },
-
-  actionText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600"
+  logoutButton: {
+    backgroundColor: "#ef4444" // Red-500
   },
-
   icon: {
     marginRight: 10
   },
-
-  logoutButton: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ff3b30"
+  actionText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500"
   },
-
   logoutText: {
-    color: "#ff3b30"
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500"
+  },
+  projectButton: {
+    backgroundColor: "#10b981", // Emerald-500
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3
+  },
+  projectButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold"
   }
 });
