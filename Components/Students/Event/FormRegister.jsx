@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -13,37 +13,36 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
-import API from "../../../utils/api";
+import { fetchBaseResponse } from "../../../utils/api";
 
 const FormRegister = () => {
-  const [studentCode, setStudentCode] = useState("");
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [major, setMajor] = useState("");
-  const [clubId, setClubId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [studentCode, setStudentCode] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [fullName, setFullName] = React.useState("");
+  const [major, setMajor] = React.useState("");
+  const [clubId, setClubId] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await API.post(
-        "/clubs/clubregister",
-        {
+      const response = await fetchBaseResponse("/clubs/clubregister", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        data: {
           studentCode,
           email,
           fullName,
           major,
           clubId
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
-      );
-
-      if (response.status >= 200 && response.status < 300) {
+      });
+      console.log("Response:", response);
+      if (response.message === "Đăng ký CLB thành công!") {
         Alert.alert("✅ Thành công", "Bạn đã đăng ký câu lạc bộ thành công!");
       } else {
         throw new Error(`HTTP Status: ${response.status}`);

@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from "react-native";
-import API from "../../utils/api";
+import { fetchBaseResponse } from "../../utils/api";
 import { Picker } from "@react-native-picker/picker";
 
 const RegisterPage = ({ navigation }) => {
@@ -49,39 +49,34 @@ const RegisterPage = ({ navigation }) => {
     }
 
     try {
-      const response = await API.post(
-        "/register",
-        {
+      const response = await fetchBaseResponse("/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        data: {
           studentCode,
           email,
           password,
           fullName,
           academicYear,
           major
-        },
-        {
-          headers: {
-            "Content-Type": "application/json"
-          }
         }
-      );
-
-      if (
-        response.status === 200 &&
-        response.data?.data?.message === "Registration successful"
-      ) {
+      });
+      console.log("RESPONSE", response);
+      if (response?.message === "Registration successful") {
         Alert.alert("Thành công", "Bạn đã đăng ký thành công");
         navigation.navigate("Login");
       } else {
-        Alert.alert("Lỗi", response.data?.message || "Không đăng ký được");
+        Alert.alert("Lỗi", response?.message || "Không đăng ký được");
       }
     } catch (error) {
+      console.error("FULL ERROR:", error);
       if (error.response?.data?.message) {
         Alert.alert("Lỗi đăng ký", error.response.data.message);
       } else {
         Alert.alert("Lỗi hệ thống", "Không thể kết nối tới máy chủ.");
       }
-      console.error("Đăng ký thất bại:", error.message);
     }
   };
 
