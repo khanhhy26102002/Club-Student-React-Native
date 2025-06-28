@@ -27,7 +27,7 @@ const FormRegister = () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse("/clubs/clubregister", {
+      const response = await fetchBaseResponse("/clubs/club-register", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,11 +42,7 @@ const FormRegister = () => {
         }
       });
       console.log("Response:", response);
-      if (response.message === "Đăng ký CLB thành công!") {
-        Alert.alert("✅ Thành công", "Bạn đã đăng ký câu lạc bộ thành công!");
-      } else {
-        throw new Error(`HTTP Status: ${response.status}`);
-      }
+      Alert.alert("✅ Thành công", "Bạn đã đăng ký câu lạc bộ thành công!");
     } catch (error) {
       Alert.alert("❌ Lỗi", "Không thể đăng ký: " + error.message);
     } finally {
