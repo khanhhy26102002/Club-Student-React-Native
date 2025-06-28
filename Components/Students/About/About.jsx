@@ -3,31 +3,45 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Alert,
+  Image
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
-
-const data = [
-  { id: 1, title: "CLB Lập Trình", description: "Nơi học hỏi về code" },
-  { id: 2, title: "CLB Thiết Kế", description: "Phát triển tư duy sáng tạo" },
-  { id: 3, title: "CLB Nhiếp Ảnh", description: "Ghi lại khoảnh khắc đẹp" },
-  {
-    id: 4,
-    title: "CLB Kinh Doanh",
-    description: "Rèn luyện tư duy chiến lược"
-  },
-  { id: 5, title: "CLB Âm Nhạc", description: "Nơi thể hiện đam mê âm nhạc" },
-  {
-    id: 6,
-    title: "CLB Thể Thao",
-    description: "Tăng cường thể chất và tinh thần"
-  }
-];
-
+import { fetchBaseResponse } from "../../../utils/api";
+import React from "react";
 const About = ({ navigation }) => {
   const { t } = useTranslation();
+  const [data, setData] = React.useState([]);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchBaseResponse("/clubs/public", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (!response || response.length === 0) {
+          Alert.alert("Không hiển thị được data club");
+          setData([]);
+        } else {
+          setData(response);
+        }
+      } catch (error) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : error?.message || JSON.stringify(error);
+
+        Alert.alert("Error fetching data club", errorMessage);
+        console.error("Error:", error);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <>
       <Header />
@@ -41,15 +55,22 @@ const About = ({ navigation }) => {
         </View>
         <View style={styles.cardGrid}>
           {data.map((item) => (
-            <View key={item.id} style={styles.card}>
+            <View key={item.clubId} style={styles.card}>
               <TouchableOpacity
                 onPress={() =>
                   navigation.navigate("About", {
                     screen: "AboutId",
-                    params: { id: item.id }
+                    params: { clubId: item.clubId }
                   })
                 }
               >
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: item.logoUrl }}
+                    style={styles.image}
+                    resizeMode="cover" // hoặc "contain", tùy ý
+                  />
+                </View>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <Text style={styles.cardDesc}>{item.description}</Text>
               </TouchableOpacity>
@@ -141,6 +162,23 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
     marginBottom: 20
+  },
+  imageWrapper: {
+    alignItems: "center",
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    padding: 8,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  image: {
+    width: 120,
+    height: 120,
+    borderRadius: 60 // ảnh tròn, bỏ nếu muốn góc bo nhẹ
   },
   cardTitle: {
     fontSize: 20,

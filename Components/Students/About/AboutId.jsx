@@ -1,120 +1,152 @@
-import { StyleSheet, Text, View, ScrollView } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Alert, Image } from "react-native";
 import React from "react";
 import { useRoute } from "@react-navigation/native";
-import { FontAwesome5 } from "@expo/vector-icons";
 import Header from "../../../Header/Header";
-
-const clubs = [
-  { id: 1, title: "CLB Lập Trình", description: "Nơi học hỏi về code" },
-  { id: 2, title: "CLB Thiết Kế", description: "Phát triển tư duy sáng tạo" },
-  { id: 3, title: "CLB Nhiếp Ảnh", description: "Ghi lại khoảnh khắc đẹp" },
-  {
-    id: 4,
-    title: "CLB Kinh Doanh",
-    description: "Rèn luyện tư duy chiến lược"
-  },
-  { id: 5, title: "CLB Âm Nhạc", description: "Nơi thể hiện đam mê âm nhạc" },
-  {
-    id: 6,
-    title: "CLB Thể Thao",
-    description: "Tăng cường thể chất và tinh thần"
-  }
-];
-
+import { fetchBaseResponse } from "../../../utils/api";
 const AboutId = () => {
   const route = useRoute();
-  const { id } = route.params;
+  const { clubId } = route.params;
+  const [data, setData] = React.useState(null);
 
-  const club = clubs.find((item) => item.id === id);
-
-  if (!club) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Không tìm thấy câu lạc bộ.</Text>
-      </View>
-    );
-  }
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (!response || response.length === 0) {
+          Alert.alert("Không hiển thị được data theo clubId");
+          setData([]);
+        } else {
+          setData(response);
+        }
+      } catch (error) {
+        Alert.alert(
+          "Lỗi khi tải dữ liệu",
+          typeof error?.message === "string"
+            ? error.message
+            : JSON.stringify(error)
+        );
+        console.error("Error: ", error);
+      }
+    };
+    fetchData();
+  }, [clubId]);
 
   return (
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <FontAwesome5
-          name="users"
-          size={40}
-          color="#6366f1"
-          style={styles.icon}
-        />
-        <Text style={styles.title}>{club.title}</Text>
-        <Text style={styles.description}>{club.description}</Text>
+        {data && (
+          <>
+            <View style={styles.logoWrapper}>
+              <Image source={{ uri: data.logoUrl }} style={styles.logo} />
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🌟 Lợi ích khi tham gia:</Text>
-          <Text style={styles.bullet}>
-            • Giao lưu, mở rộng mạng lưới bạn bè
-          </Text>
-          <Text style={styles.bullet}>• Phát triển kỹ năng chuyên môn</Text>
-          <Text style={styles.bullet}>• Cơ hội tham gia các sự kiện lớn</Text>
-          <Text style={styles.bullet}>
-            • Được cấp giấy chứng nhận hoạt động
-          </Text>
-        </View>
+            <Text style={styles.title}>{data.name}</Text>
+            <Text style={styles.description}>{data.description}</Text>
+
+            <View style={styles.statusWrapper}>
+              <Text
+                style={[
+                  styles.status,
+                  { color: data.isActive ? "#10B981" : "#EF4444" }
+                ]}
+              >
+                {data.isActive ? "🟢 Đang hoạt động" : "🔴 Ngừng hoạt động"}
+              </Text>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🌟 Lợi ích khi tham gia</Text>
+              <Text style={styles.bullet}>
+                • Giao lưu, mở rộng mạng lưới bạn bè
+              </Text>
+              <Text style={styles.bullet}>• Phát triển kỹ năng chuyên môn</Text>
+              <Text style={styles.bullet}>
+                • Cơ hội tham gia các sự kiện lớn
+              </Text>
+              <Text style={styles.bullet}>
+                • Được cấp giấy chứng nhận hoạt động
+              </Text>
+            </View>
+          </>
+        )}
       </ScrollView>
     </>
   );
 };
 
 export default AboutId;
-
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
     padding: 24,
-    backgroundColor: "#eef2ff",
+    backgroundColor: "#F3F4F6",
     alignItems: "center"
   },
-  icon: {
+  logoWrapper: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 100,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     marginBottom: 20
   },
+  logo: {
+    width: 140,
+    height: 140,
+    borderRadius: 70
+  },
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#4338ca",
-    marginBottom: 12,
-    textAlign: "center"
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#1E3A8A",
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: 8
   },
   description: {
     fontSize: 16,
-    color: "#4b5563",
+    color: "#4B5563",
     textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 24
+    marginBottom: 12,
+    paddingHorizontal: 12
+  },
+  statusWrapper: {
+    marginVertical: 10
+  },
+  status: {
+    fontSize: 16,
+    fontWeight: "600"
   },
   section: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 16,
+    width: "100%",
+    marginTop: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-    width: "100%"
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#1f2937"
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 12
   },
   bullet: {
     fontSize: 15,
     color: "#374151",
-    marginBottom: 8
-  },
-  errorText: {
-    color: "red",
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 40
+    marginBottom: 6,
+    paddingLeft: 4
   }
 });

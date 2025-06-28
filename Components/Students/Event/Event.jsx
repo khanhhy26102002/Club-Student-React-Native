@@ -11,15 +11,21 @@ import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   useFocusEffect(
     React.useCallback(() => {
       const fetchData = async () => {
+        const token = await AsyncStorage.getItem("jwt");
         try {
-          const response = await fetchBaseResponse(`/events`, {
-            method: "GET"
+          const response = await fetchBaseResponse(`/events/public`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
           });
           if (!response || response.length === 0) {
             Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
@@ -57,7 +63,7 @@ const Event = ({ navigation }) => {
               key={index}
               style={styles.card}
               onPress={() =>
-                navigation.navigate("EventId", { id: event.eventId })
+                navigation.navigate("EventId", { eventId: event.eventId })
               }
             >
               <View style={styles.cardHeader}>
