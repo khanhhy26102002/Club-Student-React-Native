@@ -4,8 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  SafeAreaView
+  View
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import Header from "../../../Header/Header";
@@ -99,7 +98,6 @@ const ClubData = [
 ];
 const Homepage = () => {
   const { t } = useTranslation();
-
   const renderClubItem = ({ item }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.image }} style={styles.image} />
@@ -113,12 +111,9 @@ const Homepage = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <>
       <Header />
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.container}>
         <Section
           title={`🌟 ${t("title80")}`}
           data={clubsData}
@@ -141,12 +136,12 @@ const Homepage = () => {
           renderItem={renderClubItem}
         />
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 };
 
 const Section = ({ title, data, renderItem }) => (
-  <View style={styles.sectionContainer}>
+  <>
     <View style={styles.sectionHeaderWrapper}>
       <Text style={styles.sectionHeader}>{title}</Text>
       <View style={styles.sectionDivider} />
@@ -159,90 +154,82 @@ const Section = ({ title, data, renderItem }) => (
       scrollEnabled={false}
       columnWrapperStyle={styles.columnWrapper}
     />
-  </View>
+  </>
 );
+
 export default Homepage;
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f9f9fb"
+  list: {
+    padding: 16,
+    paddingBottom: 40,
+    marginTop: 30
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
-    paddingBottom: 40
-  },
-  sectionContainer: {
-    marginBottom: 32
+  columnWrapper: {
+    gap: 12,
+    justifyContent: "space-between"
   },
   sectionHeaderWrapper: {
-    marginBottom: 12,
-    alignItems: "center"
+    width: "100%",
+    marginBottom: 16,
+    marginTop: 24
   },
   sectionHeader: {
     fontSize: 22,
-    fontWeight: "800",
-    color: "#1a1a1a"
-  },
-  sectionDivider: {
-    marginTop: 6,
-    height: 3,
-    width: 50,
-    backgroundColor: "#007aff",
-    borderRadius: 3
-  },
-  columnWrapper: {
-    gap: 16,
-    justifyContent: "space-between"
+    fontWeight: "700",
+    color: "#1c1c1e",
+    textAlign: "center"
   },
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    overflow: "hidden",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    marginBottom: 16,
     flex: 1,
-    marginBottom: 20,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
     elevation: 3
   },
   image: {
     width: "100%",
-    height: 140
+    height: 140,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16
   },
   textWrapper: {
-    padding: 14
+    padding: 12
   },
   title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#212121",
-    marginBottom: 6
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#212529",
+    marginBottom: 4
   },
   description: {
     fontSize: 13,
-    color: "#666",
+    color: "#495057",
     lineHeight: 18
   },
   infoCard: {
-    backgroundColor: "#e6f2ff",
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: "#eaf4ff",
+    borderRadius: 16,
+    padding: 20,
     marginTop: 24,
-    marginBottom: 40,
-    alignItems: "center"
+    alignItems: "center",
+    width: "100%"
   },
   infoTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
-    color: "#007aff",
+    color: "#0077cc",
     marginBottom: 6,
     textAlign: "center"
   },
   infoSubtitle: {
     fontSize: 14,
-    color: "#3d3d3d",
+    color: "#333",
     textAlign: "center",
     lineHeight: 20
   }
