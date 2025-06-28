@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -13,15 +13,18 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
-import API, { fetchBaseResponse } from "../../../utils/api";
+import { fetchBaseResponse } from "../../../utils/api";
 
 const FormClub = () => {
-  const [clubName, setClubName] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [logoUrl, setLogoUrl] = React.useState("");
+  const [fullName, setFullName] = React.useState("");
+  const [mentorId, setMentorId] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async () => {
-    if (!clubName || !description) {
+    if (!name || !description) {
       Alert.alert("⚠️ Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -30,21 +33,15 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await fetchBaseResponse(`/clubs/createClub`, {
+      await fetchBaseResponse(`/clubs/club-create-request`, {
         method: "POST",
-        data: { clubName, description },
+        data: { name, description, logoUrl, fullName, mentorId },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         }
       });
-
-      console.log("📦 API Response:", response);
-      if (response.status === 200 && response.message === "Success") {
-        Alert.alert("✅ Thành công", "Bạn đã tạo câu lạc bộ thành công!");
-      } else {
-        throw new Error(`Lỗi: ${response.message || "Không xác định"}`);
-      }
+      Alert.alert("✅ Thành công", "Bạn đã tạo câu lạc bộ thành công!");
     } catch (error) {
       Alert.alert("❌ Thất bại", "Không thể tạo câu lạc bộ: " + error.message);
       console.error("❌ API Error:", error);
@@ -72,18 +69,41 @@ const FormClub = () => {
             style={styles.input}
             placeholder="📛 Nhập tên câu lạc bộ (VD: Developer Club)"
             placeholderTextColor="#aaa"
-            value={clubName}
-            onChangeText={setClubName}
+            value={name}
+            onChangeText={setName}
           />
           <TextInput
-            style={[styles.input, { height: 100 }]}
+            style={[styles.input]}
             placeholder="📝 Miêu tả ngắn gọn về câu lạc bộ của bạn..."
             placeholderTextColor="#aaa"
             value={description}
             onChangeText={setDescription}
             multiline
           />
-
+          <TextInput
+            style={[styles.input]}
+            placeholder="Đường link ảnh mà bạn muốn tạo"
+            placeholderTextColor="#aaa"
+            value={logoUrl}
+            onChangeText={setLogoUrl}
+            multiline
+          />
+          <TextInput
+            style={[styles.input]}
+            placeholder="Điền họ và tên"
+            placeholderTextColor="#aaa"
+            value={fullName}
+            onChangeText={setFullName}
+            multiline
+          />
+          <TextInput
+            style={[styles.input]}
+            placeholder="Điền giảng viên"
+            placeholderTextColor="#aaa"
+            value={mentorId}
+            onChangeText={setMentorId}
+            multiline
+          />
           <TouchableOpacity
             onPress={handleSubmit}
             style={[styles.button, loading && styles.buttonDisabled]}
