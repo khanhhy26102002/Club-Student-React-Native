@@ -10,18 +10,24 @@ import React from "react";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EventId = () => {
   const route = useRoute();
-  const { id } = route.params;
+  const { eventId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/events/${id}`, {
-          method: "GET"
+        const response = await fetchBaseResponse(`/events/public/${eventId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
         });
         if (!response || response.length === 0) {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
@@ -36,7 +42,7 @@ const EventId = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [eventId]);
 
   if (loading) {
     return (
@@ -83,21 +89,6 @@ const EventId = () => {
           <View style={styles.infoRow}>
             <Text style={styles.label}>📍 Địa điểm:</Text>
             <Text style={styles.value}>{data.location}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>📌 Trạng thái:</Text>
-            <Text
-              style={[
-                styles.value,
-                {
-                  color: data.status === "Đã diễn ra" ? "#aaa" : "#28a745",
-                  fontWeight: "bold"
-                }
-              ]}
-            >
-              {data.status}
-            </Text>
           </View>
         </View>
       </ScrollView>
