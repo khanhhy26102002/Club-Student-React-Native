@@ -15,16 +15,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import Markdown from "react-native-markdown-display";
 
 const FormClub = () => {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [logoUrl, setLogoUrl] = React.useState("");
   const [fullName, setFullName] = React.useState("");
-  const [mentorId, setMentorId] = React.useState("");
+  const [mentorId, setMentorId] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!name || !description || !fullName) {
       Alert.alert(
         "⚠️ Thiếu thông tin",
@@ -37,9 +39,15 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      await fetchBaseResponse(`/clubs/club-create-request`, {
+      await fetchBaseResponse(`/clubs/create-club-request`, {
         method: "POST",
-        data: { name, description, logoUrl, fullName, mentorId },
+        data: {
+          name,
+          description,
+          logoUrl,
+          fullName,
+          mentorId: Number(mentorId)
+        },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -47,7 +55,15 @@ const FormClub = () => {
       });
       Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
     } catch (error) {
-      Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
+      console.log("Error:", error);
+      const backendErrors = error?.response?.data?.errors;
+      if (backendErrors) {
+        const messages = Object.values(backendErrors).join("\n");
+        Alert.alert("❌ Lỗi xác thực", messages);
+      } else {
+        // Trường hợp không có field cụ thể
+        Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -117,6 +133,21 @@ const FormClub = () => {
             "Mô tả ngắn gọn",
             true
           )}
+          {description ? (
+            <View
+              style={{
+                backgroundColor: "#fff",
+                marginTop: 8,
+                padding: 12,
+                borderRadius: 8
+              }}
+            >
+              <Text style={{ fontWeight: "bold", marginBottom: 6 }}>
+                Xem trước:
+              </Text>
+              <Markdown>{description}</Markdown>
+            </View>
+          ) : null}
           {renderField(
             "Logo (link ảnh)",
             "image",

@@ -10,7 +10,9 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
-  Modal
+  Modal,
+  Animated,
+  Easing
 } from "react-native";
 
 const Header = () => {
@@ -19,6 +21,31 @@ const Header = () => {
   const [lang, setLang] = React.useState("vi");
   const [dropdown, setDropdown] = React.useState(false);
   const [user, setUser] = React.useState(null);
+
+  const dropdownAnim = React.useRef(new Animated.Value(0)).current;
+
+  const openDropdown = () => {
+    setDropdown(true);
+    Animated.timing(dropdownAnim, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true
+    }).start();
+  };
+  const navigateSafely = (screen, params) => {
+    closeDropdown();
+    setTimeout(() => {
+      navigation.navigate(screen, params);
+    }, 0);
+  };
+  const closeDropdown = () => {
+    Animated.timing(dropdownAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true
+    }).start(() => setDropdown(false));
+  };
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -38,10 +65,10 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    AsyncStorage.clear();
-    setDropdown(false);
+    await AsyncStorage.clear();
     setUser(null);
-    navigate("/");
+    closeDropdown();
+    navigation.navigate("Home"); // dùng navigate thay vì navigate("/") như web
   };
 
   return (
@@ -68,7 +95,9 @@ const Header = () => {
           </TouchableOpacity>
           {user ? (
             <View style={styles.avatarWrapper}>
-              <TouchableOpacity onPress={() => setDropdown(!dropdown)}>
+              <TouchableOpacity
+                onPress={() => (dropdown ? closeDropdown() : openDropdown())}
+              >
                 <Image
                   source={{ uri: "https://i.pravatar.cc/300" }}
                   style={styles.avatar}
@@ -78,16 +107,31 @@ const Header = () => {
                 <Modal
                   visible={dropdown}
                   transparent
-                  animationType="fade"
-                  onRequestClose={() => setDropdown(false)}
+                  animationType="none"
+                  onRequestClose={closeDropdown}
                 >
                   <TouchableOpacity
                     style={styles.modalOverlay}
                     activeOpacity={1}
-                    onPressOut={() => setDropdown(false)}
+                    onPressOut={closeDropdown}
                   >
                     <View style={styles.modalContainer}>
-                      <View style={styles.dropdown}>
+                      <Animated.View
+                        style={[
+                          styles.dropdown,
+                          {
+                            opacity: dropdownAnim,
+                            transform: [
+                              {
+                                translateY: dropdownAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [-10, 0]
+                                })
+                              }
+                            ]
+                          }
+                        ]}
+                      >
                         <Text style={styles.helloRow}>
                           👋 {t("hello")}:{" "}
                           <Text style={styles.emailText}>{user.email}</Text>
@@ -105,8 +149,7 @@ const Header = () => {
                         <TouchableOpacity
                           style={styles.dropdownItem}
                           onPress={() => {
-                            setDropdown(false);
-                            navigation.navigate("Event", {
+                            navigateSafely("Event", {
                               screen: "FormClub"
                             });
                           }}
@@ -126,11 +169,9 @@ const Header = () => {
 
                         <TouchableOpacity
                           style={styles.dropdownItem}
-                          onPress={() =>
-                            navigation.navigate("Event", {
-                              screen: "FormRegister"
-                            })
-                          }
+                          onPress={() => {
+                            navigateSafely("Event", { screen: "FormRegister" });
+                          }}
                         >
                           <View style={styles.dropdownRow}>
                             <Ionicons
@@ -144,27 +185,27 @@ const Header = () => {
                             </Text>
                           </View>
                         </TouchableOpacity>
-                         <TouchableOpacity
+
+                        <TouchableOpacity
                           style={styles.dropdownItem}
-                          onPress={() =>
+                          onPress={() => {
+                            closeDropdown();
                             navigation.navigate("Event", {
                               screen: "EventRegister"
-                            })
-                          }
+                            });
+                          }}
                         >
                           <View style={styles.dropdownRow}>
                             <Ionicons
-                              name="person-add"
+                              name="calendar"
                               size={18}
                               color="#333"
                               style={{ marginRight: 8 }}
                             />
-                            <Text style={styles.dropdownText}>
-                              Tạo sự kiện
-                            </Text>
+                            <Text style={styles.dropdownText}>Tạo sự kiện</Text>
                           </View>
                         </TouchableOpacity>
-                      </View>
+                      </Animated.View>
                     </View>
                   </TouchableOpacity>
                 </Modal>
@@ -269,7 +310,7 @@ const styles = StyleSheet.create({
     paddingRight: 20
   },
   modalContainer: {
-    width: 250
+    width: 280
   },
   dropdown: {
     backgroundColor: "#fff",
