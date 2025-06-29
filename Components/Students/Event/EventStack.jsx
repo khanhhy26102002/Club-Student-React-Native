@@ -3,12 +3,14 @@ import Event from "./Event";
 import EventId from "./EventId";
 import FormClub from "./FormClub";
 import FormRegister from "./FormRegister";
+import EventRegister from "./EventRegister";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="EventStack" component={Event} />
       <Stack.Screen name="EventId" component={EventId} />
+      <Stack.Screen name="EventRegister" component={EventRegister} />
       <Stack.Screen
         name="FormClub"
         component={FormClub}

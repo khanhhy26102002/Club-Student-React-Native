@@ -144,6 +144,26 @@ const Header = () => {
                             </Text>
                           </View>
                         </TouchableOpacity>
+                         <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={() =>
+                            navigation.navigate("Event", {
+                              screen: "EventRegister"
+                            })
+                          }
+                        >
+                          <View style={styles.dropdownRow}>
+                            <Ionicons
+                              name="person-add"
+                              size={18}
+                              color="#333"
+                              style={{ marginRight: 8 }}
+                            />
+                            <Text style={styles.dropdownText}>
+                              Tạo sự kiện
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </TouchableOpacity>
