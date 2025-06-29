@@ -4,7 +4,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
+  SafeAreaView,
+  Dimensions,
+  StatusBar
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import Header from "../../../Header/Header";
@@ -96,141 +99,140 @@ const ClubData = [
     descriptionKey: "title79"
   }
 ];
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = (width - 24 * 2 - 12) / 2; // padding 24 + giữa 2 card là 12
 const Homepage = () => {
   const { t } = useTranslation();
   const renderClubItem = ({ item }) => (
     <View style={styles.card}>
       <Image source={{ uri: item.image }} style={styles.image} />
-      <View style={styles.textWrapper}>
-        <Text style={styles.title}>{t(item.titleKey)}</Text>
-        <Text style={styles.description} numberOfLines={2}>
+      <View style={styles.cardTextWrapper}>
+        <Text style={styles.cardTitle}>{t(item.titleKey)}</Text>
+        <Text style={styles.cardDescription} numberOfLines={2}>
           {t(item.descriptionKey)}
         </Text>
       </View>
     </View>
   );
 
+  const renderList = (title, data) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionDivider} />
+      <FlatList
+        data={data}
+        renderItem={renderClubItem}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        scrollEnabled={false} // dùng ScrollView cha để cuộn
+        columnWrapperStyle={styles.row}
+      />
+    </View>
+  );
   return (
-    <>
+    <SafeAreaView style={styles.screen}>
+      <StatusBar backgroundColor="#f2f4f8" barStyle="dark-content" />
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <Section
-          title={`🌟 ${t("title80")}`}
-          data={clubsData}
-          renderItem={renderClubItem}
-        />
-        <Section
-          title={`💡 ${t("title81")}`}
-          data={newClubsData}
-          renderItem={renderClubItem}
-        />
+        {renderList(`🌟 ${t("title80")}`, clubsData)}
+        {renderList(`💡 ${t("title81")}`, newClubsData)}
 
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>{t("title10")}</Text>
           <Text style={styles.infoSubtitle}>{t("title11")}</Text>
         </View>
 
-        <Section
-          title={`🎯 ${t("title12")}`}
-          data={ClubData}
-          renderItem={renderClubItem}
-        />
+        {renderList(`🎯 ${t("title12")}`, ClubData)}
       </ScrollView>
-    </>
+    </SafeAreaView>
   );
 };
-
-const Section = ({ title, data, renderItem }) => (
-  <>
-    <View style={styles.sectionHeaderWrapper}>
-      <Text style={styles.sectionHeader}>{title}</Text>
-      <View style={styles.sectionDivider} />
-    </View>
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => `${title}-${index}`}
-      numColumns={2}
-      scrollEnabled={false}
-      columnWrapperStyle={styles.columnWrapper}
-    />
-  </>
-);
-
-export default Homepage;
-
 const styles = StyleSheet.create({
-  list: {
-    padding: 16,
-    paddingBottom: 40,
-    marginTop: 30
+  screen: {
+    flex: 1,
+    backgroundColor: "#f0f6ff"
   },
-  columnWrapper: {
-    gap: 12,
-    justifyContent: "space-between"
+  container: {
+    padding: 24,
+    paddingBottom: 36,
+    gap: 32
   },
-  sectionHeaderWrapper: {
-    width: "100%",
-    marginBottom: 16,
-    marginTop: 24
+  section: {
+    marginBottom: 32
   },
-  sectionHeader: {
+  sectionTitle: {
     fontSize: 22,
-    fontWeight: "700",
+    fontWeight: "bold",
     color: "#1c1c1e",
-    textAlign: "center"
+    marginBottom: 6
+  },
+  sectionDivider: {
+    height: 3,
+    backgroundColor: "#007AFF",
+    width: 50,
+    borderRadius: 2,
+    marginBottom: 16
+  },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: 16
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    marginBottom: 16,
-    flex: 1,
+    borderRadius: 20,
+    width: CARD_WIDTH,
     overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4
+  },
+  image: {
+    width: "100%",
+    height: 110,
+    resizeMode: "cover"
+  },
+  cardTextWrapper: {
+    padding: 14
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1c1c1e",
+    marginBottom: 4
+  },
+  cardDescription: {
+    fontSize: 13,
+    color: "#666",
+    lineHeight: 18
+  },
+  infoCard: {
+    backgroundColor: "#E8F0FE",
+    borderRadius: 18,
+    padding: 24,
+    alignItems: "center",
+    marginVertical: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3
-  },
-  image: {
-    width: "100%",
-    height: 140,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16
-  },
-  textWrapper: {
-    padding: 12
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#212529",
-    marginBottom: 4
-  },
-  description: {
-    fontSize: 13,
-    color: "#495057",
-    lineHeight: 18
-  },
-  infoCard: {
-    backgroundColor: "#eaf4ff",
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 24,
-    alignItems: "center",
-    width: "100%"
+    elevation: 2
   },
   infoTitle: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "700",
-    color: "#0077cc",
-    marginBottom: 6,
+    color: "#007AFF",
+    marginBottom: 8,
     textAlign: "center"
   },
   infoSubtitle: {
     fontSize: 14,
-    color: "#333",
+    color: "#444",
     textAlign: "center",
     lineHeight: 20
   }
 });
+
+
+export default Homepage;

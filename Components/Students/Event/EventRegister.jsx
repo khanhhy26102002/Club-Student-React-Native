@@ -17,6 +17,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+
 const EventRegister = () => {
   const [title, setTitle] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -30,13 +31,16 @@ const EventRegister = () => {
   const [useLab, setUseLab] = React.useState(true);
   const [clubId, setClubId] = React.useState(0);
   const [showPicker, setShowPicker] = React.useState(false);
+
   const onChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
       setEventDate(selectedDate);
     }
   };
+
   const handleSubmit = async () => {
+    setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     const isoDate = new Date(eventDate).toISOString();
     try {
@@ -62,11 +66,34 @@ const EventRegister = () => {
       Alert.alert("Bạn tạo sự kiện thành công", "Đang chờ admin duyệt");
     } catch (error) {
       console.error("Error: ", error);
-      Alert.alert("Không tạo được sự kiện", error);
+      Alert.alert("Không tạo được sự kiện", error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const renderLabeledInput = (
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    multiline = false,
+    keyboardType = "default"
+  ) => (
+    <View style={{ marginBottom: 18 }}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder={placeholder}
+        placeholderTextColor="#aaa"
+        value={value}
+        onChangeText={onChangeText}
+        multiline={multiline}
+        keyboardType={keyboardType}
+      />
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -77,56 +104,56 @@ const EventRegister = () => {
         <View style={styles.headerBox}>
           <View style={styles.headerRow}>
             <Text style={styles.headerEmoji}>🚩</Text>
-            <Text style={styles.headerText}>Tạo câu lạc bộ cho riêng bạn</Text>
+            <Text style={styles.headerText}>Tạo sự kiện cho câu lạc bộ</Text>
           </View>
         </View>
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="📛 Nhập tên câu lạc bộ (VD: Developer Club)"
-            placeholderTextColor="#aaa"
-            value={title}
-            onChangeText={setTitle}
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="📝 Miêu tả ngắn gọn về câu lạc bộ của bạn..."
-            placeholderTextColor="#aaa"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: "700",
+              color: "#1e3a8a",
+              marginBottom: 12,
+              textAlign:"center"
+            }}
+          >
+            🎯 Thông tin sự kiện
+          </Text>
+          {renderLabeledInput(
+            "📛 Tên sự kiện",
+            title,
+            setTitle,
+            "VD: Developer Club"
+          )}
+          {renderLabeledInput(
+            "📝 Mô tả",
+            description,
+            setDescription,
+            "Miêu tả ngắn gọn về sự kiện...",
+            true
+          )}
           <View style={{ marginBottom: 18 }}>
+            <Text style={styles.label}>📅 Ngày diễn ra</Text>
             <TouchableOpacity
               onPress={() => setShowPicker(true)}
-              activeOpacity={0.8}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                borderWidth: 1,
-                borderColor: "#ddd",
-                backgroundColor: "#fff",
-                borderRadius: 14,
-                paddingVertical: 14,
-                paddingHorizontal: 16,
-                shadowColor: "#000",
-                shadowOpacity: 0.05,
-                shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
-                elevation: 2
-              }}
+              activeOpacity={0.85}
+              style={styles.datePickerButton}
             >
               <Ionicons
                 name="calendar-outline"
                 size={20}
-                color="#666"
+                color="#007AFF"
                 style={{ marginRight: 8 }}
               />
               <Text style={{ fontSize: 15, color: "#333" }}>
-                {eventDate.toLocaleDateString("vi-VN")}
+                {eventDate.toLocaleDateString("vi-VN", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric"
+                })}
               </Text>
             </TouchableOpacity>
-
             {showPicker && (
               <DateTimePicker
                 value={eventDate}
@@ -136,83 +163,75 @@ const EventRegister = () => {
               />
             )}
           </View>
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền format"
-            placeholderTextColor="#aaa"
-            value={format}
-            onChangeText={setFormat}
-            multiline
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền địa điểm"
-            placeholderTextColor="#aaa"
-            value={location}
-            onChangeText={setLocation}
-            multiline
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền tối thiểu người tham gia"
-            placeholderTextColor="#aaa"
-            value={minimumParticipants.toString()}
-            onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
-              setMinimumParticipants(isNaN(parsed) ? 0 : parsed);
-            }}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền tối đa người tham gia"
-            placeholderTextColor="#aaa"
-            value={maximumParticipants.toString()}
-            onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
-              setMaximumParticipants(isNaN(parsed) ? 0 : parsed);
-            }}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền điểm thực hành"
-            placeholderTextColor="#aaa"
-            value={visibility}
-            onChangeText={setVisibility}
-            multiline
-          />
+          {renderLabeledInput(
+            "🎭 Hình thức",
+            format,
+            setFormat,
+            "Offline, Online hoặc Hybrid"
+          )}
+          {renderLabeledInput(
+            "📍 Địa điểm",
+            location,
+            setLocation,
+            "Ví dụ: Hội trường A1",
+            true
+          )}
+          {renderLabeledInput(
+            "👥 Số lượng tối thiểu",
+            minimumParticipants.toString(),
+            (text) =>
+              setMinimumParticipants(
+                isNaN(parseInt(text)) ? 0 : parseInt(text)
+              ),
+            "0",
+            false,
+            "numeric"
+          )}
+          {renderLabeledInput(
+            "👥 Số lượng tối đa",
+            maximumParticipants.toString(),
+            (text) =>
+              setMaximumParticipants(
+                isNaN(parseInt(text)) ? 0 : parseInt(text)
+              ),
+            "0",
+            false,
+            "numeric"
+          )}
+          {renderLabeledInput(
+            "👁️‍🗨️ Mức độ công khai",
+            visibility,
+            setVisibility,
+            "Public / Private"
+          )}
           <View
             style={{
               flexDirection: "row",
               alignItems: "center",
-              marginVertical: 10
+              marginBottom: 18
             }}
           >
-            <Text style={{ marginRight: 10 }}>🔬 Dùng phòng lab:</Text>
+            <Text style={styles.label}>🔬 Dùng phòng Lab:</Text>
             <Switch
               value={useLab}
               onValueChange={setUseLab}
-              trackColor={{ false: "#aaa", true: "#0f0" }}
+              trackColor={{ false: "#aaa", true: "#007AFF" }}
               thumbColor={useLab ? "#fff" : "#f4f3f4"}
             />
           </View>
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền câu lạc bộ"
-            placeholderTextColor="#aaa"
-            value={clubId.toString()}
-            onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
-              setClubId(isNaN(parsed) ? 0 : parsed);
-            }}
-            keyboardType="numeric"
-          />
+          {renderLabeledInput(
+            "🆔 Mã câu lạc bộ",
+            clubId.toString(),
+            (text) => setClubId(isNaN(parseInt(text)) ? 0 : parseInt(text)),
+            "Ví dụ: 123",
+            false,
+            "numeric"
+          )}
           <TouchableOpacity
             onPress={handleSubmit}
             style={[styles.button, loading && styles.buttonDisabled]}
             disabled={loading}
-            activeOpacity={0.85}
+            activeOpacity={0.9}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -230,19 +249,19 @@ export default EventRegister;
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#f5f9ff",
     paddingBottom: 32,
-    backgroundColor: "#f2f4f8",
     flexGrow: 1
   },
   headerBox: {
-    backgroundColor: "#ff660020",
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: "#ff6600",
+    backgroundColor: "#dbeafe",
+    paddingVertical: 36,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    shadowColor: "#60a5fa",
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 3
   },
   headerRow: {
@@ -251,53 +270,72 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   headerEmoji: {
-    fontSize: 26,
-    marginRight: 8
+    fontSize: 28,
+    marginRight: 10
   },
   headerText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#ff6600",
-    textAlign: "center"
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#1d4ed8"
   },
   form: {
     padding: 24,
-    marginTop: 12
+    marginTop: 16
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1e3a8a",
+    marginBottom: 6
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#cbd5e1",
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    marginBottom: 18,
     fontSize: 15,
-    color: "#333",
+    color: "#0f172a",
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 1
+  },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
-    elevation: 2
+    elevation: 1
   },
   button: {
-    backgroundColor: "#ff6600",
+    backgroundColor: "#2563eb",
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: "center",
-    marginTop: 4,
-    shadowColor: "#ff6600",
+    marginTop: 16,
+    shadowColor: "#2563eb",
     shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 8,
     elevation: 4
   },
   buttonDisabled: {
-    backgroundColor: "#ccc"
+    backgroundColor: "#93c5fd"
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: 16
   }
 });

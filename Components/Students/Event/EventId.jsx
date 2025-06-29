@@ -4,7 +4,8 @@ import {
   StyleSheet,
   Text,
   View,
-  Alert
+  Alert,
+  Image
 } from "react-native";
 import React from "react";
 import { useRoute } from "@react-navigation/native";
@@ -29,14 +30,14 @@ const EventId = () => {
             "Content-Type": "application/json"
           }
         });
-        if (!response || response.length === 0) {
-          Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
-          setData([]);
+        if (!response) {
+          Alert.alert("Thông báo", "Không tìm thấy sự kiện.");
+          setData(null);
         } else {
           setData(response);
         }
       } catch (error) {
-        Alert.alert("Lỗi khi tải sự kiện", error.message || "Đã xảy ra lỗi");
+        Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi.");
       } finally {
         setLoading(false);
       }
@@ -47,7 +48,7 @@ const EventId = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
+        <ActivityIndicator size="large" color="#2196F3" />
       </View>
     );
   }
@@ -55,7 +56,7 @@ const EventId = () => {
   if (!data) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Không tìm thấy sự kiện nào</Text>
+        <Text style={styles.errorText}>Không tìm thấy sự kiện nào.</Text>
       </View>
     );
   }
@@ -64,6 +65,14 @@ const EventId = () => {
     <View style={styles.wrapper}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Banner Image (default nếu không có ảnh thật) */}
+        <Image
+          source={{
+            uri: "https://cdn-icons-png.flaticon.com/512/3039/3039434.png" // có thể thay bằng event.image nếu API có
+          }}
+          style={styles.banner}
+        />
+
         <View style={styles.headerBox}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.description}>{data.description}</Text>
@@ -85,7 +94,6 @@ const EventId = () => {
             <Text style={styles.label}>💻 Hình thức:</Text>
             <Text style={styles.value}>{data.format}</Text>
           </View>
-
           <View style={styles.infoRow}>
             <Text style={styles.label}>📍 Địa điểm:</Text>
             <Text style={styles.value}>{data.location}</Text>
@@ -97,14 +105,21 @@ const EventId = () => {
 };
 
 export default EventId;
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#E6F0FA"
+    backgroundColor: "#F5FAFE"
   },
   container: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 40
+  },
+  banner: {
+    width: "100%",
+    height: 180,
+    borderRadius: 16,
+    marginBottom: 20
   },
   headerBox: {
     backgroundColor: "#FFFFFF",
@@ -112,21 +127,21 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 4
+    elevation: 3
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#0A66C2",
-    marginBottom: 8
+    color: "#0D47A1",
+    marginBottom: 10
   },
   description: {
     fontSize: 16,
-    color: "#444",
-    marginBottom: 8
+    color: "#333",
+    marginBottom: 10
   },
   date: {
     fontSize: 14,
@@ -137,36 +152,36 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 4
+    elevation: 3
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 14
+    marginBottom: 12
   },
   label: {
-    fontSize: 16,
-    color: "#0A66C2",
-    fontWeight: "600"
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1565C0"
   },
   value: {
-    fontSize: 16,
-    color: "#111827"
+    fontSize: 15,
+    color: "#1B1B1B"
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#E6F0FA"
+    backgroundColor: "#F5FAFE"
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#E6F0FA"
+    backgroundColor: "#F5FAFE"
   },
   errorText: {
     fontSize: 16,

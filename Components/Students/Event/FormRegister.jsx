@@ -7,9 +7,9 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
+  SafeAreaView,
   Platform,
-  ScrollView
+  KeyboardAvoidingView
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
@@ -24,10 +24,15 @@ const FormRegister = () => {
   const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async () => {
+    if (!studentCode || !email || !fullName || !major || !clubId) {
+      Alert.alert("⚠️ Thiếu thông tin", "Vui lòng điền đầy đủ các trường.");
+      return;
+    }
+
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse("/clubs/club-register", {
+      await fetchBaseResponse("/clubs/club-register", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -41,8 +46,7 @@ const FormRegister = () => {
           clubId
         }
       });
-      console.log("Response:", response);
-      Alert.alert("✅ Thành công", "Bạn đã đăng ký câu lạc bộ thành công!");
+      Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
     } catch (error) {
       Alert.alert("❌ Lỗi", "Không thể đăng ký: " + error.message);
     } finally {
@@ -51,122 +55,164 @@ const FormRegister = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <Header />
-        <View style={styles.form}>
-          <Text style={styles.title}>📥 Đăng ký tham gia câu lạc bộ</Text>
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>Đăng ký Câu Lạc Bộ</Text>
+          <Text style={styles.bannerSubtitle}>
+            Hãy điền đầy đủ thông tin của bạn để tham gia vào CLB mong muốn.
+          </Text>
+        </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="📛 Mã số Sinh viên"
-            placeholderTextColor="#aaa"
+        <View style={styles.form}>
+          <FormField
+            label="🎓 Mã số sinh viên"
             value={studentCode}
             onChangeText={setStudentCode}
+            placeholder="VD: B21DCCN001"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="📧 Email"
-            placeholderTextColor="#aaa"
+          <FormField
+            label="📧 Email trường"
             value={email}
             onChangeText={setEmail}
+            placeholder="VD: b21dccn001@stu.ptit.edu.vn"
             keyboardType="email-address"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="👤 Họ và tên"
-            placeholderTextColor="#aaa"
+          <FormField
+            label="👤 Họ và tên"
             value={fullName}
             onChangeText={setFullName}
+            placeholder="VD: Nguyễn Văn A"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="🎓 Ngành học"
-            placeholderTextColor="#aaa"
+          <FormField
+            label="🏫 Ngành học"
             value={major}
             onChangeText={setMajor}
+            placeholder="VD: Công nghệ thông tin"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="🏢 Mã câu lạc bộ"
-            placeholderTextColor="#aaa"
+          <FormField
+            label="🏷️ Mã CLB muốn tham gia"
             value={clubId}
             onChangeText={setClubId}
+            placeholder="VD: 63c212fd64a4cc36df5b08f5"
           />
 
           <TouchableOpacity
             onPress={handleSubmit}
             style={[styles.button, loading && styles.buttonDisabled]}
             disabled={loading}
-            activeOpacity={0.8}
+            activeOpacity={0.9}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>🚀 Đăng ký ngay</Text>
+              <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
             )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
+const FormField = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType = "default"
+}) => (
+  <View style={{ marginBottom: 18 }}>
+    <Text style={styles.label}>{label}</Text>
+    <TextInput
+      style={styles.input}
+      placeholder={placeholder}
+      placeholderTextColor="#999"
+      value={value}
+      onChangeText={onChangeText}
+      keyboardType={keyboardType}
+    />
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 32,
-    backgroundColor: "#f2f2f7",
-    flexGrow: 1
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    justifyContent: "flex-start"
   },
-  form: {
-    padding: 24,
-    marginTop: 8
+  banner: {
+    backgroundColor: "#fff4ec",
+    padding: 28,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    alignItems: "center",
+    shadowColor: "#ff7a00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3
   },
-  title: {
-    fontSize: 22,
+  bannerTitle: {
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-    color: "#2c3e50",
+    color: "#ff6600",
+    marginBottom: 6
+  },
+  bannerSubtitle: {
+    fontSize: 14,
+    color: "#6b7280",
     textAlign: "center"
   },
+  form: {
+    paddingHorizontal: 24,
+    paddingTop: 24
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: 6,
+    marginLeft: 4
+  },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
     backgroundColor: "#fff",
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 13,
-    marginBottom: 14,
+    paddingVertical: 14,
     fontSize: 15,
-    color: "#333",
+    color: "#111827",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1
   },
   button: {
     backgroundColor: "#ff6600",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
+    shadowColor: "#ff6600",
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 4
+    elevation: 4,
+    marginTop: 10
   },
   buttonDisabled: {
-    backgroundColor: "#ccc"
+    backgroundColor: "#d4d4d8"
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
+    fontSize: 16,
+    fontWeight: "600"
   }
 });
 
