@@ -4,28 +4,32 @@ import {
   Text,
   Alert,
   KeyboardAvoidingView,
-  ScrollView,
   TextInput,
   ActivityIndicator,
   StyleSheet,
   Platform,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const FormClub = () => {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [logoUrl, setLogoUrl] = React.useState("");
   const [fullName, setFullName] = React.useState("");
-  const [mentorId, setMentorId] = React.useState(0);
+  const [mentorId, setMentorId] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async () => {
-    if (!name || !description) {
-      Alert.alert("⚠️ Vui lòng điền đầy đủ thông tin.");
+    if (!name || !description || !fullName) {
+      Alert.alert(
+        "⚠️ Thiếu thông tin",
+        "Vui lòng nhập đủ các trường bắt buộc."
+      );
       return;
     }
 
@@ -41,79 +45,111 @@ const FormClub = () => {
           "Content-Type": "application/json"
         }
       });
-      Alert.alert("✅ Thành công", "Bạn đã tạo câu lạc bộ thành công!");
+      Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
     } catch (error) {
-      Alert.alert("❌ Thất bại", "Không thể tạo câu lạc bộ: " + error.message);
-      console.error("❌ API Error:", error);
+      Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const renderField = (
+    label,
+    iconName,
+    value,
+    setValue,
+    placeholder,
+    multiline = false,
+    keyboardType = "default"
+  ) => (
+    <View style={styles.field}>
+      <View style={styles.labelRow}>
+        <Icon
+          name={iconName}
+          size={18}
+          color="#ff6600"
+          style={{ marginRight: 6 }}
+        />
+        <Text style={styles.label}>{label}</Text>
+      </View>
+
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={[styles.input, multiline && styles.textarea]}
+          placeholder={placeholder}
+          value={value}
+          onChangeText={setValue}
+          multiline={multiline}
+          placeholderTextColor="#999"
+          keyboardType={keyboardType}
+        />
+      </View>
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#f8fafc" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
         <Header />
-        <View style={styles.headerBox}>
-          <View style={styles.headerRow}>
-            <Text style={styles.headerEmoji}>🚩</Text>
-            <Text style={styles.headerText}>Tạo câu lạc bộ cho riêng bạn</Text>
-          </View>
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>Tạo Câu Lạc Bộ</Text>
+          <Text style={styles.bannerSubtitle}>
+            Điền đầy đủ thông tin để gửi yêu cầu tạo CLB của bạn.
+          </Text>
         </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="📛 Nhập tên câu lạc bộ (VD: Developer Club)"
-            placeholderTextColor="#aaa"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="📝 Miêu tả ngắn gọn về câu lạc bộ của bạn..."
-            placeholderTextColor="#aaa"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Đường link ảnh mà bạn muốn tạo"
-            placeholderTextColor="#aaa"
-            value={logoUrl}
-            onChangeText={setLogoUrl}
-            multiline
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền họ và tên"
-            placeholderTextColor="#aaa"
-            value={fullName}
-            onChangeText={setFullName}
-            multiline
-          />
-          <TextInput
-            style={[styles.input]}
-            placeholder="Điền giảng viên"
-            placeholderTextColor="#aaa"
-            value={mentorId}
-            onChangeText={setMentorId}
-            multiline
-          />
+        <View style={styles.formContainer}>
+          {renderField(
+            "Tên CLB *",
+            "group",
+            name,
+            setName,
+            "Nhập tên câu lạc bộ"
+          )}
+          {renderField(
+            "Miêu tả *",
+            "description",
+            description,
+            setDescription,
+            "Mô tả ngắn gọn",
+            true
+          )}
+          {renderField(
+            "Logo (link ảnh)",
+            "image",
+            logoUrl,
+            setLogoUrl,
+            "https://..."
+          )}
+          {renderField(
+            "Họ tên người đại diện *",
+            "person",
+            fullName,
+            setFullName,
+            "Nguyễn Văn A"
+          )}
+          {renderField(
+            "ID giảng viên phụ trách",
+            "badge",
+            mentorId,
+            setMentorId,
+            "123456",
+            false,
+            "numeric"
+          )}
+
           <TouchableOpacity
-            onPress={handleSubmit}
             style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
             disabled={loading}
-            activeOpacity={0.85}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>🚀 Tạo câu lạc bộ ngay</Text>
+              <Text style={styles.buttonText}>Gửi Yêu Cầu</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -124,75 +160,97 @@ const FormClub = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 32,
-    backgroundColor: "#f2f4f8",
-    flexGrow: 1
+    paddingBottom: 10
   },
-  headerBox: {
-    backgroundColor: "#ff660020",
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: "#ff6600",
-    shadowOpacity: 0.1,
+  banner: {
+    backgroundColor: "#fff4ec",
+    padding: 28,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    alignItems: "center",
+    shadowColor: "#ff7a00",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3
   },
-  headerRow: {
+  labelRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center"
+    marginBottom: 6
   },
-  headerEmoji: {
-    fontSize: 26,
-    marginRight: 8
-  },
-  headerText: {
-    fontSize: 22,
-    fontWeight: "700",
+
+  bannerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
     color: "#ff6600",
+    marginBottom: 6
+  },
+  bannerSubtitle: {
+    fontSize: 14,
+    color: "#6b7280",
     textAlign: "center"
   },
-  form: {
-    padding: 24,
-    marginTop: 12
+  formContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24
+  },
+  field: {
+    marginBottom: 18
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: 6
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingHorizontal: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  icon: {
+    marginRight: 8
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 18,
+    flex: 1,
+    paddingVertical: 12,
     fontSize: 15,
-    color: "#333",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2
+    color: "#111827"
+  },
+  textarea: {
+    height: 100,
+    textAlignVertical: "top"
   },
   button: {
     backgroundColor: "#ff6600",
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: "center",
-    marginTop: 4,
     shadowColor: "#ff6600",
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
-    elevation: 4
+    elevation: 4,
+    marginTop: -8
   },
   buttonDisabled: {
-    backgroundColor: "#ccc"
+    backgroundColor: "#d4d4d8"
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
+    fontSize: 16,
+    fontWeight: "600"
   }
 });
 
