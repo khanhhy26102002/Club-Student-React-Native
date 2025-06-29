@@ -9,7 +9,8 @@ import {
   StyleSheet,
   SafeAreaView,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  ScrollView
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
@@ -60,60 +61,62 @@ const FormRegister = () => {
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Header />
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>Đăng ký Câu Lạc Bộ</Text>
-          <Text style={styles.bannerSubtitle}>
-            Hãy điền đầy đủ thông tin của bạn để tham gia vào CLB mong muốn.
-          </Text>
-        </View>
+        <ScrollView contentContainerStyle={styles.container}>
+          <Header />
+          <View style={styles.banner}>
+            <Text style={styles.bannerTitle}>Đăng ký Câu Lạc Bộ</Text>
+            <Text style={styles.bannerSubtitle}>
+              Hãy điền đầy đủ thông tin của bạn để tham gia vào CLB mong muốn.
+            </Text>
+          </View>
 
-        <View style={styles.form}>
-          <FormField
-            label="🎓 Mã số sinh viên"
-            value={studentCode}
-            onChangeText={setStudentCode}
-            placeholder="VD: B21DCCN001"
-          />
-          <FormField
-            label="📧 Email trường"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="VD: b21dccn001@stu.ptit.edu.vn"
-            keyboardType="email-address"
-          />
-          <FormField
-            label="👤 Họ và tên"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="VD: Nguyễn Văn A"
-          />
-          <FormField
-            label="🏫 Ngành học"
-            value={major}
-            onChangeText={setMajor}
-            placeholder="VD: Công nghệ thông tin"
-          />
-          <FormField
-            label="🏷️ Mã CLB muốn tham gia"
-            value={clubId}
-            onChangeText={setClubId}
-            placeholder="VD: 63c212fd64a4cc36df5b08f5"
-          />
+          <View style={styles.form}>
+            <FormField
+              label="🎓 Mã số sinh viên"
+              value={studentCode}
+              onChangeText={setStudentCode}
+              placeholder="VD: B21DCCN001"
+            />
+            <FormField
+              label="📧 Email trường"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="VD: mail của trường đó"
+              keyboardType="email-address"
+            />
+            <FormField
+              label="👤 Họ và tên"
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="VD: Nguyễn Văn A"
+            />
+            <FormField
+              label="🏫 Ngành học"
+              value={major}
+              onChangeText={setMajor}
+              placeholder="VD: Công nghệ thông tin"
+            />
+            <FormField
+              label="🏷️ Mã CLB muốn tham gia"
+              value={clubId}
+              onChangeText={setClubId}
+              placeholder="VD: 63c212fd64a4cc36df5b08f5"
+            />
 
-          <TouchableOpacity
-            onPress={handleSubmit}
-            style={[styles.button, loading && styles.buttonDisabled]}
-            disabled={loading}
-            activeOpacity={0.9}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={[styles.button, loading && styles.buttonDisabled]}
+              disabled={loading}
+              activeOpacity={0.9}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -141,7 +144,7 @@ const FormField = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#f8fafc",
     justifyContent: "flex-start"
   },
