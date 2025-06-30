@@ -24,21 +24,27 @@ const LoginPage = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const handleLogin = async () => {
     try {
-      const data = await fetchBaseResponse("/login", {
+      const response = await fetchBaseResponse("/login", {
         method: "POST",
         data: { email, password }
       });
-      Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
-      const token = data.data.token;
-      const roleName = data.data.roles?.[0]?.role || "GUEST";
-      await AsyncStorage.setItem("jwt", token);
-      await AsyncStorage.setItem("role", roleName);
-      await AsyncStorage.setItem("email", email);
-      setRoleName(roleName);
-      if (roleName === "MEMBER") {
-        navigation.navigate("Main");
-      } else if (roleName === "EVENT_ORGANZERS") {
-        navigation.navigate("Organizer");
+      if (response.message === "Login successful") {
+        Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
+        const token = response.data.token;
+        console.log("Token: ", token);
+        const roleName = response.data.roles?.[0]?.role || "GUEST";
+        console.log("roleName: ", roleName);
+        await AsyncStorage.setItem("jwt", token);
+        await AsyncStorage.setItem("role", roleName);
+        await AsyncStorage.setItem("email", email);
+        setRoleName(roleName);
+        if (roleName === "MEMBER") {
+          navigation.navigate("Main");
+        } else if (roleName === "EVENT_ORGANZERS") {
+          navigation.navigate("Organizer");
+        }
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
       }
     } catch (err) {
       Alert.alert("Đăng nhập thất bại", err.message);

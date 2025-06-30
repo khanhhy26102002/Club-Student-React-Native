@@ -65,10 +65,12 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.clear();
-    setUser(null);
-    closeDropdown();
-    navigation.navigate("Home");
+    closeDropdown(); // Đóng dropdown trước
+    setTimeout(async () => {
+      await AsyncStorage.clear();
+      setUser(null); // Sau khi đã clear, cập nhật state
+      navigation.navigate("Main"); // Điều hướng sau cùng
+    }, 200); // delay một chút để tránh conflict render
   };
 
   return (
