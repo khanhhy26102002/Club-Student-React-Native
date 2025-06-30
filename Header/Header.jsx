@@ -68,7 +68,7 @@ const Header = () => {
     await AsyncStorage.clear();
     setUser(null);
     closeDropdown();
-    navigation.navigate("Home"); // dùng navigate thay vì navigate("/") như web
+    navigation.navigate("Home");
   };
 
   return (
@@ -149,7 +149,7 @@ const Header = () => {
                         <TouchableOpacity
                           style={styles.dropdownItem}
                           onPress={() => {
-                            navigateSafely("Event", {
+                            navigateSafely("About", {
                               screen: "FormClub"
                             });
                           }}
@@ -170,7 +170,7 @@ const Header = () => {
                         <TouchableOpacity
                           style={styles.dropdownItem}
                           onPress={() => {
-                            navigateSafely("Event", { screen: "FormRegister" });
+                            navigateSafely("About", { screen: "FormRegister" });
                           }}
                         >
                           <View style={styles.dropdownRow}>

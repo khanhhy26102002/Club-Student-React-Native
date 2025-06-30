@@ -50,20 +50,25 @@ const Blog = ({ navigation }) => {
   const renderItem = ({ item }) => {
     return (
       <View style={styles.card}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.meta}>
-          Đăng bởi <Text style={styles.author}>{item.authorName}</Text> •{" "}
-          {formatDate(item.createdAt)}
-        </Text>
-        <Text style={styles.description} numberOfLines={3}>
-          {item.content}
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("BlogId", { id: item.blogId })}
-        >
-          <Text style={styles.buttonText}>Xem chi tiết</Text>
-        </TouchableOpacity>
+        {item.thumbnail && (
+          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+        )}
+        <View style={styles.cardContent}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.meta}>
+            Đăng bởi <Text style={styles.author}>{item.authorName}</Text> •{" "}
+            {formatDate(item.createdAt)}
+          </Text>
+          <Text style={styles.description} numberOfLines={3}>
+            {item.content}
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("BlogId", { id: item.blogId })}
+          >
+            <Text style={styles.buttonText}>Xem chi tiết</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -98,69 +103,77 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
-    padding: 20,
+    padding: 20
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
     color: "#111827",
     marginBottom: 20,
-    textAlign: "center",
+    textAlign: "center"
   },
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    overflow: "hidden",
+    marginBottom: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4
+  },
+  thumbnail: {
+    width: "100%",
+    height: 180,
+    resizeMode: "cover"
+  },
+  cardContent: {
+    padding: 16
   },
   title: {
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: "bold",
     color: "#1f2937",
-    marginBottom: 8,
+    marginBottom: 6
   },
   meta: {
     fontSize: 14,
-    color: "#6b7280", // Gray-500
-    marginBottom: 10,
+    color: "#6b7280",
+    marginBottom: 10
   },
   author: {
     fontWeight: "bold",
-    color: "#2563eb", // Blue-600
+    color: "#2563eb"
   },
   description: {
-    fontSize: 16,
-    color: "#374151", // Gray-700
+    fontSize: 15,
+    color: "#374151",
     lineHeight: 22,
-    marginBottom: 16,
+    marginBottom: 16
   },
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#2563eb",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 16
   },
   buttonText: {
     color: "#ffffff",
-    fontWeight: "500",
-    fontSize: 14,
+    fontWeight: "600",
+    fontSize: 14
   },
+
   loadingContainer: {
     marginTop: 50,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   emptyText: {
     textAlign: "center",
     color: "#9ca3af",
     fontSize: 16,
-    marginTop: 20,
-  },
+    marginTop: 20
+  }
 });
-
