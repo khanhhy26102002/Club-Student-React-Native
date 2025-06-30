@@ -27,7 +27,7 @@ const BlogId = () => {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
           setData([]);
         } else {
-          setData(response);
+          setData(response.data);
         }
       } catch (error) {
         Alert.alert("Lỗi khi tải bài viết", error.message || "Đã xảy ra lỗi");

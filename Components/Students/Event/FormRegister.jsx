@@ -48,7 +48,13 @@ const FormRegister = () => {
         }
       });
       console.log("✅ Đăng ký thành công:", response);
-      Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
+      if (
+        response.message === "Club registered successfully, pending approval"
+      ) {
+        Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
     } catch (error) {
       console.error("❌ Lỗi đăng ký:", error.message);
       Alert.alert("❌ Đăng ký thất bại", error.message || "Không xác định");

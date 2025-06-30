@@ -39,7 +39,7 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      await fetchBaseResponse(`/clubs/create-club-request`, {
+      const response = await fetchBaseResponse(`/clubs/create-club-request`, {
         method: "POST",
         data: {
           name,
@@ -53,7 +53,14 @@ const FormClub = () => {
           "Content-Type": "application/json"
         }
       });
-      Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
+      if (
+        response.message ===
+        "Club creation request submitted and pending mentor approval."
+      ) {
+        Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
     } catch (error) {
       console.log("Error:", error);
       const backendErrors = error?.response?.data?.errors;
@@ -61,7 +68,6 @@ const FormClub = () => {
         const messages = Object.values(backendErrors).join("\n");
         Alert.alert("❌ Lỗi xác thực", messages);
       } else {
-        // Trường hợp không có field cụ thể
         Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
       }
     } finally {

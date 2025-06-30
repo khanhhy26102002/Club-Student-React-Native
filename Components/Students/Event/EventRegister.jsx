@@ -44,7 +44,7 @@ const EventRegister = () => {
     const token = await AsyncStorage.getItem("jwt");
     const isoDate = new Date(eventDate).toISOString();
     try {
-      await fetchBaseResponse("/events/create-event-request", {
+      const response = await fetchBaseResponse("/events/create-event-request", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,7 +63,11 @@ const EventRegister = () => {
           clubId
         }
       });
-      Alert.alert("Bạn tạo sự kiện thành công", "Đang chờ admin duyệt");
+      if (response.message === "event creation request successful") {
+        Alert.alert("Bạn tạo sự kiện thành công", "Đang chờ admin duyệt");
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
     } catch (error) {
       console.error("Error: ", error);
       Alert.alert("Không tạo được sự kiện", error.message);
@@ -114,7 +118,7 @@ const EventRegister = () => {
               fontWeight: "700",
               color: "#1e3a8a",
               marginBottom: 12,
-              textAlign:"center"
+              textAlign: "center"
             }}
           >
             🎯 Thông tin sự kiện

@@ -21,7 +21,7 @@ const AboutId = () => {
           Alert.alert("Không hiển thị được data theo clubId");
           setData([]);
         } else {
-          setData(response);
+          setData(response.data);
         }
       } catch (error) {
         Alert.alert(
