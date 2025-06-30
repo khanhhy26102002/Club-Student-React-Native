@@ -11,7 +11,6 @@ const EventStack = () => {
       <Stack.Screen name="EventStack" component={Event} />
       <Stack.Screen name="EventId" component={EventId} />
       <Stack.Screen name="EventRegister" component={EventRegister} />
-     
     </Stack.Navigator>
   );
 };
