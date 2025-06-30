@@ -1,28 +1,28 @@
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  Image
+  Image,
+  Alert
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
-import React from "react";
+
 const About = ({ navigation }) => {
   const { t } = useTranslation();
-  const [data, setData] = React.useState([]);
-  React.useEffect(() => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetchBaseResponse("/clubs/public", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
+          headers: { "Content-Type": "application/json" }
         });
         if (!response || response.length === 0) {
           Alert.alert("Không hiển thị được data club");
@@ -31,216 +31,210 @@ const About = ({ navigation }) => {
           setData(response.data);
         }
       } catch (error) {
-        const errorMessage =
-          typeof error === "string"
-            ? error
-            : error?.message || JSON.stringify(error);
-
-        Alert.alert("Error fetching data club", errorMessage);
-        console.error("Error:", error);
+        Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
       }
     };
     fetchData();
   }, []);
+
+  const renderClubCard = ({ item }) => (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        onPress={() =>
+          navigation.navigate("About", {
+            screen: "AboutId",
+            params: { clubId: item.clubId }
+          })
+        }
+      >
+        <Image source={{ uri: item.logoUrl }} style={styles.image} />
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{item.title}</Text>
+          <Text style={styles.cardDesc} numberOfLines={2}>
+            {item.description}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() =>
+          navigation.navigate("About", {
+            screen: "FormClub"
+          })
+        }
+      >
+        <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <>
       <Header />
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>🎓 Giới thiệu các câu lạc bộ</Text>
-          <Text style={styles.subtitle}>
-            Khám phá những câu lạc bộ nổi bật của trường — nơi phát triển kỹ
-            năng, tạo dựng đam mê và kết nối bạn bè.
-          </Text>
-        </View>
-        <View style={styles.cardGrid}>
-          {data.map((item) => (
-            <View key={item.clubId} style={styles.card}>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("About", {
-                    screen: "AboutId",
-                    params: { clubId: item.clubId }
-                  })
-                }
-              >
-                <View style={styles.imageWrapper}>
-                  <Image
-                    source={{ uri: item.logoUrl }}
-                    style={styles.image}
-                    resizeMode="cover" // hoặc "contain", tùy ý
-                  />
-                </View>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardDesc}>{item.description}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate("Event", {
-                    screen: "FormClub"
-                  })
-                }
-              >
-                <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t("whyChooseUs")}</Text>
-          <View style={styles.valueGrid}>
-            {[
-              {
-                icon: "users",
-                title: t("value1Title"),
-                text: t("value1Text")
-              },
-              {
-                icon: "calendar-alt",
-                title: t("value2Title"),
-                text: t("value2Text")
-              },
-              {
-                icon: "star",
-                title: t("value3Title"),
-                text: t("value3Text")
-              }
-            ].map((item, index) => (
-              <View key={index} style={styles.valueCard}>
-                <FontAwesome5
-                  name={item.icon}
-                  size={24}
-                  color="#6366f1"
-                  style={{ marginBottom: 10 }}
-                />
-                <Text style={styles.valueTitle}>{item.title}</Text>
-                <Text style={styles.valueText}>{item.text}</Text>
-              </View>
-            ))}
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.clubId.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.container}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.title}>🎓 Khám phá Câu lạc bộ</Text>
+            <Text style={styles.subtitle}>
+              Nơi kết nối đam mê, rèn luyện kỹ năng và phát triển bản thân trong
+              môi trường năng động.
+            </Text>
+            <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
           </View>
-        </View>
-      </ScrollView>
+        }
+        ListFooterComponent={
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t("whyChooseUs")}</Text>
+            <View style={styles.valueGrid}>
+              {[
+                {
+                  icon: "users",
+                  title: t("value1Title"),
+                  text: t("value1Text")
+                },
+                {
+                  icon: "calendar-alt",
+                  title: t("value2Title"),
+                  text: t("value2Text")
+                },
+                {
+                  icon: "star",
+                  title: t("value3Title"),
+                  text: t("value3Text")
+                }
+              ].map((item, index) => (
+                <View key={index} style={styles.valueCard}>
+                  <FontAwesome5
+                    name={item.icon}
+                    size={22}
+                    color="#6366f1"
+                    style={{ marginBottom: 10 }}
+                  />
+                  <Text style={styles.valueTitle}>{item.title}</Text>
+                  <Text style={styles.valueText}>{item.text}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+        renderItem={renderClubCard}
+      />
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#f4f4fc",
-    padding: 16
+    paddingHorizontal: 16,
+    paddingBottom: 32
   },
   header: {
-    marginTop: 24,
-    marginBottom: 32,
-    alignItems: "center",
-    paddingHorizontal: 12
+    marginTop: 16,
+    marginBottom: 20,
+    alignItems: "center"
   },
   title: {
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#4338ca",
-    textAlign: "center"
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1f2937",
+    textAlign: "center",
+    marginBottom: 8
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#6b7280",
     textAlign: "center",
-    marginTop: 10,
-    lineHeight: 24
+    lineHeight: 22
   },
-  cardGrid: {
-    gap: 16
+  subHeading: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#374151",
+    marginTop: 24,
+    marginBottom: 12
+  },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: 16
   },
   card: {
     backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-    marginBottom: 20
-  },
-  imageWrapper: {
-    alignItems: "center",
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    padding: 8,
     borderRadius: 16,
+    overflow: "hidden",
+    width: "48%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
     elevation: 3
   },
   image: {
-    width: 120,
-    height: 120,
-    borderRadius: 60 // ảnh tròn, bỏ nếu muốn góc bo nhẹ
+    width: "100%",
+    height: 120
+  },
+  cardContent: {
+    padding: 10
   },
   cardTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#4f46e5"
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#1f2937",
+    marginBottom: 4
   },
   cardDesc: {
-    fontSize: 15,
-    color: "#4b5563",
-    marginTop: 6,
-    lineHeight: 22
+    fontSize: 13,
+    color: "#6b7280"
   },
   button: {
-    marginTop: 16,
     backgroundColor: "#4f46e5",
     paddingVertical: 10,
-    borderRadius: 10
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16
   },
   buttonText: {
-    color: "#fff",
     textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 15
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 13
   },
   section: {
-    marginTop: 48,
-    marginBottom: 36,
-    alignItems: "center"
+    marginTop: 30,
+    marginBottom: 20
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#4f46e5",
-    marginBottom: 24
-  },
-  valueGrid: {
-    flexDirection: "column",
-    gap: 16,
-    paddingHorizontal: 12
-  },
-  valueCard: {
-    backgroundColor: "#ffffff",
-    padding: 20,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-    alignItems: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1f2937",
+    textAlign: "center",
     marginBottom: 16
   },
+  valueGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  valueCard: {
+    flex: 1,
+    backgroundColor: "#f3f4f6",
+    padding: 12,
+    marginHorizontal: 4,
+    borderRadius: 12,
+    alignItems: "center"
+  },
   valueTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: "bold",
     color: "#1f2937",
     textAlign: "center"
   },
   valueText: {
+    fontSize: 12,
     color: "#6b7280",
-    fontSize: 14,
-    lineHeight: 22,
     textAlign: "center"
   }
 });
