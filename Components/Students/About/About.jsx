@@ -28,7 +28,7 @@ const About = ({ navigation }) => {
           Alert.alert("Không hiển thị được data club");
           setData([]);
         } else {
-          setData(response);
+          setData(response.data);
         }
       } catch (error) {
         const errorMessage =

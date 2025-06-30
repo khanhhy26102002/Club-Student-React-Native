@@ -34,7 +34,7 @@ const EventId = () => {
           Alert.alert("Thông báo", "Không tìm thấy sự kiện.");
           setData(null);
         } else {
-          setData(response);
+          setData(response.data);
         }
       } catch (error) {
         Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi.");

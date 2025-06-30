@@ -34,7 +34,7 @@ const Event = ({ navigation }) => {
             Alert.alert("Thông báo", "Không có sự kiện nào để hiển thị.");
             setData([]);
           } else {
-            setData(response);
+            setData(response.data);
           }
         } catch (error) {
           Alert.alert(

@@ -35,7 +35,7 @@ const Blog = ({ navigation }) => {
             Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
             setData([]);
           } else {
-            setData(response);
+            setData(response.data);
           }
         } catch (error) {
           Alert.alert("Lỗi lấy dữ liệu", error.message || "Không xác định");
