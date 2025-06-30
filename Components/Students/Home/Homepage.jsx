@@ -1,12 +1,10 @@
 import {
   FlatList,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   View,
   SafeAreaView,
-  Dimensions,
   StatusBar,
   TouchableOpacity
 } from "react-native";
