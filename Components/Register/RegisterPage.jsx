@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { fetchBaseResponse } from "../../utils/api";
 import { Picker } from "@react-native-picker/picker";
+import OtpModal from "./OtpModal";
 
 const RegisterPage = ({ navigation }) => {
   const [studentCode, setStudentCode] = React.useState("");
@@ -22,21 +23,8 @@ const RegisterPage = ({ navigation }) => {
   const [fullName, setFullName] = React.useState("");
   const [academicYear, setAcademicYear] = React.useState("");
   const [major, setMajor] = React.useState("");
-
+  const [showOtpModal, setShowOtpModal] = React.useState(false);
   const handleRegister = async () => {
-    if (
-      !studentCode ||
-      !email ||
-      !password ||
-      !confirmPassword ||
-      !fullName ||
-      !academicYear ||
-      !major
-    ) {
-      Alert.alert("Lỗi", "Vui lòng điền đầy đủ tất cả các trường");
-      return;
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert("Lỗi", "Email không hợp lệ");
@@ -64,11 +52,10 @@ const RegisterPage = ({ navigation }) => {
         }
       });
       console.log("RESPONSE", response);
-      if (response?.message === "Registration successful") {
-        Alert.alert("Thành công", "Bạn đã đăng ký thành công");
-        navigation.navigate("Login");
+      if (response.message === "Registration successful") {
+        setShowOtpModal(true);
       } else {
-        Alert.alert("Lỗi", response?.message || "Không đăng ký được");
+        Alert.alert("Lỗi", response.message || "Không đăng ký được");
       }
     } catch (error) {
       console.error("FULL ERROR:", error);
@@ -77,6 +64,28 @@ const RegisterPage = ({ navigation }) => {
       } else {
         Alert.alert("Lỗi hệ thống", "Không thể kết nối tới máy chủ.");
       }
+    }
+  };
+  const handleVerifyOtp = async (otp) => {
+    try {
+      const response = await fetchBaseResponse("/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        data: { email, otp }
+      });
+
+      if (response.message === "Email verified successfully") {
+        Alert.alert("✅ Thành công", "Tài khoản của bạn đã được xác minh!");
+        setShowOtpModal(false);
+        navigation.navigate("Login");
+      } else {
+        Alert.alert("❌ Lỗi", response.message || "Sai mã OTP");
+      }
+    } catch (error) {
+      console.error("VERIFY OTP ERROR:", error);
+      Alert.alert("❌ Lỗi", error.message || "Không xác minh được OTP");
     }
   };
 
@@ -191,7 +200,6 @@ const RegisterPage = ({ navigation }) => {
             onChangeText={setConfirmPassword}
           />
         </View>
-
         <TouchableOpacity
           style={styles.registerButton}
           onPress={handleRegister}
@@ -199,6 +207,11 @@ const RegisterPage = ({ navigation }) => {
         >
           <Text style={styles.registerButtonText}>Đăng ký</Text>
         </TouchableOpacity>
+        <OtpModal
+          visible={showOtpModal}
+          onSubmit={handleVerifyOtp}
+          onCancel={() => setShowOtpModal(false)}
+        />
 
         <View style={styles.socialWrapper}>
           <Text style={styles.orText}>Hoặc đăng ký bằng</Text>

@@ -24,20 +24,20 @@ const FormRegister = () => {
   const [clubId, setClubId] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = async () => {
-    if (!studentCode || !email || !fullName || !major || !clubId) {
-      Alert.alert("⚠️ Thiếu thông tin", "Vui lòng điền đầy đủ các trường.");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!studentCode || !email | !fullName || !major || !clubId) {
+      Alert.alert("Điền vào ô trống");
       return;
     }
-
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
+
     try {
-      await fetchBaseResponse("/clubs/club-register", {
+      const response = await fetchBaseResponse("/clubs/club-register", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${token}`
         },
         data: {
           studentCode,
@@ -47,9 +47,11 @@ const FormRegister = () => {
           clubId
         }
       });
+      console.log("✅ Đăng ký thành công:", response);
       Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
     } catch (error) {
-      Alert.alert("❌ Lỗi", "Không thể đăng ký: " + error.message);
+      console.error("❌ Lỗi đăng ký:", error.message);
+      Alert.alert("❌ Đăng ký thất bại", error.message || "Không xác định");
     } finally {
       setLoading(false);
     }
