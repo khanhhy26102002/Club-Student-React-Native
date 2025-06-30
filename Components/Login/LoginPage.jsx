@@ -29,8 +29,8 @@ const LoginPage = ({ navigation }) => {
         data: { email, password }
       });
       Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
-      const token = data.token;
-      const roleName = data.roles?.[0]?.role || "GUEST";
+      const token = data.data.token;
+      const roleName = data.data.roles?.[0]?.role || "GUEST";
       await AsyncStorage.setItem("jwt", token);
       await AsyncStorage.setItem("role", roleName);
       await AsyncStorage.setItem("email", email);
@@ -54,7 +54,7 @@ const LoginPage = ({ navigation }) => {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
           setData([]);
         } else {
-          setData(response);
+          setData(response.data);
         }
       } catch (error) {
         Alert.alert("Lỗi lấy ngành học:", error.message);
