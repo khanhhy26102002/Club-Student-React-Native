@@ -167,14 +167,24 @@ const RegisterPage = ({ navigation }) => {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Ngành học</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập ngành học"
-            placeholderTextColor="#bbb"
-            keyboardType="default"
-            value={major}
-            onChangeText={setMajor}
-          />
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={major}
+              onValueChange={(itemValue) => setMajor(itemValue)}
+              style={styles.picker}
+              dropdownIconColor="#555"
+            >
+              <Picker.Item label="Chọn ngành học..." value="" />
+              <Picker.Item label="Công nghệ thông tin" value={1} />
+            </Picker>
+            <FontAwesome
+              name="caret-down"
+              size={20}
+              color="#777"
+              style={styles.pickerIcon}
+              pointerEvents="none"
+            />
+          </View>
         </View>
 
         <View style={styles.formGroup}>
@@ -307,7 +317,7 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   picker: {
-    height: 50,
+    height: 55,
     width: "100%",
     color: "#34495e"
   },
