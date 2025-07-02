@@ -296,7 +296,7 @@ export default EventRegister;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#f5f9ff",
-    paddingBottom: 32,
+    paddingBottom: -20,
     flexGrow: 1
   },
   headerBox: {
