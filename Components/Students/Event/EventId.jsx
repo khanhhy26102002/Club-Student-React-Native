@@ -48,7 +48,7 @@ const EventId = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2196F3" />
+        <ActivityIndicator size="large" color="#1E88E5" />
       </View>
     );
   }
@@ -65,20 +65,18 @@ const EventId = () => {
     <View style={styles.wrapper}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Banner Image (default nếu không có ảnh thật) */}
         <Image
           source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/3039/3039434.png" // có thể thay bằng event.image nếu API có
+            uri: data.image || "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
           }}
           style={styles.banner}
         />
 
-        <View style={styles.headerBox}>
+        <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.description}>{data.description}</Text>
           <Text style={styles.date}>
-            📅{" "}
-            {new Date(data.eventDate).toLocaleString("vi-VN", {
+            📅 {new Date(data.eventDate).toLocaleString("vi-VN", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -89,7 +87,7 @@ const EventId = () => {
           </Text>
         </View>
 
-        <View style={styles.infoBox}>
+        <View style={styles.card}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>💻 Hình thức:</Text>
             <Text style={styles.value}>{data.format}</Text>
@@ -98,6 +96,12 @@ const EventId = () => {
             <Text style={styles.label}>📍 Địa điểm:</Text>
             <Text style={styles.value}>{data.location}</Text>
           </View>
+          {data.maximumParticipants > 0 && (
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>👥 Giới hạn:</Text>
+              <Text style={styles.value}>{data.maximumParticipants} người</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -109,53 +113,44 @@ export default EventId;
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#F5FAFE"
+    backgroundColor: "#F3F6FD"
   },
   container: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 40
   },
   banner: {
     width: "100%",
-    height: 180,
-    borderRadius: 16,
-    marginBottom: 20
+    height: 200,
+    borderRadius: 20,
+    marginBottom: 24,
+    backgroundColor: "#e0e0e0"
   },
-  headerBox: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
     padding: 20,
     marginBottom: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 4
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "800",
     color: "#0D47A1",
     marginBottom: 10
   },
   description: {
     fontSize: 16,
-    color: "#333",
-    marginBottom: 10
+    color: "#4A4A4A",
+    marginBottom: 12
   },
   date: {
-    fontSize: 14,
-    color: "#666"
-  },
-  infoBox: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    fontSize: 15,
+    color: "#757575"
   },
   infoRow: {
     flexDirection: "row",
@@ -165,7 +160,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1565C0"
+    color: "#1976D2"
   },
   value: {
     fontSize: 15,
@@ -175,17 +170,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5FAFE"
+    backgroundColor: "#F3F6FD"
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5FAFE"
+    backgroundColor: "#F3F6FD"
   },
   errorText: {
     fontSize: 16,
-    color: "#888",
+    color: "#999",
     fontStyle: "italic"
   }
 });

@@ -146,8 +146,10 @@ const ClubData = [
     descriptionKey: "title87"
   }
 ];
+
 const Homepage = () => {
   const renderClubItem = ({ item }) => <ClubCard item={item} />;
+
   const renderList = (title, data) => (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -156,7 +158,6 @@ const Homepage = () => {
           <Text style={styles.viewAll}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.sectionDivider} />
       <FlatList
         data={data}
         renderItem={renderClubItem}
@@ -164,17 +165,18 @@ const Homepage = () => {
         numColumns={2}
         scrollEnabled={false}
         columnWrapperStyle={styles.row}
+        contentContainerStyle={{ gap: 16 }}
       />
     </View>
   );
+
   return (
     <SafeAreaView style={styles.screen}>
-      <StatusBar backgroundColor="#f2f4f8" barStyle="dark-content" />
+      <StatusBar backgroundColor="#f4f6f8" barStyle="dark-content" />
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        {renderList("🌟 Câu lạc bộ nổi bật", clubsData)}
-        {renderList("🆕 Câu lạc bộ mới thành lập", newClubsData)}
-
+        {renderList("\u2728 Câu lạc bộ nổi bật", clubsData)}
+        {renderList("\u{1F195} Câu lạc bộ mới", newClubsData)}
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>
             Tham gia CLB để phát triển bản thân
@@ -184,7 +186,7 @@ const Homepage = () => {
           </Text>
         </View>
 
-        {renderList("🎯 Gợi ý cho bạn", ClubData)}
+        {renderList("\u{1F3AF} Gợi ý cho bạn", ClubData)}
       </ScrollView>
     </SafeAreaView>
   );
@@ -193,67 +195,58 @@ const Homepage = () => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#EEF4FF"
+    backgroundColor: "#f4f6f8"
   },
   container: {
-    padding: 20,
-    gap: 12,
-    paddingBottom: -40
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    gap: 28
   },
   section: {
-    marginBottom: 32
+    marginBottom: -24
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 12
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: "#1c1c1e"
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1a1a1a"
   },
   viewAll: {
-    fontSize: 13,
-    color: "#007AFF",
-    fontWeight: "500",
-    textDecorationLine: "none"
-  },
-  sectionDivider: {
-    height: 3,
-    backgroundColor: "#007AFF",
-    width: 40,
-    borderRadius: 2,
-    marginVertical: 8
+    fontSize: 14,
+    color: "#3366FF",
+    fontWeight: "500"
   },
   row: {
     justifyContent: "space-between",
-    marginBottom: 20
+    gap: 12
   },
   infoCard: {
-    marginTop: -40,
-    backgroundColor: "#e1efff",
-    borderRadius: 16,
-    paddingVertical: 28,
-    paddingHorizontal: 20,
+    marginTop: -20,
+    backgroundColor: "#DCEBFF",
+    borderRadius: 20,
+    padding: 24,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4
   },
   infoTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#007AFF",
-    marginBottom: 8,
+    color: "#3366FF",
+    marginBottom: 10,
     textAlign: "center"
   },
   infoSubtitle: {
     fontSize: 14,
-    color: "#4a4a4a",
+    color: "#4f4f4f",
     textAlign: "center",
     lineHeight: 20
   }

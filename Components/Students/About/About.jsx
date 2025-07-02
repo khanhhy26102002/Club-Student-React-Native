@@ -38,41 +38,40 @@ const About = ({ navigation }) => {
   }, []);
 
   const renderClubCard = ({ item }) => (
-    <View style={styles.card}>
-      <TouchableOpacity
-        style={{ flex: 1 }}
-        onPress={() =>
-          navigation.navigate("About", {
-            screen: "AboutId",
-            params: { clubId: item.clubId }
-          })
-        }
-      >
-        <Image source={{ uri: item.logoUrl }} style={styles.image} />
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          <Text style={styles.cardDesc} numberOfLines={2}>
-            {item.description}
-          </Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() =>
-          navigation.navigate("About", {
-            screen: "FormClub"
-          })
-        }
-      >
-        <Text style={styles.buttonText}>🚀 Tham gia ngay</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate("About", {
+          screen: "AboutId",
+          params: { clubId: item.clubId }
+        })
+      }
+    >
+      <Image source={{ uri: item.logoUrl }} style={styles.image} />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardDesc} numberOfLines={2}>
+          {item.description}
+        </Text>
+        <TouchableOpacity
+          style={styles.joinButton}
+          onPress={() =>
+            navigation.navigate("About", {
+              screen: "FormClub"
+            })
+          }
+        >
+          <Text style={styles.joinText}>🚀 {t("joinNow")}</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
-    <>
+    <View style={styles.wrapper}>
       <Header />
       <FlatList
+        scrollIndicatorInsets={{ bottom: 100 }}
         data={data}
         keyExtractor={(item) => item.clubId.toString()}
         numColumns={2}
@@ -107,15 +106,17 @@ const About = ({ navigation }) => {
                   icon: "star",
                   title: t("value3Title"),
                   text: t("value3Text")
-                }
+                },
+                {
+                  icon: "star",
+                  title: t("value3Title"),
+                  text: t("value3Text")
+                },
               ].map((item, index) => (
                 <View key={index} style={styles.valueCard}>
-                  <FontAwesome5
-                    name={item.icon}
-                    size={22}
-                    color="#6366f1"
-                    style={{ marginBottom: 10 }}
-                  />
+                  <View style={styles.iconCircle}>
+                    <FontAwesome5 name={item.icon} size={20} color="#4F46E5" />
+                  </View>
                   <Text style={styles.valueTitle}>{item.title}</Text>
                   <Text style={styles.valueText}>{item.text}</Text>
                 </View>
@@ -125,117 +126,141 @@ const About = ({ navigation }) => {
         }
         renderItem={renderClubCard}
       />
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    paddingBottom: 32
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#F8FAFC"
   },
-  header: {
-    marginTop: 16,
-    marginBottom: 20,
+  container: {
+    padding: 20,
+    paddingBottom: 70
+  },
+  headerSection: {
+    marginVertical: 24,
     alignItems: "center"
   },
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#1f2937",
-    textAlign: "center",
-    marginBottom: 8
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#1E3A8A",
+    marginBottom: 8,
+    textAlign: "center"
   },
   subtitle: {
-    fontSize: 15,
-    color: "#6b7280",
+    fontSize: 16,
+    color: "#64748B",
     textAlign: "center",
+    marginHorizontal: 12,
     lineHeight: 22
   },
   subHeading: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#374151",
-    marginTop: 24,
-    marginBottom: 12
+    fontWeight: "700",
+    color: "#334155",
+    marginTop: 14,
+    marginBottom: 10,
+    textAlign: "center"
   },
   row: {
     justifyContent: "space-between",
     marginBottom: 16
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
     overflow: "hidden",
     width: "48%",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 4
   },
   image: {
     width: "100%",
-    height: 120
+    height: 120,
+    backgroundColor: "#E5E7EB"
   },
   cardContent: {
-    padding: 10
+    padding: 12
   },
   cardTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#1f2937",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0F172A",
     marginBottom: 4
   },
   cardDesc: {
     fontSize: 13,
-    color: "#6b7280"
+    color: "#6B7280",
+    marginBottom: 10
   },
-  button: {
-    backgroundColor: "#4f46e5",
-    paddingVertical: 10,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16
+  joinButton: {
+    backgroundColor: "#3B82F6",
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignItems: "center"
   },
-  buttonText: {
-    textAlign: "center",
-    color: "#fff",
+  joinText: {
+    color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 13
   },
   section: {
-    marginTop: 30,
-    marginBottom: -20
+    marginTop: 36,
+    marginBottom: -60,
+    paddingHorizontal: 8
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1E3A8A",
     textAlign: "center",
-    marginBottom: 16
+    marginBottom: 20
   },
   valueGrid: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "flex-start",
+    flexWrap: "wrap",
+    gap: 12
   },
+
   valueCard: {
-    flex: 1,
-    backgroundColor: "#f3f4f6",
+    width: "48%",
+    backgroundColor: "#F0F4FF",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3
+  },
+
+  iconCircle: {
+    backgroundColor: "#EEF2FF",
     padding: 12,
-    marginHorizontal: 4,
-    borderRadius: 12,
-    alignItems: "center"
+    borderRadius: 50,
+    marginBottom: 10
   },
   valueTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#1f2937",
-    textAlign: "center"
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1E293B",
+    textAlign: "center",
+    marginBottom: 6
   },
   valueText: {
-    fontSize: 12,
-    color: "#6b7280",
-    textAlign: "center"
+    fontSize: 13,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 18
   }
 });
 
