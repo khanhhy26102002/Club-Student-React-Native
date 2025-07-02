@@ -33,7 +33,7 @@ const EventRegister = () => {
   const [clubId, setClubId] = React.useState(0);
   const [showPicker, setShowPicker] = React.useState(false);
 
-  const onChange = (event, selectedDate) => {
+  const onChange = (selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
       setEventDate(selectedDate);
