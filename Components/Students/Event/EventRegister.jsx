@@ -17,6 +17,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 
 const EventRegister = () => {
   const [title, setTitle] = React.useState("");
@@ -97,7 +98,40 @@ const EventRegister = () => {
       />
     </View>
   );
-
+  const renderLabeledSelect = (
+    label,
+    value,
+    setValue,
+    placeholder,
+    options
+  ) => (
+    <View style={{ marginVertical: 10 }}>
+      <Text style={{ fontSize: 16, marginBottom: 15 }}>{label}</Text>
+      <View
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          borderRadius: 5,
+          backgroundColor: "#fff"
+        }}
+      >
+        <Picker
+          selectedValue={value}
+          onValueChange={(itemValue) => setValue(itemValue)}
+          style={{ height: 55 }}
+        >
+          <Picker.Item label={placeholder} value="" />
+          {options.map((option) => (
+            <Picker.Item
+              label={option.label}
+              value={option.value}
+              key={option.value}
+            />
+          ))}
+        </Picker>
+      </View>
+    </View>
+  );
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -167,11 +201,15 @@ const EventRegister = () => {
               />
             )}
           </View>
-          {renderLabeledInput(
+          {renderLabeledSelect(
             "🎭 Hình thức",
             format,
             setFormat,
-            "Offline, Online hoặc Hybrid"
+            "Chọn hình thức",
+            [
+              { label: "Offline", value: "OFFLINE" },
+              { label: "Online", value: "ONLINE" }
+            ]
           )}
           {renderLabeledInput(
             "📍 Địa điểm",
@@ -202,11 +240,15 @@ const EventRegister = () => {
             false,
             "numeric"
           )}
-          {renderLabeledInput(
+          {renderLabeledSelect(
             "👁️‍🗨️ Mức độ công khai",
             visibility,
             setVisibility,
-            "Public / Private"
+            "Chọn hình thức công khai",
+            [
+              { label: "Công Khai", value: "PUBLIC" },
+              { label: "Riêng tư", value: "PRIVATE" }
+            ]
           )}
           <View
             style={{
