@@ -96,7 +96,6 @@ const Event = ({ navigation }) => {
               >
                 <View style={styles.imageContainer}>
                   <Image
-                    // Ưu tiên ảnh từ API, nếu không có thì dùng ảnh mặc định
                     source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
                     style={styles.cardImage}
                   />
