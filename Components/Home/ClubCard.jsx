@@ -12,8 +12,8 @@ import {
 import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
-const CARD_MARGIN = 1;
-const CARD_WIDTH = (width - 24 * 2 - CARD_MARGIN * 2) / 2;
+const CARD_MARGIN = 0;
+const CARD_WIDTH = (width - 21 * 2 - CARD_MARGIN * 1) / 2;
 
 const ClubCard = ({ item, onPress }) => {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ const ClubCard = ({ item, onPress }) => {
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.95,
+      toValue: 0.96,
       useNativeDriver: true
     }).start();
   };
@@ -47,13 +47,14 @@ const ClubCard = ({ item, onPress }) => {
       ]}
     >
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.9}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
         style={styles.card}
       >
         <Image source={{ uri: item.image }} style={styles.image} />
+        <View style={styles.overlay} />
 
         <View style={styles.content}>
           {item.members && (
@@ -72,6 +73,10 @@ const ClubCard = ({ item, onPress }) => {
               </View>
             ))}
           </View>
+
+          <TouchableOpacity style={styles.moreBtn} onPress={onPress}>
+            <Text style={styles.moreText}>{t("seeMore") || "Xem thêm"}</Text>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -80,18 +85,18 @@ const ClubCard = ({ item, onPress }) => {
 
 const styles = StyleSheet.create({
   animatedCard: {
-    marginBottom: 18,
+    marginBottom: 20,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: "hidden",
-    backgroundColor: "#121212",
+    backgroundColor: "#1a1a1a",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
-    height: 220,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    height: 240,
     justifyContent: "flex-end"
   },
   image: {
@@ -100,20 +105,25 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover"
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)"
+  },
   content: {
-    padding: 14,
+    padding: 16,
     position: "relative"
   },
   membersBadge: {
     position: "absolute",
-    top: -20,
+    top: -18,
     right: 14,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 20,
     paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderWidth: Platform.OS === "ios" ? 1 : 0,
-    borderColor: "rgba(255,255,255,0.3)"
+    paddingHorizontal: 12,
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.3)",
+    backdropFilter: "blur(6px)"
   },
   membersText: {
     fontSize: 12,
@@ -121,29 +131,43 @@ const styles = StyleSheet.create({
     color: "#fff"
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
     color: "#fff",
-    textShadowColor: "rgba(0,0,0,0.7)",
+    marginBottom: 10,
+    textShadowColor: "rgba(0,0,0,0.6)",
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-    marginBottom: 8
+    textShadowRadius: 3
   },
   tags: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 6,
-    flexWrap: "wrap"
+    marginBottom: 10
   },
   tag: {
     backgroundColor: "rgba(255,255,255,0.15)",
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 10
+    borderRadius: 12
   },
   tagText: {
-    color: "#E0E0E0",
+    color: "#e0e0e0",
     fontSize: 12,
     fontWeight: "500"
+  },
+  moreBtn: {
+    alignSelf: "flex-start",
+    backgroundColor: "#ffffff20",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 10
+  },
+  moreText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600"
   }
 });
+
 export default ClubCard;
