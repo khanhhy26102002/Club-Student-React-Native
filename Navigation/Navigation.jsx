@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Homepage from "../Components/Students/Home/Homepage";
+
 import EventStack from "../Components/Students/Event/EventStack";
 import ClubStack from "../Components/Students/Club/ClubStack";
 import ProfileStack from "../Components/Students/Profile/ProfileStack";
+import Homepage from "../Components/Home/Homepage";
 const Tab = createBottomTabNavigator();
 const Navigation = () => {
   return (
