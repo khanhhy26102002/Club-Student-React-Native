@@ -12,16 +12,15 @@ import {
   ScrollView,
   Modal
 } from "react-native";
-import API, { fetchBaseResponse } from "../../utils/api";
+import { fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+/* trang event show các sự kiện mà getAll và thêm nút xem sự kiện đã đăng kí
+   show các câu lạc bộ đã tham gia và đổi icon contact thành workspace hoặc là my club
+ */
 const LoginPage = ({ navigation }) => {
-  const [selectedMajor, setSelectedMajor] = React.useState(null);
-  const [isModalVisible, setModalVisible] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
-  const [data, setData] = React.useState([]);
   const handleLogin = async () => {
     try {
       const response = await fetchBaseResponse("/login", {
@@ -50,24 +49,6 @@ const LoginPage = ({ navigation }) => {
       Alert.alert("Đăng nhập thất bại", err.message);
     }
   };
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchBaseResponse(`/majors`, {
-          method: "GET"
-        });
-        if (!response || response.length === 0) {
-          Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
-          setData([]);
-        } else {
-          setData(response.data);
-        }
-      } catch (error) {
-        Alert.alert("Lỗi lấy ngành học:", error.message);
-      }
-    };
-    fetchData();
-  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : null}
@@ -137,56 +118,7 @@ const LoginPage = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Ngành học</Text>
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => setModalVisible(true)}
-          >
-            <Text style={{ color: selectedMajor ? "#000" : "#a3a3a3" }}>
-              {selectedMajor
-                ? `${selectedMajor.majorName} - ${selectedMajor.department}`
-                : "Chọn ngành học"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <Modal
-          visible={isModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>🎓 Chọn ngành học</Text>
 
-              <ScrollView style={styles.modalScroll}>
-                {data.map((major) => (
-                  <TouchableOpacity
-                    key={major.majorId}
-                    style={styles.modalOption}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setSelectedMajor(major);
-                      setModalVisible(false);
-                    }}
-                  >
-                    <Text style={styles.modalOptionText}>
-                      📘 {major.majorName} - {major.department}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              <TouchableOpacity
-                style={styles.modalClose}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalCloseText}>❌ Đóng</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
   );

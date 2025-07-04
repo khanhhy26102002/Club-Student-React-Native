@@ -1,24 +1,13 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Alert
-} from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
-/* show list task hoặc list project
- */
-const About = ({ navigation }) => {
+const Club = () => {
   const { t } = useTranslation();
-  const [data, setData] = useState([]);
+  const [data, setData] = React.useState([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetchBaseResponse("/clubs/public", {
@@ -88,48 +77,13 @@ const About = ({ navigation }) => {
             <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
           </View>
         }
-        ListFooterComponent={
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t("whyChooseUs")}</Text>
-            <View style={styles.valueGrid}>
-              {[
-                {
-                  icon: "users",
-                  title: t("value1Title"),
-                  text: t("value1Text")
-                },
-                {
-                  icon: "calendar-alt",
-                  title: t("value2Title"),
-                  text: t("value2Text")
-                },
-                {
-                  icon: "star",
-                  title: t("value3Title"),
-                  text: t("value3Text")
-                },
-                {
-                  icon: "star",
-                  title: t("value3Title"),
-                  text: t("value3Text")
-                },
-              ].map((item, index) => (
-                <View key={index} style={styles.valueCard}>
-                  <View style={styles.iconCircle}>
-                    <FontAwesome5 name={item.icon} size={20} color="#4F46E5" />
-                  </View>
-                  <Text style={styles.valueTitle}>{item.title}</Text>
-                  <Text style={styles.valueText}>{item.text}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        }
         renderItem={renderClubCard}
       />
     </View>
   );
 };
+
+export default Club;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -264,5 +218,3 @@ const styles = StyleSheet.create({
     lineHeight: 18
   }
 });
-
-export default About;

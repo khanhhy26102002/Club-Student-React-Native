@@ -60,8 +60,12 @@ const Event = ({ navigation }) => {
     <View style={styles.wrapper}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>🎉 Sự Kiện Nổi Bật</Text>
-
+        <View style={styles.headingRow}>
+          <Text style={styles.heading}>🎉 Sự Kiện Nổi Bật</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAll}>Sự kiện đã đăng kí</Text>
+          </TouchableOpacity>
+        </View>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#007AFF" />
@@ -142,12 +146,21 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingBottom: -10
   },
+  headingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24
+  },
   heading: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1D2C4D", // Màu xanh đậm, sang trọng
-    textAlign: "center",
-    marginBottom: 24
+    color: "#1D2C4D"
+  },
+  viewAll: {
+    fontSize: 14,
+    color: "#3366FF",
+    fontWeight: "500"
   },
   loadingContainer: {
     flex: 1,
