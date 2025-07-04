@@ -5,6 +5,8 @@ import Club from "./Club";
 import ClubId from "./ClubId";
 import FormClub from "../Club/FormClub";
 import FormRegister from "../Club/FormRegister";
+import ClubRegisters from "./ClubRegisters";
+import ClubCreated from "./ClubCreated";
 const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
@@ -19,6 +21,16 @@ const ClubStack = () => {
       <Stack.Screen
         name="FormRegister"
         component={FormRegister}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ClubList"
+        component={ClubRegisters}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ClubCreate"
+        component={ClubCreated}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
