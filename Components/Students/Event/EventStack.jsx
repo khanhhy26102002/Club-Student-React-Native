@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Event from "./Event";
 import EventId from "./EventId";
-import FormClub from "./FormClub";
-import FormRegister from "./FormRegister";
+import FormClub from "../Club/FormClub";
+import FormRegister from "../Club/FormRegister";
 import EventRegister from "./EventRegister";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
@@ -11,6 +11,7 @@ const EventStack = () => {
       <Stack.Screen name="EventStack" component={Event} />
       <Stack.Screen name="EventId" component={EventId} />
       <Stack.Screen name="EventRegister" component={EventRegister} />
+    
     </Stack.Navigator>
   );
 };

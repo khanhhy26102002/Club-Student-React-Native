@@ -1,10 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Homepage from "../Components/Students/Home/Homepage";
-import Contact from "../Components/Students/Contact/Contact";
-import BlogStack from "../Components/Students/Blog/BlogStack";
 import EventStack from "../Components/Students/Event/EventStack";
-import AboutStack from "../Components/Students/About/AboutStack";
+import ClubStack from "../Components/Students/Club/ClubStack";
+import ProfileStack from "../Components/Students/Profile/ProfileStack";
 const Tab = createBottomTabNavigator();
 const Navigation = () => {
   return (
@@ -13,8 +12,7 @@ const Navigation = () => {
         tabBarIcon: ({ color, focused }) => {
           let iconName;
           if (route.name === "Home") iconName = "home";
-          else if (route.name === "About") iconName = "alert-circle-outline";
-          else if (route.name === "Contact") iconName = "call-outline";
+          else if (route.name === "Club") iconName = "people-outline";
           else if (route.name === "Event") iconName = "remove-circle-sharp";
           else if (route.name === "Profile") iconName = "person-circle-sharp";
           else if (route.name === "Blog") iconName = "document-text-outline";
@@ -52,18 +50,13 @@ const Navigation = () => {
         options={{ headerShown: false }}
       />
       <Tab.Screen
-        name="Contact"
-        component={Contact}
+        name="Club"
+        component={ClubStack}
         options={{ headerShown: false }}
       />
       <Tab.Screen
-        name="About"
-        component={AboutStack}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Blog"
-        component={BlogStack}
+        name="Profile"
+        component={ProfileStack}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

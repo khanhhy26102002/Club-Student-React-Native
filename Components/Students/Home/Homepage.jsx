@@ -48,14 +48,6 @@ const clubsData = [
     members: 98,
     tags: ["Sports", "Football", "Fitness"]
   },
-  {
-    id: "5",
-    image: "https://www.ufm.edu.vn/images/upload/clb-tinh-nguyen-ufm.jpg",
-    titleKey: "club.volunteer.title",
-    descriptionKey: "club.volunteer.description",
-    members: 76,
-    tags: ["Community", "Charity", "Empathy"]
-  }
 ];
 
 const newClubsData = [
@@ -175,18 +167,17 @@ const Homepage = () => {
       <StatusBar backgroundColor="#f4f6f8" barStyle="dark-content" />
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        {renderList("\u2728 Câu lạc bộ nổi bật", clubsData)}
-        {renderList("\u{1F195} Câu lạc bộ mới", newClubsData)}
-        <View style={styles.infoCard}>
+        {renderList("\u{1F195} Câu lạc bộ nổi bật", clubsData)}
+        {renderList("\u{1F195} Sự kiện nổi bật", newClubsData)}
+        {/* <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>
             Tham gia CLB để phát triển bản thân
           </Text>
           <Text style={styles.infoSubtitle}>
             Kết nối, học hỏi, và cùng nhau tạo nên những giá trị tuyệt vời.
           </Text>
-        </View>
-
-        {renderList("\u{1F3AF} Gợi ý cho bạn", ClubData)}
+        </View> */}
+        {/* {renderList("\u{1F3AF} Gợi ý cho bạn", ClubData)} */}
       </ScrollView>
     </SafeAreaView>
   );

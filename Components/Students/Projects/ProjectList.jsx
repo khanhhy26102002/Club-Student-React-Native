@@ -7,6 +7,7 @@ import {
   Alert,
   StyleSheet
 } from "react-native";
+import Header from "../../../Header/Header";
 
 const ProjectList = ({ navigation }) => {
   const [projects, setProjects] = useState([]);
@@ -60,14 +61,17 @@ const ProjectList = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={projects}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
-    </View>
+    <>
+      <Header />
+      <View style={styles.container}>
+        <FlatList
+          data={projects}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      </View>
+    </>
   );
 };
 

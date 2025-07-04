@@ -23,7 +23,28 @@ const RegisterPage = ({ navigation }) => {
   const [fullName, setFullName] = React.useState("");
   const [academicYear, setAcademicYear] = React.useState("");
   const [major, setMajor] = React.useState("");
+  const [majors, setMajors] = React.useState([]);
   const [showOtpModal, setShowOtpModal] = React.useState(false);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchBaseResponse("/majors", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.message === "Success") {
+          setMajors(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+      }
+    };
+    fetchData();
+  });
   const handleRegister = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -48,7 +69,7 @@ const RegisterPage = ({ navigation }) => {
           password,
           fullName,
           academicYear,
-          major
+          major: major
         }
       });
       console.log("RESPONSE", response);
@@ -175,7 +196,13 @@ const RegisterPage = ({ navigation }) => {
               dropdownIconColor="#555"
             >
               <Picker.Item label="Chọn ngành học..." value="" />
-              <Picker.Item label="Công nghệ thông tin" value={1} />
+              {majors.map((item) => (
+                <Picker.Item
+                  key={item.majorId}
+                  label={item.majorName}
+                  value={item.majorId}
+                />
+              ))}
             </Picker>
             <FontAwesome
               name="caret-down"

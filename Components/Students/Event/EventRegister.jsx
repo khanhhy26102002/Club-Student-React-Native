@@ -33,7 +33,7 @@ const EventRegister = () => {
   const [clubId, setClubId] = React.useState(0);
   const [showPicker, setShowPicker] = React.useState(false);
 
-  const onChange = (selectedDate) => {
+  const onChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
       setEventDate(selectedDate);
@@ -247,7 +247,7 @@ const EventRegister = () => {
             "Chọn hình thức công khai",
             [
               { label: "Công Khai", value: "PUBLIC" },
-              { label: "Riêng tư", value: "PRIVATE" }
+              { label: "Nội bộ", value: "INTERNAL" }
             ]
           )}
           <View

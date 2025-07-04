@@ -10,43 +10,13 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
-  Modal,
-  Animated,
-  Easing
 } from "react-native";
 
 const Header = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const [lang, setLang] = React.useState("vi");
-  const [dropdown, setDropdown] = React.useState(false);
   const [user, setUser] = React.useState(null);
-
-  const dropdownAnim = React.useRef(new Animated.Value(0)).current;
-
-  const openDropdown = () => {
-    setDropdown(true);
-    Animated.timing(dropdownAnim, {
-      toValue: 1,
-      duration: 200,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true
-    }).start();
-  };
-  const navigateSafely = (screen, params) => {
-    closeDropdown();
-    setTimeout(() => {
-      navigation.navigate(screen, params);
-    }, 0);
-  };
-  const closeDropdown = () => {
-    Animated.timing(dropdownAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true
-    }).start(() => setDropdown(false));
-  };
-
   React.useEffect(() => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
@@ -56,23 +26,16 @@ const Header = () => {
       }
     };
     fetchUser();
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchUser();
+    });
+    return unsubscribe;
   }, []);
-
   const toggleLang = () => {
     const newLang = lang === "vi" ? "en" : "vi";
     setLang(newLang);
     i18n.changeLanguage(newLang);
   };
-
-  const handleLogout = async () => {
-    closeDropdown(); // Đóng dropdown trước
-    setTimeout(async () => {
-      await AsyncStorage.clear();
-      setUser(null); // Sau khi đã clear, cập nhật state
-      navigation.navigate("Main"); // Điều hướng sau cùng
-    }, 200); // delay một chút để tránh conflict render
-  };
-
   return (
     <View style={styles.header}>
       <StatusBar barStyle="light-content" backgroundColor="#ff6600" />
@@ -95,142 +58,26 @@ const Header = () => {
           <TouchableOpacity onPress={toggleLang} style={styles.language}>
             <Text style={styles.flag}>{lang === "vi" ? "🇻🇳" : "🇺🇸"}</Text>
           </TouchableOpacity>
-          {user ? (
-            <View style={styles.avatarWrapper}>
-              <TouchableOpacity
-                onPress={() => (dropdown ? closeDropdown() : openDropdown())}
-              >
-                <Image
-                  source={{ uri: "https://i.pravatar.cc/300" }}
-                  style={styles.avatar}
-                />
-              </TouchableOpacity>
-              {dropdown && (
-                <Modal
-                  visible={dropdown}
-                  transparent
-                  animationType="none"
-                  onRequestClose={closeDropdown}
+          <View style={styles.actions}>
+            {!user && (
+              <View style={styles.authButtons}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Login")}
+                  style={styles.authBtn}
                 >
-                  <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPressOut={closeDropdown}
-                  >
-                    <View style={styles.modalContainer}>
-                      <Animated.View
-                        style={[
-                          styles.dropdown,
-                          {
-                            opacity: dropdownAnim,
-                            transform: [
-                              {
-                                translateY: dropdownAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [-10, 0]
-                                })
-                              }
-                            ]
-                          }
-                        ]}
-                      >
-                        <Text style={styles.helloRow}>
-                          👋 {t("hello")}:{" "}
-                          <Text style={styles.emailText}>{user.email}</Text>
-                        </Text>
-
-                        <TouchableOpacity
-                          style={styles.dropdownItem}
-                          onPress={handleLogout}
-                        >
-                          <Text style={styles.logoutText}>
-                            🔓 {t("title88")}
-                          </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            navigateSafely("About", {
-                              screen: "FormClub"
-                            });
-                          }}
-                        >
-                          <View style={styles.dropdownRow}>
-                            <Ionicons
-                              name="add-circle-outline"
-                              size={18}
-                              color="#333"
-                              style={{ marginRight: 8 }}
-                            />
-                            <Text style={styles.dropdownText}>
-                              Tạo câu lạc bộ
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            navigateSafely("About", { screen: "FormRegister" });
-                          }}
-                        >
-                          <View style={styles.dropdownRow}>
-                            <Ionicons
-                              name="person-add"
-                              size={18}
-                              color="#333"
-                              style={{ marginRight: 8 }}
-                            />
-                            <Text style={styles.dropdownText}>
-                              Đăng kí câu lạc bộ
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            closeDropdown();
-                            navigation.navigate("Event", {
-                              screen: "EventRegister"
-                            });
-                          }}
-                        >
-                          <View style={styles.dropdownRow}>
-                            <Ionicons
-                              name="calendar"
-                              size={18}
-                              color="#333"
-                              style={{ marginRight: 8 }}
-                            />
-                            <Text style={styles.dropdownText}>Tạo sự kiện</Text>
-                          </View>
-                        </TouchableOpacity>
-                      </Animated.View>
-                    </View>
-                  </TouchableOpacity>
-                </Modal>
-              )}
-            </View>
-          ) : (
-            <View style={styles.authButtons}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Login")}
-                style={styles.authBtn}
-              >
-                <Text style={styles.authText}>{t("login")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Register")}
-                style={[styles.authBtn, { backgroundColor: "#fff" }]}
-              >
-                <Text style={[styles.authText, { color: "#ff6600" }]}>
-                  {t("register")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                  <Text style={styles.authText}>{t("login")}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Register")}
+                  style={[styles.authBtn, { backgroundColor: "#fff" }]}
+                >
+                  <Text style={[styles.authText, { color: "#ff6600" }]}>
+                    {t("register")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </View>
     </View>
