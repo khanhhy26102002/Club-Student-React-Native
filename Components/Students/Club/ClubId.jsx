@@ -1,13 +1,23 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
 import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  useWindowDimensions,
+  Alert
+} from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import RenderHTML from "react-native-render-html";
 
 const ClubId = () => {
   const route = useRoute();
   const { clubId } = route.params;
   const [data, setData] = React.useState(null);
+  const { width } = useWindowDimensions();
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -18,20 +28,14 @@ const ClubId = () => {
             "Content-Type": "application/json"
           }
         });
-        if (!response || response.length === 0) {
-          Alert.alert("Không hiển thị được data theo clubId");
-          setData([]);
+        if (!response || !response.data) {
+          Alert.alert("Không hiển thị được dữ liệu theo clubId");
+          setData(null);
         } else {
           setData(response.data);
         }
       } catch (error) {
-        Alert.alert(
-          "Lỗi khi tải dữ liệu",
-          typeof error?.message === "string"
-            ? error.message
-            : JSON.stringify(error)
-        );
-        console.error("Error: ", error);
+        Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
       }
     };
     fetchData();
@@ -42,39 +46,34 @@ const ClubId = () => {
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         {data && (
-          <>
+          <View style={styles.card}>
             <View style={styles.logoWrapper}>
-              <Image source={{ uri: data.logoUrl }} style={styles.logo} />
+              {data.logoUrl ? (
+                <Image source={{ uri: data.logoUrl }} style={styles.logo} />
+              ) : (
+                <Text style={styles.logoFallback}>No Logo</Text>
+              )}
             </View>
 
             <Text style={styles.title}>{data.name}</Text>
-            <Text style={styles.description}>{data.description}</Text>
-
-            <View style={styles.statusWrapper}>
-              <Text
-                style={[
-                  styles.status,
-                  { color: data.isActive ? "#10B981" : "#EF4444" }
-                ]}
-              >
-                {data.isActive ? "🟢 Đang hoạt động" : "🔴 Ngừng hoạt động"}
-              </Text>
-            </View>
+            <Text
+              style={[
+                styles.status,
+                { color: data.isActive ? "#10B981" : "#EF4444" }
+              ]}
+            >
+              {data.isActive ? "🟢 Đang hoạt động" : "🔴 Ngừng hoạt động"}
+            </Text>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🌟 Lợi ích khi tham gia</Text>
-              <Text style={styles.bullet}>
-                • Giao lưu, mở rộng mạng lưới bạn bè
-              </Text>
-              <Text style={styles.bullet}>• Phát triển kỹ năng chuyên môn</Text>
-              <Text style={styles.bullet}>
-                • Cơ hội tham gia các sự kiện lớn
-              </Text>
-              <Text style={styles.bullet}>
-                • Được cấp giấy chứng nhận hoạt động
-              </Text>
+              <Text style={styles.sectionTitle}>📄 Giới thiệu</Text>
+              <RenderHTML
+                contentWidth={width - 48}
+                source={{ html: data.description || "<p>Không có mô tả</p>" }}
+                tagsStyles={htmlStyles}
+              />
             </View>
-          </>
+          </View>
         )}
       </ScrollView>
     </>
@@ -85,70 +84,173 @@ export default ClubId;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
+    padding: 20,
+    paddingBottom: 140,
     backgroundColor: "#F3F4F6",
     alignItems: "center"
   },
+  card: {
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3
+  },
   logoWrapper: {
-    backgroundColor: "#fff",
+    alignSelf: "center",
+    backgroundColor: "#FFF7ED",
     padding: 12,
     borderRadius: 100,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    marginBottom: 20
+    marginBottom: 20,
+    elevation: 2
   },
   logo: {
-    width: 140,
-    height: 140,
-    borderRadius: 70
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    resizeMode: "cover"
+  },
+  logoFallback: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#E5E7EB",
+    textAlign: "center",
+    lineHeight: 120,
+    color: "#6B7280"
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
-    color: "#1E3A8A",
+    color: "#1E40AF",
     textAlign: "center",
-    marginTop: 12,
-    marginBottom: 8
-  },
-  description: {
-    fontSize: 16,
-    color: "#4B5563",
-    textAlign: "center",
-    marginBottom: 12,
-    paddingHorizontal: 12
-  },
-  statusWrapper: {
-    marginVertical: 10
+    marginBottom: 4
   },
   status: {
     fontSize: 16,
-    fontWeight: "600"
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 20
   },
   section: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 16,
-    width: "100%",
-    marginTop: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2
+    backgroundColor: "#F9FAFB",
+    padding: 16,
+    borderRadius: 12
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 12
-  },
-  bullet: {
-    fontSize: 15,
-    color: "#374151",
-    marginBottom: 6,
-    paddingLeft: 4
+    marginBottom: 10
   }
 });
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    color: "#374151",
+    lineHeight: 24,
+    textAlign: "left",
+    alignSelf: "stretch",
+    paddingHorizontal: 4
+  },
+  heading1: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+    marginTop: 20,
+    color: "#1F2937"
+  },
+  heading2: {
+    fontSize: 20,
+    color: "#111827",
+    marginBottom: 8,
+    marginTop: 16,
+    fontWeight: "700"
+  },
+  heading3: {
+    fontSize: 18,
+    color: "#1F2937",
+    marginTop: 14,
+    marginBottom: 6,
+    fontWeight: "600"
+  },
+  paragraph: {
+    marginBottom: 10
+  },
+  list_item: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6
+  },
+  list_item_content: {
+    fontSize: 16,
+    color: "#4B5563"
+  },
+  link: {
+    color: "#2563EB",
+    textDecorationLine: "underline"
+  },
+  code_inline: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontFamily: "monospace",
+    color: "#111827"
+  }
+};
+const htmlStyles = {
+  p: {
+    fontSize: 16,
+    color: "#374151",
+    lineHeight: 24,
+    marginBottom: 10
+  },
+  h2: {
+    fontSize: 20,
+    color: "#111827",
+    marginTop: 20,
+    marginBottom: 8,
+    fontWeight: "700"
+  },
+  h3: {
+    fontSize: 18,
+    color: "#1F2937",
+    marginTop: 16,
+    marginBottom: 6,
+    fontWeight: "600"
+  },
+  img: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    marginVertical: 10,
+    borderRadius: 8
+  },
+  table: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    marginBottom: 10
+  },
+  th: {
+    backgroundColor: "#F3F4F6",
+    padding: 6,
+    fontWeight: "700",
+    borderWidth: 1,
+    borderColor: "#D1D5DB"
+  },
+  td: {
+    padding: 6,
+    borderWidth: 1,
+    borderColor: "#D1D5DB"
+  },
+  iframe: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8
+  }
+};

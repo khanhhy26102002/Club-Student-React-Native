@@ -10,10 +10,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import Header from "../../../Header/Header";
-import { LinearGradient } from "expo-linear-gradient";
-
+import { Ionicons } from "@expo/vector-icons";
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
@@ -53,10 +51,7 @@ const Profile = () => {
       <Header />
       {user ? (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <LinearGradient
-            colors={["#6a11cb", "#2575fc"]}
-            style={styles.headerSection}
-          >
+          <View style={styles.headerSectionNoGradient}>
             <Image
               source={{ uri: "https://i.pravatar.cc/300" }}
               style={styles.avatar}
@@ -69,7 +64,7 @@ const Profile = () => {
                 {lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇺🇸 English"}
               </Text>
             </TouchableOpacity>
-          </LinearGradient>
+          </View>
 
           <View style={styles.actions}>
             <ActionItem
@@ -118,14 +113,29 @@ const Profile = () => {
               }
               color="#f44336"
             />
+            <ActionItem
+              icon="albums-outline"
+              label="Đăng kí câu lạc bộ của tôi"
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubList"
+                })
+              }
+            />
+            <ActionItem
+              icon="ribbon-outline"
+              label="Câu lạc bộ của tôi"
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubCreate"
+                })
+              }
+            />
           </View>
         </ScrollView>
       ) : (
         <View style={styles.container}>
-          <LinearGradient
-            colors={["#ff9966", "#ff5e62"]}
-            style={styles.gradientBackground}
-          >
+          <View style={styles.gradientBackgroundNoGradient}>
             <View style={styles.card}>
               <Text style={styles.notLoggedIn}>Bạn chưa đăng nhập</Text>
               <TouchableOpacity
@@ -135,7 +145,7 @@ const Profile = () => {
                 <Text style={styles.authText}>{t("login")}</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </View>
         </View>
       )}
     </>
@@ -153,17 +163,18 @@ export default Profile;
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    paddingBottom: 40,
+    paddingBottom: 10,
     backgroundColor: "#f5f7fa"
   },
   container: {
     flex: 1
   },
-  gradientBackground: {
+  gradientBackgroundNoGradient: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 24
+    padding: 24,
+    backgroundColor: "#ff685d"
   },
   card: {
     backgroundColor: "#fff",
@@ -177,12 +188,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 10,
     elevation: 6
-  },
-  icon: {
-    width: 80,
-    height: 80,
-    marginBottom: 16,
-    tintColor: "#ff6600"
   },
   notLoggedIn: {
     fontSize: 18,
@@ -202,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16
   },
-  headerSection: {
+  headerSectionNoGradient: {
     alignItems: "center",
     paddingTop: 40,
     paddingBottom: 30,
@@ -221,7 +226,7 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff"
+    color: "#333"
   },
   langButton: {
     backgroundColor: "#fff",

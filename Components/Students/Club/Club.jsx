@@ -1,9 +1,18 @@
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
-const Club = () => {
+import Markdown from "react-native-markdown-display";
+import html2md from "html-to-md";
+const Club = ({ navigation }) => {
   const { t } = useTranslation();
   const [data, setData] = React.useState([]);
 
@@ -31,22 +40,19 @@ const Club = () => {
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
-        navigation.navigate("About", {
-          screen: "AboutId",
+        navigation.navigate("Club", {
+          screen: "ClubId",
           params: { clubId: item.clubId }
         })
       }
     >
       <Image source={{ uri: item.logoUrl }} style={styles.image} />
       <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.title}</Text>
-        <Text style={styles.cardDesc} numberOfLines={2}>
-          {item.description}
-        </Text>
+        <Text style={styles.cardTitle}>{item.name}</Text>
         <TouchableOpacity
           style={styles.joinButton}
           onPress={() =>
-            navigation.navigate("About", {
+            navigation.navigate("Club", {
               screen: "FormClub"
             })
           }
@@ -92,7 +98,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
-    paddingBottom: 70
+    paddingBottom: 10
   },
   headerSection: {
     marginVertical: 24,
@@ -149,10 +155,75 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     marginBottom: 4
   },
-  cardDesc: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginBottom: 10
+  markdown: {
+    body: {
+      fontSize: 16,
+      color: "#1a1a1a",
+      lineHeight: 22
+    },
+    heading1: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: "#004aad",
+      marginBottom: 8
+    },
+    heading2: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: "#0055cc",
+      marginBottom: 6
+    },
+    heading3: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: "#0066cc"
+    },
+    strong: {
+      fontWeight: "bold",
+      color: "#000"
+    },
+    em: {
+      fontStyle: "italic"
+    },
+    list_item: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: 4
+    },
+    bullet_list_icon: {
+      color: "#004aad"
+    },
+    paragraph: {
+      marginBottom: 8
+    },
+    link: {
+      color: "#0077ee",
+      textDecorationLine: "underline"
+    },
+    blockquote: {
+      borderLeftWidth: 4,
+      borderLeftColor: "#004aad",
+      paddingLeft: 10,
+      color: "#444",
+      fontStyle: "italic",
+      marginBottom: 8
+    },
+    code_inline: {
+      backgroundColor: "#f0f0f0",
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      fontFamily: "monospace",
+      color: "#333"
+    },
+    code_block: {
+      backgroundColor: "#f4f4f4",
+      padding: 10,
+      borderRadius: 8,
+      fontFamily: "monospace",
+      color: "#333",
+      marginBottom: 10
+    }
   },
   joinButton: {
     backgroundColor: "#3B82F6",

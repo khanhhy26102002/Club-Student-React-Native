@@ -15,6 +15,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import Markdown from "react-native-markdown-display";
+import html2md from "html-to-md";
 const FormClub = () => {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -136,6 +138,24 @@ const FormClub = () => {
             setDescription,
             "Mô tả ngắn gọn",
             true
+          )}
+          {description.trim() !== "" && (
+            <View style={{ marginTop: 24 }}>
+              <Text
+                style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}
+              >
+                📋 Xem trước Mô tả:
+              </Text>
+              <Markdown
+                style={{
+                  heading1: { fontSize: 20, color: "#ff6600", marginBottom: 8 },
+                  paragraph: { fontSize: 14, color: "#333", marginBottom: 6 },
+                  strong: { fontWeight: "bold" }
+                }}
+              >
+                {html2md(description)}
+              </Markdown>
+            </View>
           )}
           {renderField(
             "Logo (link ảnh)",
