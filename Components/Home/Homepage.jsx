@@ -8,9 +8,8 @@ import {
   StatusBar,
   TouchableOpacity
 } from "react-native";
-import Header from "../../../Header/Header";
-import ClubCard from "./ClubCard";
-
+import Header from "../../Header/Header";
+import ClubCard from "../Home/ClubCard";
 const clubsData = [
   {
     id: "1",
