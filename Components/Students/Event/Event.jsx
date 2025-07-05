@@ -13,6 +13,7 @@ import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 const DEFAULT_EVENT_IMAGE =
   "https://images.unsplash.com/photo-1505238680356-667803448bb6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80";
 const Event = ({ navigation }) => {
@@ -62,10 +63,33 @@ const Event = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headingRow}>
           <Text style={styles.heading}>🎉 Sự Kiện Nổi Bật</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAll}>Sự kiện đã đăng kí</Text>
+          <TouchableOpacity style={styles.eventButton} activeOpacity={0.8}>
+            <View style={styles.eventButtonContent}>
+              <Icon name="calendar-check" size={18} color="#1E40AF" />
+              <Text style={styles.eventButtonText}>Sự kiện đã đăng kí</Text>
+            </View>
           </TouchableOpacity>
         </View>
+        <View style={styles.filterBar}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity style={styles.filterChip}>
+              <Text style={styles.filterText}>Tất cả</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Text style={styles.filterText}>Online</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Text style={styles.filterText}>Offline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Text style={styles.filterText}>Tuần này</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Text style={styles.filterText}>Tháng sau</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#007AFF" />
@@ -138,7 +162,7 @@ export default Event;
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#F4F6F8" // Một màu nền nhẹ nhàng, sạch sẽ
+    backgroundColor: "#F4F6F8" 
   },
   container: {
     paddingHorizontal: 16,
@@ -154,12 +178,36 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#1D2C4D"
+    color: "#1D2C4D",
+    marginTop: -10
   },
-  viewAll: {
+  eventButton: {
+    alignSelf: "flex-end", // đẩy nút sang phải
+    marginRight: -10, // căn phải một chút
+    marginTop: -6, // kéo nút lên trên một chút
+    borderWidth: 1,
+    borderColor: "#93C5FD",
+    backgroundColor: "#EFF6FF",
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1
+  },
+  eventButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  eventButtonText: {
+    marginLeft: 8,
     fontSize: 14,
-    color: "#3366FF",
-    fontWeight: "500"
+    fontWeight: "600",
+    color: "#1E40AF",
+    marginTop: -1
   },
   loadingContainer: {
     flex: 1,
@@ -270,6 +318,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#616A6B",
     fontWeight: "500",
-    flexShrink: 1 // Cho phép text co lại nếu quá dài
+    flexShrink: 1
+  },
+  filterBar: {
+    flexDirection: "row",
+    marginBottom: 20,
+    paddingLeft: 2
+  },
+  filterChip: {
+    backgroundColor: "#E0ECFF",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#B0C4DE"
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#1E40AF"
   }
 });

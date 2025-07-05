@@ -10,8 +10,7 @@ import React from "react";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
-import Markdown from "react-native-markdown-display";
-import html2md from "html-to-md";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 const Club = ({ navigation }) => {
   const { t } = useTranslation();
   const [data, setData] = React.useState([]);
@@ -80,6 +79,20 @@ const Club = ({ navigation }) => {
               Nơi kết nối đam mê, rèn luyện kỹ năng và phát triển bản thân trong
               môi trường năng động.
             </Text>
+            <TouchableOpacity
+              style={styles.clubButton}
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubList"
+                })
+              }
+            >
+              <View style={styles.clubButtonContent}>
+                <Icon name="account-group" size={18} color="#1E40AF" />
+                <Text style={styles.clubButtonText}>Câu lạc bộ đã đăng kí</Text>
+              </View>
+            </TouchableOpacity>
+
             <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
           </View>
         }
@@ -287,5 +300,31 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textAlign: "center",
     lineHeight: 18
+  },
+  clubButton: {
+    borderWidth: 1,
+    borderColor: "#93C5FD", // Nhẹ nhàng hơn
+    borderRadius: 999, // Full bo tròn
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#EFF6FF",
+    alignSelf: "center",
+    marginTop: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1
+  },
+  clubButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  clubButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1D4ED8",
+    marginLeft: 8
   }
 });
