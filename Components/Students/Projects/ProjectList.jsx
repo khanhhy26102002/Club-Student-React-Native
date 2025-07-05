@@ -16,16 +16,15 @@ const ProjectList = ({ navigation }) => {
     const mockProjects = [
       {
         id: 1,
-        title: "Ứng dụng ToDo",
+        title: "📋 Ứng dụng ToDo",
         description: "Ghi chú, nhắc nhở, deadline"
       },
       {
         id: 2,
-        title: "CLB Công Nghệ",
+        title: "💻 CLB Công Nghệ",
         description: "Website quản lý hoạt động CLB"
       }
     ];
-
     setProjects(mockProjects);
   }, []);
 
@@ -36,10 +35,11 @@ const ProjectList = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <TouchableOpacity
+        activeOpacity={0.8}
         onPress={() =>
           navigation.navigate("Project", {
             screen: "ProjectDetail",
-            params: { id: item.projectId }
+            params: { id: item.id }
           })
         }
       >
@@ -52,14 +52,14 @@ const ProjectList = ({ navigation }) => {
           style={styles.feedbackButton}
           onPress={() => navigation.navigate("FeedBack", { eventId: item.id })}
         >
-          <Text style={styles.feedbackButtonText}>Phản hồi</Text>
+          <Text style={styles.feedbackButtonText}>📝 Phản hồi</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.joinButton}
           onPress={() => joinProject(item.id)}
         >
-          <Text style={styles.joinButtonText}>Tham gia</Text>
+          <Text style={styles.joinButtonText}>🚀 Tham gia</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -69,11 +69,13 @@ const ProjectList = ({ navigation }) => {
     <>
       <Header />
       <View style={styles.container}>
+        <Text style={styles.headerText}>📂 Danh sách dự án</Text>
         <FlatList
           data={projects}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     </>
@@ -84,29 +86,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f9faff"
+    backgroundColor: "#f3f4f6"
+  },
+  headerText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#1f2937"
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
-    elevation: 5
+    elevation: 4
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#222",
-    marginBottom: 6
+    color: "#111827",
+    marginBottom: 8
   },
   description: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 12
+    fontSize: 15,
+    color: "#6b7280",
+    marginBottom: 14
   },
   actions: {
     flexDirection: "row",
@@ -116,22 +124,24 @@ const styles = StyleSheet.create({
   feedbackButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: "#f0f0f0"
+    borderRadius: 30,
+    backgroundColor: "#e5e7eb"
   },
   feedbackButtonText: {
-    color: "#555",
-    fontWeight: "600"
+    color: "#374151",
+    fontWeight: "600",
+    fontSize: 14
   },
   joinButton: {
     paddingVertical: 8,
     paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: "#0077cc"
+    borderRadius: 30,
+    backgroundColor: "#3b82f6"
   },
   joinButtonText: {
     color: "#fff",
-    fontWeight: "700"
+    fontWeight: "700",
+    fontSize: 14
   }
 });
 
