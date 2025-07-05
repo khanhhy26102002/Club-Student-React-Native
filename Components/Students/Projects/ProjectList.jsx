@@ -36,7 +36,12 @@ const ProjectList = ({ navigation }) => {
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <TouchableOpacity
-        onPress={() => navigation.navigate("ProjectDetail", { id: item.id })}
+        onPress={() =>
+          navigation.navigate("Project", {
+            screen: "ProjectDetail",
+            params: { id: item.projectId }
+          })
+        }
       >
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.description}>{item.description}</Text>

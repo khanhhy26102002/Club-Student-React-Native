@@ -32,7 +32,7 @@ const ClubRegisters = () => {
   }, []);
   return (
     <>
-    <Header/>
+      <Header />
       <ScrollView contentContainerStyle={styles.container}>
         {data.map((club) => (
           <View key={club.clubId} style={styles.card}>
@@ -44,7 +44,7 @@ const ClubRegisters = () => {
               )}
             </View>
 
-            <Text style={styles.title}>{club.name}</Text>
+            <Text style={styles.title}>🏛️ {club.name}</Text>
 
             <Text
               style={[
@@ -56,9 +56,13 @@ const ClubRegisters = () => {
             </Text>
 
             <View style={styles.markdownWrapper}>
-              <Markdown style={markdownStyles}>
-                {html2md(club.description || "")}
-              </Markdown>
+              {club.description ? (
+                <Markdown style={markdownStyles}>
+                  {html2md(club.description || "")}
+                </Markdown>
+              ) : (
+                <Text style={styles.noDescription}>ℹ️ Chưa có mô tả</Text>
+              )}
             </View>
           </View>
         ))}
@@ -74,19 +78,28 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 16,
     paddingBottom: 230,
-    backgroundColor: "#F9FAFB"
+    backgroundColor: "#F3F4F6"
   },
   card: {
     width: "100%",
+    backgroundColor: "#FFFFFF",
     padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3
   },
   logoWrapper: {
     alignSelf: "center",
-    backgroundColor: "#FEF3C7",
-    padding: 12,
+    backgroundColor: "#FDE68A",
+    padding: 10,
     borderRadius: 100,
     marginBottom: 16,
-    elevation: 3
+    borderWidth: 2,
+    borderColor: "#FACC15"
   },
   logo: {
     width: 90,
@@ -115,12 +128,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
-    marginBottom: 12,
-    color: "#10B981"
+    marginBottom: 12
   },
   markdownWrapper: {
-    marginTop: 4,
-    alignItems: "flex-start"
+    marginTop: 6,
+    padding: 12,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    alignItems: "center", // canh giữa nội dung bên trong
+  },
+  noDescription: {
+    fontStyle: "italic",
+    color: "#6B7280",
+    fontSize: 14
   }
 });
 
@@ -129,33 +149,33 @@ const markdownStyles = {
     fontSize: 15,
     color: "#374151",
     lineHeight: 22,
-    textAlign: "left"
+    textAlign: "center" // canh giữa văn bản
   },
   heading2: {
     fontSize: 17,
     color: "#111827",
     marginBottom: 6,
     marginTop: 10,
-    fontWeight: "700"
+    fontWeight: "700",
+    textAlign: "center"
   },
   heading3: {
     fontSize: 16,
     color: "#1F2937",
     marginTop: 8,
     marginBottom: 4,
-    fontWeight: "600"
+    fontWeight: "600",
+    textAlign: "center"
   },
   paragraph: {
-    marginBottom: 6
-  },
-  list_item: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 4
+    marginBottom: 6,
+    textAlign: "center"
   },
   list_item_content: {
     fontSize: 15,
-    color: "#4B5563"
+    color: "#4B5563",
+    textAlign: "center"
   }
 };
+
 

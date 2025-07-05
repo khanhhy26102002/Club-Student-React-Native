@@ -1,5 +1,6 @@
 import { View, Text, Alert, TextInput, Button } from "react-native";
 import React from "react";
+import Header from "../../../Header/Header";
 
 const Feedback = ({ route }) => {
   const { eventId } = route.params;
@@ -13,26 +14,29 @@ const Feedback = ({ route }) => {
     setFeedBack("");
   };
   return (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 18, marginBottom: 10 }}>
-        Góp ý cho sự kiện đã tham gia
-      </Text>
-      <TextInput
-        value={feedback}
-        onChangeText={setFeedBack}
-        placeholder="Nội dung góp ý..."
-        multiline
-        style={{
-          borderColor: "#ccc",
-          borderWidth: 1,
-          padding: 10,
-          height: 120,
-          textAlignVertical: "top",
-          marginBottom: 20
-        }}
-      />
-      <Button title="Gửi góp ý" onPress={handleSubmit} />
-    </View>
+    <>
+      <Header />
+      <View style={{ padding: 20 }}>
+        <Text style={{ fontSize: 18, marginBottom: 10 }}>
+          Góp ý cho sự kiện đã tham gia
+        </Text>
+        <TextInput
+          value={feedback}
+          onChangeText={setFeedBack}
+          placeholder="Nội dung góp ý..."
+          multiline
+          style={{
+            borderColor: "#ccc",
+            borderWidth: 1,
+            padding: 10,
+            height: 120,
+            textAlignVertical: "top",
+            marginBottom: 20
+          }}
+        />
+        <Button title="Gửi góp ý" onPress={handleSubmit} />
+      </View>
+    </>
   );
 };
 

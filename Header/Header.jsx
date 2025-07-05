@@ -9,7 +9,7 @@ import {
   StyleSheet,
   StatusBar,
   Image,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 
 const Header = () => {
@@ -46,7 +46,8 @@ const Header = () => {
         <View style={styles.center}>
           <Image
             source={{
-              uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnL5O9nttQugNjhsuWpmCvTS8NI3iiRUFoEA&s"
+              uri:
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnL5O9nttQugNjhsuWpmCvTS8NI3iiRUFoEA&s"
             }}
             style={styles.logo}
           />
@@ -56,16 +57,20 @@ const Header = () => {
         </View>
         <View style={styles.actions}>
           <TouchableOpacity onPress={toggleLang} style={styles.language}>
-            <Text style={styles.flag}>{lang === "vi" ? "🇻🇳" : "🇺🇸"}</Text>
+            <Text style={styles.flag}>
+              {lang === "vi" ? "🇻🇳" : "🇺🇸"}
+            </Text>
           </TouchableOpacity>
           <View style={styles.actions}>
-            {!user && (
+            {!user &&
               <View style={styles.authButtons}>
                 <TouchableOpacity
                   onPress={() => navigation.navigate("Login")}
                   style={styles.authBtn}
                 >
-                  <Text style={styles.authText}>{t("login")}</Text>
+                  <Text style={styles.authText}>
+                    {t("login")}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => navigation.navigate("Register")}
@@ -75,8 +80,7 @@ const Header = () => {
                     {t("register")}
                   </Text>
                 </TouchableOpacity>
-              </View>
-            )}
+              </View>}
           </View>
         </View>
       </View>
@@ -89,7 +93,7 @@ export default Header;
 const styles = StyleSheet.create({
   header: {
     backgroundColor: "#FF6600",
-    paddingTop: 12,
+    paddingTop: 52,
     paddingBottom: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,

@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme":"yourapp",
+    "scheme": "yourapp",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -30,6 +30,9 @@
       "eas": {
         "projectId": "76b0213f-de30-4081-b409-12d7e91786e8"
       }
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
