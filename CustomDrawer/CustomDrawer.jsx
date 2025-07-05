@@ -11,8 +11,8 @@ import {
   View
 } from "react-native";
 
-export const CustomDrawer = () => {
-  const navigation = useNavigation();
+export const CustomDrawer = (props) => {
+  const navigation = props.navigation;
   const { t } = useTranslation();
   const user = {
     name: "Nguyễn Văn A",
@@ -21,6 +21,7 @@ export const CustomDrawer = () => {
     major: "Trí Tuệ Nhân Tạo",
     Skill: "Programming"
   };
+
   return (
     <DrawerContentScrollView>
       <View style={styles.header}>
@@ -66,7 +67,14 @@ export const CustomDrawer = () => {
         </View>
 
         <TouchableOpacity
-          onPress={() => navigation.navigate("ProjectList")}
+          onPress={() =>
+            navigation.navigate("Navigation", {
+              screen: "Profile",
+              params: {
+                screen: "Project"
+              }
+            })
+          }
           style={styles.projectButton}
         >
           <Text style={styles.projectButtonText}>📂 Xem danh sách dự án</Text>

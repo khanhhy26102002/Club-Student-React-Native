@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Profile from "./Profile";
 import Contact from "../Contact/Contact";
-import ProjectList from "../Projects/ProjectList";
-import ProjectDetail from "../Projects/ProjectDetail";
+import ProjectStack from "../Projects/ProjectStack";
+import Feedback from "../Feedback/Feedback";
 const Stack = createNativeStackNavigator();
 const ProfileStack = () => {
   return (
@@ -15,12 +15,12 @@ const ProfileStack = () => {
       />
       <Stack.Screen
         name="Project"
-        component={ProjectList}
+        component={ProjectStack}
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="ProjectDetail"
-        component={ProjectDetail}
+        name="FeedBack"
+        component={Feedback}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

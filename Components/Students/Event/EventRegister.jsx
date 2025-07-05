@@ -32,15 +32,56 @@ const EventRegister = () => {
   const [useLab, setUseLab] = React.useState(true);
   const [clubId, setClubId] = React.useState(0);
   const [showPicker, setShowPicker] = React.useState(false);
-
   const onChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
       setEventDate(selectedDate);
     }
   };
+  const validateForm = () => {
+    if (!title.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập tên sự kiện");
+      return false;
+    }
+    if (!description.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập mô tả sự kiện");
+      return false;
+    }
+    if (!format) {
+      Alert.alert("Lỗi", "Vui lòng chọn hình thức tổ chức");
+      return false;
+    }
+    if (!location.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập địa điểm tổ chức");
+      return false;
+    }
+    if (minimumParticipants <= 0) {
+      Alert.alert("Lỗi", "Số lượng tối thiểu phải lớn hơn 0");
+      return false;
+    }
+    if (maximumParticipants <= 0) {
+      Alert.alert("Lỗi", "Số lượng tối đa phải lớn hơn 0");
+      return false;
+    }
+    if (minimumParticipants > maximumParticipants) {
+      Alert.alert("Lỗi", "Số lượng tối thiểu không được lớn hơn tối đa");
+      return false;
+    }
+    if (!visibility) {
+      Alert.alert("Lỗi", "Vui lòng chọn mức độ công khai");
+      return false;
+    }
+    if (clubId <= 0) {
+      Alert.alert("Lỗi", "Vui lòng nhập mã câu lạc bộ hợp lệ");
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     const isoDate = new Date(eventDate).toISOString();
