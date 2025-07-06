@@ -26,10 +26,57 @@ const FormRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!studentCode || !email | !fullName || !major || !clubId) {
-      Alert.alert("Điền vào ô trống");
+
+    const trimmedStudentCode = studentCode.trim();
+    const trimmedEmail = email.trim();
+    const trimmedFullName = fullName.trim();
+    const trimmedMajor = major.trim();
+    const clubIdNumber = Number(clubId);
+
+    // Validate rỗng
+    if (
+      !trimmedStudentCode ||
+      !trimmedEmail ||
+      !trimmedFullName ||
+      !trimmedMajor ||
+      !clubId
+    ) {
+      Alert.alert(
+        "⚠️ Thiếu thông tin",
+        "Vui lòng nhập đầy đủ tất cả các trường."
+      );
       return;
     }
+
+    // Validate mã số sinh viên: chỉ cho chữ, số, dài ít nhất 5 ký tự
+    const studentCodeRegex = /^[a-zA-Z0-9]{5,}$/;
+    if (!studentCodeRegex.test(trimmedStudentCode)) {
+      Alert.alert(
+        "⚠️ Mã sinh viên không hợp lệ",
+        "Mã sinh viên chỉ được chứa chữ/số và tối thiểu 5 ký tự."
+      );
+      return;
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert(
+        "⚠️ Email không hợp lệ",
+        "Vui lòng nhập đúng định dạng email."
+      );
+      return;
+    }
+
+    // Validate clubId
+    if (isNaN(clubIdNumber) || clubIdNumber <= 0) {
+      Alert.alert(
+        "⚠️ Câu lạc bộ không hợp lệ",
+        "Vui lòng chọn một CLB hợp lệ."
+      );
+      return;
+    }
+
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
 
@@ -40,13 +87,14 @@ const FormRegister = () => {
           Authorization: `Bearer ${token}`
         },
         data: {
-          studentCode,
-          email,
-          fullName,
-          major,
-          clubId
+          studentCode: trimmedStudentCode,
+          email: trimmedEmail,
+          fullName: trimmedFullName,
+          major: trimmedMajor,
+          clubId: clubIdNumber
         }
       });
+
       console.log("✅ Đăng ký thành công:", response);
       if (
         response.message === "Club registered successfully, pending approval"
