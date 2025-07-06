@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from "react-native";
 import React from "react";
@@ -39,7 +40,7 @@ const ClubCreated = () => {
   }, []);
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>🎓 Câu lạc bộ bạn đang quản lý</Text>
@@ -48,22 +49,30 @@ const ClubCreated = () => {
             <View key={club.clubId} style={styles.card}>
               <View style={styles.logoWrapper}>
                 {club.logoUrl ? (
-                  <Image
-                    source={{ uri: club.logoUrl }}
-                    style={styles.logo}
-                  />
+                  <Image source={{ uri: club.logoUrl }} style={styles.logo} />
                 ) : (
                   <View style={styles.logoFallback}>
                     <Text style={styles.logoFallbackText}>No Logo</Text>
                   </View>
                 )}
               </View>
+
               <View style={styles.info}>
                 <Text style={styles.clubName}>{club.clubName}</Text>
                 <Text style={styles.role}>
-                  Vai trò:{" "}
-                  <Text style={styles.roleValue}>{club.role}</Text>
+                  Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
                 </Text>
+
+                <TouchableOpacity
+                  style={styles.manageButton}
+                  onPress={() =>
+                    Alert.alert(
+                      "Mọi thông tin sẽ được xử lý trên phiên bản web."
+                    )
+                  }
+                >
+                  <Text style={styles.manageButtonText}>Quản lý CLB</Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))
@@ -71,7 +80,7 @@ const ClubCreated = () => {
           <Text style={styles.emptyText}>Bạn chưa quản lý câu lạc bộ nào.</Text>
         )}
       </ScrollView>
-    </>
+    </View>
   );
 };
 
@@ -79,78 +88,84 @@ export default ClubCreated;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    paddingBottom: 220,
-    backgroundColor: "#F3F4F6"
+    padding: 16
   },
   heading: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#1E3A8A",
     marginBottom: 16,
-    textAlign: "center"
+    color: "#1e293b"
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    flexDirection: "row",
     padding: 16,
     marginBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
     elevation: 3
   },
   logoWrapper: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#E5E7EB",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16
+    marginRight: 16,
+    width: 64,
+    height: 64
   },
   logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
     resizeMode: "cover"
   },
   logoFallback: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#D1D5DB",
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: "#e2e8f0",
     justifyContent: "center",
     alignItems: "center"
   },
   logoFallbackText: {
-    color: "#6B7280",
-    fontSize: 10
+    fontSize: 10,
+    color: "#64748b"
   },
   info: {
-    flex: 1
+    flex: 1,
+    justifyContent: "center"
   },
   clubName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827"
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+    color: "#0f172a"
   },
   role: {
     fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4
+    color: "#475569"
   },
   roleValue: {
-    color: "#10B981",
+    fontWeight: "bold",
+    color: "#2563eb"
+  },
+  manageButton: {
+    marginTop: 10,
+    backgroundColor: "#2563eb",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: "flex-start"
+  },
+  manageButtonText: {
+    color: "white",
     fontWeight: "600"
   },
   emptyText: {
     textAlign: "center",
-    marginTop: 40,
-    fontSize: 16,
-    color: "#9CA3AF"
+    color: "#64748b",
+    fontSize: 14,
+    marginTop: 32
   }
 });
+
