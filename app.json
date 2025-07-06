@@ -25,18 +25,22 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ledangkhanhhy.finalprojectmobilejavascript"
+      "package": "com.ledangkhanhhy.finalprojectmobilejavascript",
+      "config": {
+        "cleartextTraffic": true
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "76b0213f-de30-4081-b409-12d7e91786e8"
+        "projectId": "79141299-58b5-44be-8347-ef0e40a2d327"
       }
     },
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "owner": "ledangkhanhhy"
   }
 }
