@@ -31,12 +31,23 @@ const LoginPage = ({ navigation }) => {
         Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
         const token = response.data.token;
         console.log("Token: ", token);
-        const roleName = response.data.roles?.[0]?.role || "GUEST";
+        const roles = response.data.roles || [];
+        const roleName = roles?.[0]?.role || "GUEST";
         console.log("roleName: ", roleName);
         await AsyncStorage.setItem("jwt", token);
-        await AsyncStorage.setItem("role", roleName);
+        await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
         setRoleName(roleName);
+        const clubResponse = await fetchBaseResponse("/clubs/my-club-roles", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const ownedClub = (clubResponse.data || []).find(
+          (c) => c.clubId !== null && c.role === "MEMBER"
+        );
+        if (ownedClub) {
+          console.log("Bạn sở hữu CLB:", ownedClub.clubName);
+        }
         if (roleName === "MEMBER") {
           navigation.navigate("Main");
         } else if (roleName === "EVENT_ORGANZERS") {
@@ -118,7 +129,6 @@ const LoginPage = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-
       </ScrollView>
     </KeyboardAvoidingView>
   );
