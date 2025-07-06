@@ -176,15 +176,15 @@ const styles = StyleSheet.create({
     marginBottom: 24
   },
   heading: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 23,
+    fontWeight:"condensedBold",
     color: "#1D2C4D",
     marginTop: -10
   },
   eventButton: {
-    alignSelf: "flex-end", // đẩy nút sang phải
-    marginRight: -10, // căn phải một chút
-    marginTop: -6, // kéo nút lên trên một chút
+    alignSelf: "flex-end", 
+    marginRight: -10,
+    marginTop: -6,
     borderWidth: 1,
     borderColor: "#93C5FD",
     backgroundColor: "#EFF6FF",
@@ -241,7 +241,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     marginBottom: 24,
-    // Shadow tinh tế hơn cho iOS và Android
     shadowColor: "#99AAB5",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
