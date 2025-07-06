@@ -24,9 +24,23 @@ const FormClub = () => {
   const [fullName, setFullName] = React.useState("");
   const [mentorId, setMentorId] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem("jwt");
+    const response = await fetchBaseResponse("/clubs", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data.map((club) => club.name.toLowerCase());
+  };
+  React.useEffect(() => {
+    fetchData();
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const existingNames = await fetchData();
     if (!name || !description || !fullName) {
       Alert.alert(
         "⚠️ Thiếu thông tin",
@@ -34,7 +48,28 @@ const FormClub = () => {
       );
       return;
     }
-
+    const trimmedName = name.trim().toLowerCase();
+    const isDuplicate = existingNames.includes(trimmedName);
+    if (isDuplicate) {
+      Alert.alert(
+        "❌ Trùng tên",
+        "Tên CLB đã tồn tại. Vui lòng chọn tên khác."
+      );
+      return;
+    }
+    const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ\-]{3,}$/;
+    if (!nameRegex.test(trimmedName)) {
+      Alert.alert(
+        "⚠️ Tên không hợp lệ",
+        "Tên CLB phải có ít nhất 3 ký tự và không chứa ký tự đặc biệt."
+      );
+      return;
+    }
+    const mentorNumber = Number(mentorId);
+    if (isNaN(mentorNumber) || mentorNumber <= 0) {
+      Alert.alert("⚠️ Mentor không hợp lệ", "Vui lòng chọn một mentor hợp lệ.");
+      return;
+    }
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
 
