@@ -38,9 +38,7 @@
         "projectId": "79141299-58b5-44be-8347-ef0e40a2d327"
       }
     },
-    "plugins": [
-      "expo-asset"
-    ],
+    "plugins": ["expo-asset"],
     "owner": "ledangkhanhhy"
   }
 }
