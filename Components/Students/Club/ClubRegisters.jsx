@@ -34,6 +34,11 @@ const ClubRegisters = () => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.sectionTitleContainer}>
+          <Text style={styles.sectionTitle}>🎓 Câu lạc bộ bạn đã đăng kí</Text>
+          <View style={styles.sectionUnderline} />
+        </View>
+
         {data.map((club) => (
           <View key={club.clubId} style={styles.card}>
             <View style={styles.logoWrapper}>
@@ -79,6 +84,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 230,
     backgroundColor: "#F3F4F6"
+  },
+  sectionTitleContainer: {
+    marginBottom: 20,
+    marginTop: 10,
+    alignItems: "center"
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1D4ED8",
+    textAlign: "center"
+  },
+  sectionUnderline: {
+    width: 60,
+    height: 4,
+    backgroundColor: "#60A5FA",
+    borderRadius: 4,
+    marginTop: 6
   },
   card: {
     width: "100%",
@@ -135,7 +158,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#F3F4F6",
     borderRadius: 12,
-    alignItems: "center", // canh giữa nội dung bên trong
+    alignItems: "center" // canh giữa nội dung bên trong
   },
   noDescription: {
     fontStyle: "italic",
@@ -177,5 +200,3 @@ const markdownStyles = {
     textAlign: "center"
   }
 };
-
-
