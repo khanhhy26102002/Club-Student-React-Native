@@ -67,6 +67,7 @@ const ClubCreated = () => {
                   style={styles.manageButton}
                   onPress={() =>
                     Alert.alert(
+                      "Lỗi",
                       "Mọi thông tin sẽ được xử lý trên phiên bản web."
                     )
                   }
@@ -168,4 +169,3 @@ const styles = StyleSheet.create({
     marginTop: 32
   }
 });
-
