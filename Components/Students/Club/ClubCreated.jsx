@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -14,9 +15,10 @@ import { fetchBaseResponse } from "../../../utils/api";
 
 const ClubCreated = () => {
   const [data, setData] = React.useState([]);
-
+  const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse("/clubs/my-club-roles", {
@@ -34,6 +36,8 @@ const ClubCreated = () => {
       } catch (error) {
         Alert.alert("Lỗi", error.message);
         console.error("Error: ", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -42,45 +46,53 @@ const ClubCreated = () => {
   return (
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>🎓 Câu lạc bộ bạn đang quản lý</Text>
-        {data.length > 0 ? (
-          data.map((club) => (
-            <View key={club.clubId} style={styles.card}>
-              <View style={styles.logoWrapper}>
-                {club.logoUrl ? (
-                  <Image source={{ uri: club.logoUrl }} style={styles.logo} />
-                ) : (
-                  <View style={styles.logoFallback}>
-                    <Text style={styles.logoFallbackText}>No Logo</Text>
-                  </View>
-                )}
-              </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563eb" />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.container}>
+          <Text style={styles.heading}>🎓 Câu lạc bộ bạn đang quản lý</Text>
+          {data.length > 0 ? (
+            data.map((club) => (
+              <View key={club.clubId} style={styles.card}>
+                <View style={styles.logoWrapper}>
+                  {club.logoUrl ? (
+                    <Image source={{ uri: club.logoUrl }} style={styles.logo} />
+                  ) : (
+                    <View style={styles.logoFallback}>
+                      <Text style={styles.logoFallbackText}>No Logo</Text>
+                    </View>
+                  )}
+                </View>
 
-              <View style={styles.info}>
-                <Text style={styles.clubName}>{club.clubName}</Text>
-                <Text style={styles.role}>
-                  Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
-                </Text>
+                <View style={styles.info}>
+                  <Text style={styles.clubName}>{club.clubName}</Text>
+                  <Text style={styles.role}>
+                    Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
+                  </Text>
 
-                <TouchableOpacity
-                  style={styles.manageButton}
-                  onPress={() =>
-                    Alert.alert(
-                      "Lỗi",
-                      "Mọi thông tin sẽ được xử lý trên phiên bản web."
-                    )
-                  }
-                >
-                  <Text style={styles.manageButtonText}>Quản lý CLB</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.manageButton}
+                    onPress={() =>
+                      Alert.alert(
+                        "Lỗi",
+                        "Mọi thông tin sẽ được xử lý trên phiên bản web."
+                      )
+                    }
+                  >
+                    <Text style={styles.manageButtonText}>Quản lý CLB</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.emptyText}>Bạn chưa quản lý câu lạc bộ nào.</Text>
-        )}
-      </ScrollView>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>
+              Bạn chưa quản lý câu lạc bộ nào.
+            </Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -88,6 +100,11 @@ const ClubCreated = () => {
 export default ClubCreated;
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
   container: {
     padding: 16
   },

@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,7 @@ const Profile = () => {
   const navigation = useNavigation();
   const [user, setUser] = useState(null);
   const [lang, setLang] = useState("vi");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -24,7 +26,10 @@ const Profile = () => {
       const storedToken = await AsyncStorage.getItem("jwt");
       if (storedEmail && storedToken) {
         setUser({ email: storedEmail, token: storedToken });
+      } else {
+        setUser(null);
       }
+      setLoading(false);
     };
     fetchUser();
     const unsubscribe = navigation.addListener("focus", () => {
@@ -49,7 +54,14 @@ const Profile = () => {
   return (
     <>
       <Header />
-      {user ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563EB" />
+          <Text style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
+            Đang tải...
+          </Text>
+        </View>
+      ) : user ? (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.headerSectionNoGradient}>
             <Image
