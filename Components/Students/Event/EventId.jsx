@@ -5,7 +5,8 @@ import {
   Text,
   View,
   Alert,
-  Image
+  Image,
+  TouchableOpacity
 } from "react-native";
 import React from "react";
 import { useRoute } from "@react-navigation/native";
@@ -13,7 +14,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const EventId = () => {
+const EventId = ({ navigation }) => {
   const route = useRoute();
   const { eventId } = route.params;
   const [data, setData] = React.useState(null);
@@ -67,7 +68,9 @@ const EventId = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <Image
           source={{
-            uri: data.image || "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
+            uri:
+              data.image ||
+              "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
           }}
           style={styles.banner}
         />
@@ -76,7 +79,8 @@ const EventId = () => {
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.description}>{data.description}</Text>
           <Text style={styles.date}>
-            📅 {new Date(data.eventDate).toLocaleString("vi-VN", {
+            📅{" "}
+            {new Date(data.eventDate).toLocaleString("vi-VN", {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -96,12 +100,22 @@ const EventId = () => {
             <Text style={styles.label}>📍 Địa điểm:</Text>
             <Text style={styles.value}>{data.location}</Text>
           </View>
-          {data.maximumParticipants > 0 && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>👥 Giới hạn:</Text>
-              <Text style={styles.value}>{data.maximumParticipants} người</Text>
-            </View>
-          )}
+        </View>
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>
+            Nếu bạn hứng thú với sự kiện này thì bấm đăng kí nhé
+          </Text>
+
+          <TouchableOpacity
+            style={styles.registerButton}
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "EventRegistration"
+              })
+            }
+          >
+            <Text style={styles.registerButtonText}>Đăng kí sự kiện</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -114,6 +128,33 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: "#F3F6FD"
+  },
+  registerContainer: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 12,
+    alignItems: "center"
+  },
+  registerText: {
+    fontSize: 18,
+    color: "#374151",
+    marginBottom: 10,
+    textAlign: "center",
+    marginTop: -30
+  },
+  registerButton: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 10,
+    marginLeft: -10
+  },
+  registerButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600"
   },
   container: {
     padding: 20,
@@ -138,7 +179,7 @@ const styles = StyleSheet.create({
     elevation: 4
   },
   title: {
-    fontSize: 26,
+    fontSize: 23,
     fontWeight: "800",
     color: "#0D47A1",
     marginBottom: 10
