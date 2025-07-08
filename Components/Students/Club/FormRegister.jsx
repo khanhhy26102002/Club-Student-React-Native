@@ -81,31 +81,48 @@ const FormRegister = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await fetchBaseResponse("/clubs/club-register", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        data: {
-          studentCode: trimmedStudentCode,
-          email: trimmedEmail,
-          fullName: trimmedFullName,
-          major: trimmedMajor,
-          clubId: clubIdNumber
+      const response = await fetchBaseResponse(
+        "/memberships/membership-register",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          data: {
+            studentCode: trimmedStudentCode,
+            email: trimmedEmail,
+            fullName: trimmedFullName,
+            major: trimmedMajor,
+            clubId: clubIdNumber
+          }
         }
-      });
+      );
 
-      console.log("✅ Đăng ký thành công:", response);
-      if (
-        response.message === "Club registered successfully, pending approval"
-      ) {
-        Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
+      console.log("✅ Server response:", response);
+
+      if (response.status === 200) {
+        if (
+          response.message === "Club registered successfully, pending approval"
+        ) {
+          Alert.alert("🎉 Thành công", "Bạn đã đăng ký vào CLB thành công!");
+        } else {
+          // Trường hợp thành công nhưng message khác
+          Alert.alert("✅ Phản hồi", response.message || "Đăng ký thành công.");
+        }
       } else {
-        throw new Error(`HTTP Status:${response.status}`);
+        // Nếu không phải status 200 thì ném lỗi để xuống catch xử lý
+        throw new Error(response.message || `Lỗi status ${response.status}`);
       }
     } catch (error) {
       console.error("❌ Lỗi đăng ký:", error.message);
-      Alert.alert("❌ Đăng ký thất bại", error.message || "Không xác định");
+      if (error.message.includes("Members of other clubs")) {
+        Alert.alert(
+          "🚫 Không thể đăng ký",
+          "Bạn đã là thành viên của một CLB khác. Vui lòng rút khỏi CLB đó trước khi đăng ký."
+        );
+      } else {
+        Alert.alert("❌ Đăng ký thất bại", error.message || "Có lỗi xảy ra.");
+      }
     } finally {
       setLoading(false);
     }

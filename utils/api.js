@@ -8,10 +8,10 @@ console.log("API_URL", API_URL);
 export async function fetchBaseResponse(url, config) {
   try {
     const response = await API(url, config);
-    const { status, message, data } = response.data;
+    const { message, data } = response.data;
 
-    if (status >= 200 && status < 300) {
-      return { status, data, message };
+    if (response.status >= 200 && response.status < 300) {
+      return { status: response.status, data, message };
     } else {
       throw new Error(message || "Đã có lỗi xảy ra");
     }

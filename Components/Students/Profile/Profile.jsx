@@ -131,7 +131,15 @@ const Profile = () => {
                 })
               }
             />
-            
+            <ActionItem
+              icon="ribbon-outline"
+              label="Thanh toán cho sự kiện"
+              onPress={() =>
+                navigation.navigate("Event", {
+                  screen: "EventRegistration"
+                })
+              }
+            />
           </View>
         </ScrollView>
       ) : (

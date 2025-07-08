@@ -27,27 +27,33 @@ const LoginPage = ({ navigation }) => {
         method: "POST",
         data: { email, password }
       });
+
       if (response.message === "Login successful") {
         Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
         const token = response.data.token;
-        console.log("Token: ", token);
         const roles = response.data.roles || [];
         const roleName = roles?.[0]?.role || "GUEST";
-        console.log("roleName: ", roleName);
+
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
         setRoleName(roleName);
+
         const clubResponse = await fetchBaseResponse("/clubs/my-club-roles", {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` }
         });
-        const ownedClub = (clubResponse.data || []).find(
-          (c) => c.clubId !== null && c.role === "MEMBER"
+
+        const ownedClubs = (clubResponse.data || []).filter(
+          (c) => c.role === "CLUBLEADER"
         );
-        if (ownedClub) {
-          console.log("Bạn sở hữu CLB:", ownedClub.clubName);
+
+        if (ownedClubs.length > 0) {
+          ownedClubs.forEach((club) => {
+            console.log("Bạn thuộc CLB:", club.clubName);
+          });
         }
+
         if (roleName === "MEMBER") {
           navigation.navigate("Main");
         } else if (roleName === "EVENT_ORGANZERS") {
@@ -60,6 +66,7 @@ const LoginPage = ({ navigation }) => {
       Alert.alert("Đăng nhập thất bại", err.message);
     }
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : null}

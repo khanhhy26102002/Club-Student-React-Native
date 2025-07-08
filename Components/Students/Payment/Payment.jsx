@@ -1,119 +1,116 @@
-import { useNavigation, useRoute } from "@react-navigation/native";
 import {
-  View,
-  Text,
-  Alert,
   StyleSheet,
+  Text,
+  View,
   TouchableOpacity,
-  SafeAreaView
+  Alert,
+  TextInput
 } from "react-native";
-const Payment = () => {
-  const route = useRoute();
-  const navigation = useNavigation();
-  const event = route.params?.event;
+import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchBaseResponse } from "../../../utils/api";
+import { Ionicons } from "@expo/vector-icons";
+import Header from "../../../Header/Header";
 
-  if (!event) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>
-          ❌ Không tìm thấy thông tin sự kiện.
-        </Text>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>← Quay lại</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
+const Payment = ({ navigation }) => {
+  const [eventId, setEventId] = React.useState(0);
+  const [ticketId, setTicketId] = React.useState(0);
 
-  const handlePayment = () => {
-    Alert.alert(
-      "💸 Thanh toán thành công",
-      `Bạn đã thanh toán ${event.fee.toLocaleString()} VND cho "${event.title}"`
-    );
-    navigation.goBack();
+  const handleRegister = async () => {
+     
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>💳 Thanh toán sự kiện</Text>
-        <Text style={styles.label}>📌 Tên sự kiện:</Text>
-        <Text style={styles.value}>{event.title}</Text>
+    <>
+      <Header />
+      <View style={styles.container}>
+        <Ionicons name="card-outline" size={60} color="#1D4ED8" />
+        <Text style={styles.title}>Xác nhận đăng ký sự kiện</Text>
+        <Text style={styles.text}>Vui lòng nhập thông tin sự kiện:</Text>
 
-        <Text style={styles.label}>💰 Phí tham dự:</Text>
-        <Text style={styles.value}>{event.fee.toLocaleString()} VND</Text>
+        <View style={styles.infoBox}>
+          <Text style={styles.label}>Mã sự kiện (eventId):</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập ID sự kiện"
+            value={eventId}
+            onChangeText={setEventId}
+            keyboardType="numeric"
+          />
 
-        <TouchableOpacity style={styles.payButton} onPress={handlePayment}>
-          <Text style={styles.payButtonText}>Thanh toán ngay</Text>
+          <Text style={styles.label}>Mã vé (ticketId):</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nhập ID vé"
+            value={ticketId}
+            onChangeText={setTicketId}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Đăng ký và Thanh toán</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </>
   );
 };
+
+export default Payment;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f4f6fc"
-  },
-  card: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    marginTop: 24
+    padding: 24,
+    backgroundColor: "#F9FAFB",
+    alignItems: "center",
+    justifyContent: "center"
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginVertical: 12,
+    color: "#1F2937"
+  },
+  text: {
+    fontSize: 16,
+    color: "#6B7280",
     textAlign: "center",
-    color: "#333"
+    marginBottom: 24
+  },
+  infoBox: {
+    width: "100%",
+    backgroundColor: "#EFF6FF",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24
   },
   label: {
     fontSize: 16,
-    color: "#555",
-    marginTop: 10
-  },
-  value: {
-    fontSize: 18,
+    color: "#1E3A8A",
     fontWeight: "600",
-    color: "#222"
+    marginBottom: 6
   },
-  payButton: {
-    backgroundColor: "#1e90ff",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginTop: 30,
-    alignItems: "center"
-  },
-  payButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold"
-  },
-  errorText: {
-    fontSize: 16,
-    color: "red",
-    textAlign: "center",
+  input: {
+    height: 44,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#fff",
     marginBottom: 16
   },
-  backButton: {
-    alignSelf: "center",
-    padding: 10
+  button: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    width: "100%"
   },
-  backButtonText: {
-    color: "#1e90ff",
-    fontSize: 16
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center"
   }
 });
-
-export default Payment;

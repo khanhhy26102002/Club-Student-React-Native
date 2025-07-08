@@ -19,34 +19,49 @@ const DEFAULT_EVENT_IMAGE =
 const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [filter, setFilter] = React.useState("ALL");
+  const fetchData = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("jwt");
+    console.log("JWT Token:", token);
+
+    try {
+      const endpoint =
+        filter === "INTERNAL"
+          ? "/events/visibility?visibility=INTERNAL"
+          : filter === "PUBLIC"
+          ? "/events/visibility?visibility=PUBLIC"
+          : "/events/public";
+
+      console.log("Fetching:", endpoint);
+
+      const response = await fetchBaseResponse(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log("📌 filter:", filter);
+      console.log("✅ RESPONSE RAW:", response);
+
+      // 🔐 Luôn đảm bảo response.data là array
+      const events = Array.isArray(response.data) ? response.data : [];
+      setData(events);
+    } catch (error) {
+      console.error("❌ FETCH ERROR:", error);
+      Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi khi tải dữ liệu.");
+      setData([]); // fallback nếu gặp lỗi
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
-      const fetchData = async () => {
-        setLoading(true); // Bắt đầu loading mỗi khi focus
-        const token = await AsyncStorage.getItem("jwt");
-        try {
-          const response = await fetchBaseResponse(`/events/public`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          });
-          // Giả sử API trả về trong response.data
-          const events = response.data || response;
-          if (!events || events.length === 0) {
-            setData([]);
-          } else {
-            setData(events);
-          }
-        } catch (error) {
-          Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi khi tải dữ liệu.");
-        } finally {
-          setLoading(false);
-        }
-      };
       fetchData();
-    }, [])
+    }, [filter])
   );
 
   const formatDate = (dateString) => {
@@ -72,21 +87,24 @@ const Event = ({ navigation }) => {
         </View>
         <View style={styles.filterBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>Tất cả</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>Online</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>Offline</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>Tuần này</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Text style={styles.filterText}>Tháng sau</Text>
-            </TouchableOpacity>
+            {["ALL", "PUBLIC", "INTERNAL"].map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.filterChip,
+                  filter === type && { backgroundColor: "#93C5FD" }
+                ]}
+                onPress={() => setFilter(type)}
+              >
+                <Text style={styles.filterText}>
+                  {type === "ALL"
+                    ? "Tất cả"
+                    : type === "PUBLIC"
+                    ? "Công Khai"
+                    : "Nội Bộ"}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
@@ -162,7 +180,7 @@ export default Event;
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#F4F6F8" 
+    backgroundColor: "#F4F6F8"
   },
   container: {
     paddingHorizontal: 16,
@@ -177,12 +195,12 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 23,
-    fontWeight:"condensedBold",
+    fontWeight: "condensedBold",
     color: "#1D2C4D",
     marginTop: -10
   },
   eventButton: {
-    alignSelf: "flex-end", 
+    alignSelf: "flex-end",
     marginRight: -10,
     marginTop: -6,
     borderWidth: 1,

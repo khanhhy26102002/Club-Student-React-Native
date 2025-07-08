@@ -11,7 +11,7 @@ const ClubRegisters = () => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse("/clubs/my-clubs", {
+        const response = await fetchBaseResponse("/memberships", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -39,36 +39,44 @@ const ClubRegisters = () => {
           <View style={styles.sectionUnderline} />
         </View>
 
-        {data.map((club) => (
-          <View key={club.clubId} style={styles.card}>
-            <View style={styles.logoWrapper}>
-              {club.logoUrl ? (
-                <Image source={{ uri: club.logoUrl }} style={styles.logo} />
-              ) : (
-                <Text style={styles.logoFallback}>No Logo</Text>
-              )}
-            </View>
-
-            <Text style={styles.title}>🏛️ {club.name}</Text>
-
-            <Text
-              style={[
-                styles.status,
-                { color: club.isActive ? "#10B981" : "#EF4444" }
-              ]}
-            >
-              {club.isActive ? "🟢 Đang hoạt động" : "🔴 Ngừng hoạt động"}
+        {data.map((membership) => (
+          <View key={membership.membershipId} style={styles.card}>
+            <Text style={styles.clubName}>
+              🏛️ Tên câu lạc bộ: {membership.clubName}
             </Text>
 
-            <View style={styles.markdownWrapper}>
-              {club.description ? (
-                <Markdown style={markdownStyles}>
-                  {html2md(club.description || "")}
-                </Markdown>
-              ) : (
-                <Text style={styles.noDescription}>ℹ️ Chưa có mô tả</Text>
-              )}
+            <View style={styles.badgeWrapper}>
+              <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
+              <View
+                style={[
+                  styles.badge,
+                  membership.status === "APPROVED"
+                    ? styles.approved
+                    : membership.status === "PENDING"
+                    ? styles.pending
+                    : styles.rejected
+                ]}
+              >
+                <Text style={styles.badgeText}>
+                  {membership.status === "APPROVED"
+                    ? "✅ Đã được duyệt"
+                    : membership.status === "PENDING"
+                    ? "⏳ Chờ duyệt"
+                    : "❌ Từ chối"}
+                </Text>
+              </View>
             </View>
+
+            <Text style={styles.joinDate}>
+              📅 Ngày tham gia:{" "}
+              {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })}
+            </Text>
           </View>
         ))}
       </ScrollView>
@@ -83,7 +91,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 16,
     paddingBottom: 230,
-    backgroundColor: "#F3F4F6"
+    backgroundColor: "#F9FAFB"
   },
   sectionTitleContainer: {
     marginBottom: 20,
@@ -91,15 +99,15 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#1D4ED8",
+    color: "#2563EB",
     textAlign: "center"
   },
   sectionUnderline: {
     width: 60,
     height: 4,
-    backgroundColor: "#60A5FA",
+    backgroundColor: "#3B82F6",
     borderRadius: 4,
     marginTop: 6
   },
@@ -107,63 +115,59 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#FFFFFF",
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    shadowRadius: 8,
+    elevation: 4
   },
-  logoWrapper: {
-    alignSelf: "center",
-    backgroundColor: "#FDE68A",
-    padding: 10,
-    borderRadius: 100,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: "#FACC15"
-  },
-  logo: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    resizeMode: "cover"
-  },
-  logoFallback: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "#E5E7EB",
-    textAlign: "center",
-    lineHeight: 90,
-    color: "#6B7280",
-    fontSize: 14
-  },
-  title: {
+  clubName: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#1D4ED8",
+    color: "#1E3A8A",
     textAlign: "center",
-    marginBottom: 4
+    marginBottom: 10
   },
-  status: {
+  badgeWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 12,
+    flexWrap: "wrap"
+  },
+  statusLabel: {
     fontSize: 15,
     fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 12
+    color: "#374151"
   },
-  markdownWrapper: {
-    marginTop: 6,
-    padding: 12,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    alignItems: "center" // canh giữa nội dung bên trong
+  badge: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "#E5E7EB"
   },
-  noDescription: {
-    fontStyle: "italic",
-    color: "#6B7280",
-    fontSize: 14
+  badgeText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#fff"
+  },
+  approved: {
+    backgroundColor: "#10B981" // xanh lá
+  },
+  pending: {
+    backgroundColor: "#F59E0B" // vàng
+  },
+  rejected: {
+    backgroundColor: "#EF4444" // đỏ
+  },
+
+  joinDate: {
+    fontSize: 14,
+    color: "#4B5563",
+    textAlign: "center"
   }
 });
 

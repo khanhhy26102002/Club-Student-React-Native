@@ -40,7 +40,10 @@ const FormClub = () => {
   }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const existingNames = await fetchData();
+
+    // Validate client-side
     if (!name || !description || !fullName) {
       Alert.alert(
         "⚠️ Thiếu thông tin",
@@ -48,6 +51,7 @@ const FormClub = () => {
       );
       return;
     }
+
     const trimmedName = name.trim().toLowerCase();
     const isDuplicate = existingNames.includes(trimmedName);
     if (isDuplicate) {
@@ -57,6 +61,7 @@ const FormClub = () => {
       );
       return;
     }
+
     const nameRegex = /^[a-zA-Z0-9\sÀ-ỹ\-]{3,}$/;
     if (!nameRegex.test(trimmedName)) {
       Alert.alert(
@@ -65,11 +70,13 @@ const FormClub = () => {
       );
       return;
     }
+
     const mentorNumber = Number(mentorId);
     if (isNaN(mentorNumber) || mentorNumber <= 0) {
       Alert.alert("⚠️ Mentor không hợp lệ", "Vui lòng chọn một mentor hợp lệ.");
       return;
     }
+
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
 
@@ -81,29 +88,57 @@ const FormClub = () => {
           description,
           logoUrl,
           fullName,
-          mentorId: Number(mentorId)
+          mentorId: mentorNumber
         },
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         }
       });
+
       if (
         response.message ===
         "Club creation request submitted and pending mentor approval."
       ) {
         Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
       } else {
-        throw new Error(`HTTP Status:${response.status}`);
+        // Nếu server không trả đúng message nhưng status vẫn 200
+        Alert.alert(
+          "✅ Phản hồi",
+          response.message || "Gửi yêu cầu thành công."
+        );
       }
     } catch (error) {
-      console.log("Error:", error);
+      console.log("❌ Error:", error);
+
+      // 1. Nếu backend trả lỗi chi tiết trong `errors`:
       const backendErrors = error?.response?.data?.errors;
       if (backendErrors) {
         const messages = Object.values(backendErrors).join("\n");
         Alert.alert("❌ Lỗi xác thực", messages);
+        return;
+      }
+
+      // 2. Nếu backend trả message cụ thể khác:
+      const serverMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Lỗi không xác định.";
+      if (
+        serverMessage.includes("Club with the same name already exists") ||
+        serverMessage.includes("already registered")
+      ) {
+        Alert.alert("❌ Trùng tên", "Tên CLB này đã tồn tại.");
+      } else if (
+        serverMessage.includes("Mentor is not available") ||
+        serverMessage.includes("Mentor not found")
+      ) {
+        Alert.alert(
+          "❌ Mentor không hợp lệ",
+          "Mentor đã được sử dụng hoặc không tồn tại."
+        );
       } else {
-        Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
+        Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + serverMessage);
       }
     } finally {
       setLoading(false);
