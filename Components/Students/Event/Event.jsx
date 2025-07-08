@@ -9,6 +9,7 @@ import {
   Image
 } from "react-native";
 import React from "react";
+// event controller get Id số 5 bị lỗi trừ số 3 thì get Id được còn lại lỗi events public
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
