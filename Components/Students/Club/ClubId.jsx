@@ -6,14 +6,15 @@ import {
   View,
   Image,
   useWindowDimensions,
-  Alert
+  Alert,
+  TouchableOpacity
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import RenderHTML from "react-native-render-html";
-
-const ClubId = () => {
+// mai hỏi cái image-controller
+const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
   const [data, setData] = React.useState(null);
@@ -72,6 +73,16 @@ const ClubId = () => {
                 source={{ html: data.description || "<p>Không có mô tả</p>" }}
                 tagsStyles={htmlStyles}
               />
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "FormClub"
+                  })
+                }
+              >
+                <Text style={styles.registerButtonText}>📝 Đăng ký</Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -88,6 +99,18 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
     backgroundColor: "#F3F4F6",
     alignItems: "center"
+  },
+  registerButton: {
+    marginTop: 24,
+    backgroundColor: "#2563eb",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center"
+  },
+  registerButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600"
   },
   card: {
     width: "100%",
