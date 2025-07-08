@@ -1,56 +1,60 @@
 import {
-  StyleSheet,
-  Text,
   View,
+  Text,
+  StyleSheet,
+  Linking,
   TouchableOpacity,
-  Alert,
-  TextInput
+  Image
 } from "react-native";
-import React from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchBaseResponse } from "../../../utils/api";
-import { Ionicons } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
 import Header from "../../../Header/Header";
+import { LinearGradient } from "expo-linear-gradient";
 
-const Payment = ({ navigation }) => {
-  const [eventId, setEventId] = React.useState(0);
-  const [ticketId, setTicketId] = React.useState(0);
-
-  const handleRegister = async () => {
-     
-  };
+const Payment = () => {
+  const route = useRoute();
+  const { registrationId, paymentUrl, qrCode } = route.params;
 
   return (
     <>
       <Header />
       <View style={styles.container}>
-        <Ionicons name="card-outline" size={60} color="#1D4ED8" />
-        <Text style={styles.title}>Xác nhận đăng ký sự kiện</Text>
-        <Text style={styles.text}>Vui lòng nhập thông tin sự kiện:</Text>
+        <Text style={styles.emoji}>🎉</Text>
+        <Text style={styles.headerText}>Bạn đã đăng ký thành công!</Text>
 
-        <View style={styles.infoBox}>
-          <Text style={styles.label}>Mã sự kiện (eventId):</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập ID sự kiện"
-            value={eventId}
-            onChangeText={setEventId}
-            keyboardType="numeric"
-          />
+        <LinearGradient
+          colors={["#fdfbfb", "#ebedee"]}
+          style={styles.card}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.row}>
+            <Text style={styles.cardLabel}>Mã đăng ký:</Text>
+            <Text style={styles.cardValue}>{registrationId}</Text>
+          </View>
 
-          <Text style={styles.label}>Mã vé (ticketId):</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập ID vé"
-            value={ticketId}
-            onChangeText={setTicketId}
-            keyboardType="numeric"
-          />
-        </View>
+          <TouchableOpacity
+            style={styles.paymentButton}
+            onPress={() => Linking.openURL(paymentUrl)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.paymentButtonText}>💳 Mở trang thanh toán</Text>
+          </TouchableOpacity>
+        </LinearGradient>
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Đăng ký và Thanh toán</Text>
-        </TouchableOpacity>
+        {qrCode ? (
+          <View style={styles.qrBox}>
+            <View style={styles.qrWrapper}>
+              <Image
+                source={{ uri: `data:image/png;base64,${qrCode}` }}
+                style={styles.qrImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.qrNote}>📷 Quét mã QR để thanh toán</Text>
+          </View>
+        ) : (
+          <Text style={styles.noQrText}>Không có mã QR</Text>
+        )}
       </View>
     </>
   );
@@ -61,56 +65,95 @@ export default Payment;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f0f4f8",
     padding: 24,
-    backgroundColor: "#F9FAFB",
     alignItems: "center",
-    justifyContent: "center"
   },
-  title: {
+  emoji: {
+    fontSize: 64,
+    marginBottom: 12,
+  },
+  headerText: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#1f2937",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  card: {
+    width: "100%",
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 32,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  cardLabel: {
+    fontSize: 17,
+    color: "#6b7280",
+  },
+  cardValue: {
     fontSize: 20,
     fontWeight: "bold",
-    marginVertical: 12,
-    color: "#1F2937"
+    color: "#2563eb",
+    marginLeft: 8,
   },
-  text: {
-    fontSize: 16,
-    color: "#6B7280",
-    textAlign: "center",
-    marginBottom: 24
-  },
-  infoBox: {
-    width: "100%",
-    backgroundColor: "#EFF6FF",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24
-  },
-  label: {
-    fontSize: 16,
-    color: "#1E3A8A",
-    fontWeight: "600",
-    marginBottom: 6
-  },
-  input: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
-    marginBottom: 16
-  },
-  button: {
-    backgroundColor: "#2563EB",
+  paymentButton: {
+    backgroundColor: "#3b82f6",
+    borderRadius: 14,
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    width: "100%"
+    paddingHorizontal: 32,
+    shadowColor: "#2563eb",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+    alignSelf: "center",
   },
-  buttonText: {
-    color: "#FFFFFF",
+  paymentButtonText: {
+    color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center"
-  }
+    fontWeight: "600",
+  },
+  qrBox: {
+    marginTop: 16,
+    alignItems: "center",
+  },
+  qrWrapper: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  qrImage: {
+    width: 180,
+    height: 180,
+    borderRadius: 12,
+  },
+  qrNote: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#374151",
+    fontStyle: "italic",
+  },
+  noQrText: {
+    fontSize: 16,
+    color: "#9ca3af",
+    marginTop: 16,
+  },
 });

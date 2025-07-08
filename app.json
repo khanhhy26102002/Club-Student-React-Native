@@ -35,10 +35,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "79141299-58b5-44be-8347-ef0e40a2d327"
+        "projectId": "3c9eb8cb-7e7a-4569-8ff8-7d71d0f7e11e"
       }
     },
-    "plugins": ["expo-asset"],
+    "plugins": [
+      "expo-asset"
+    ],
     "owner": "ledangkhanhhy"
   }
 }

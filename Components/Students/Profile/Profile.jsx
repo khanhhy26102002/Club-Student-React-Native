@@ -133,7 +133,7 @@ const Profile = () => {
             />
             <ActionItem
               icon="ribbon-outline"
-              label="Thanh toán cho sự kiện"
+              label="Đăng kí sự kiện của tôi"
               onPress={() =>
                 navigation.navigate("Event", {
                   screen: "EventRegistration"
