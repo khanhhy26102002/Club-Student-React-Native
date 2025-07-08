@@ -7,7 +7,8 @@ import {
   Image,
   useWindowDimensions,
   Alert,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
