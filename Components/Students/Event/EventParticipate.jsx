@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   Platform
 } from "react-native";
 import { fetchBaseResponse } from "../../../utils/api";
@@ -16,6 +17,7 @@ import Header from "../../../Header/Header";
 const EventParticipate = ({ navigation }) => {
   const [eventId, setEventId] = React.useState("");
   const [ticketId, setTicketId] = React.useState("");
+  const [loading, setLoading] = React.useState(false); // 🆕 Loading state
 
   const handleOpenPayment = async () => {
     if (!eventId) {
@@ -28,6 +30,7 @@ const EventParticipate = ({ navigation }) => {
     formData.append("eventId", Number(eventId));
     formData.append("ticketId", Number(ticketId));
 
+    setLoading(true); // 🆕 Start loading
     try {
       const response = await fetchBaseResponse("/registrations/register", {
         method: "POST",
@@ -66,6 +69,8 @@ const EventParticipate = ({ navigation }) => {
         Alert.alert("Lỗi", serverMessage || "Không đăng kí được sự kiện");
       }
       console.warn("❌ Server Error:", serverStatus, serverMessage);
+    } finally {
+      setLoading(false); // 🆕 End loading
     }
   };
 
@@ -99,8 +104,16 @@ const EventParticipate = ({ navigation }) => {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleOpenPayment}>
-          <Text style={styles.buttonText}>Đăng ký & Thanh toán</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.6 }]}
+          onPress={handleOpenPayment}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Đăng ký & Thanh toán</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </>

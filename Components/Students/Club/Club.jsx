@@ -4,16 +4,20 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  ActivityIndicator,
+  Alert
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
 const Club = ({ navigation }) => {
   const { t } = useTranslation();
   const [data, setData] = React.useState([]);
+  const [loading, setLoading] = React.useState(true); // ⬅️ Loading state
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +34,8 @@ const Club = ({ navigation }) => {
         }
       } catch (error) {
         Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+      } finally {
+        setLoading(false); // ⬅️ Dừng loading sau khi fetch xong
       }
     };
     fetchData();
@@ -65,39 +71,50 @@ const Club = ({ navigation }) => {
   return (
     <View style={styles.wrapper}>
       <Header />
-      <FlatList
-        scrollIndicatorInsets={{ bottom: 100 }}
-        data={data}
-        keyExtractor={(item) => item.clubId.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.container}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.title}>🎓 Khám phá Câu lạc bộ</Text>
-            <Text style={styles.subtitle}>
-              Nơi kết nối đam mê, rèn luyện kỹ năng và phát triển bản thân trong
-              môi trường năng động.
-            </Text>
-            <TouchableOpacity
-              style={styles.clubButton}
-              onPress={() =>
-                navigation.navigate("Club", {
-                  screen: "ClubList"
-                })
-              }
-            >
-              <View style={styles.clubButtonContent}>
-                <Icon name="account-group" size={18} color="#1E40AF" />
-                <Text style={styles.clubButtonText}>Câu lạc bộ đã đăng kí</Text>
-              </View>
-            </TouchableOpacity>
+      {loading ? ( // ⬅️ Loading Indicator
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={{ marginTop: 12, color: "#6B7280" }}>
+            Đang tải dữ liệu...
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          scrollIndicatorInsets={{ bottom: 100 }}
+          data={data}
+          keyExtractor={(item) => item.clubId.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.container}
+          ListHeaderComponent={
+            <View style={styles.header}>
+              <Text style={styles.title}>🎓 Khám phá Câu lạc bộ</Text>
+              <Text style={styles.subtitle}>
+                Nơi kết nối đam mê, rèn luyện kỹ năng và phát triển bản thân
+                trong môi trường năng động.
+              </Text>
+              <TouchableOpacity
+                style={styles.clubButton}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubList"
+                  })
+                }
+              >
+                <View style={styles.clubButtonContent}>
+                  <Icon name="account-group" size={18} color="#1E40AF" />
+                  <Text style={styles.clubButtonText}>
+                    Câu lạc bộ đã đăng kí
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-            <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
-          </View>
-        }
-        renderItem={renderClubCard}
-      />
+              <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
+            </View>
+          }
+          renderItem={renderClubCard}
+        />
+      )}
     </View>
   );
 };
@@ -109,6 +126,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8FAFC"
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 120,
+    backgroundColor: "#F8FAFC"
+  },
+
   container: {
     padding: 20,
     paddingBottom: 10

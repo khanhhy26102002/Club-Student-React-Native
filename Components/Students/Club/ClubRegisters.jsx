@@ -1,14 +1,14 @@
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { fetchBaseResponse } from "../../../utils/api";
-import Markdown from "react-native-markdown-display";
-import html2md from "html-to-md";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 const ClubRegisters = () => {
   const [data, setData] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse("/memberships", {
@@ -26,10 +26,13 @@ const ClubRegisters = () => {
       } catch (error) {
         console.error("Error: ", error);
         Alert.alert("Lỗi", error.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
+
   return (
     <>
       <Header />
@@ -39,46 +42,52 @@ const ClubRegisters = () => {
           <View style={styles.sectionUnderline} />
         </View>
 
-        {data.map((membership) => (
-          <View key={membership.membershipId} style={styles.card}>
-            <Text style={styles.clubName}>
-              🏛️ Tên câu lạc bộ: {membership.clubName}
-            </Text>
-
-            <View style={styles.badgeWrapper}>
-              <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
-              <View
-                style={[
-                  styles.badge,
-                  membership.status === "APPROVED"
-                    ? styles.approved
-                    : membership.status === "PENDING"
-                    ? styles.pending
-                    : styles.rejected
-                ]}
-              >
-                <Text style={styles.badgeText}>
-                  {membership.status === "APPROVED"
-                    ? "✅ Đã được duyệt"
-                    : membership.status === "PENDING"
-                    ? "⏳ Chờ duyệt"
-                    : "❌ Từ chối"}
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.joinDate}>
-              📅 Ngày tham gia:{" "}
-              {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-              })}
-            </Text>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2563EB" />
           </View>
-        ))}
+        ) : (
+          data.map((membership) => (
+            <View key={membership.membershipId} style={styles.card}>
+              <Text style={styles.clubName}>
+                🏛️ Tên câu lạc bộ: {membership.clubName}
+              </Text>
+
+              <View style={styles.badgeWrapper}>
+                <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
+                <View
+                  style={[
+                    styles.badge,
+                    membership.status === "APPROVED"
+                      ? styles.approved
+                      : membership.status === "PENDING"
+                      ? styles.pending
+                      : styles.rejected
+                  ]}
+                >
+                  <Text style={styles.badgeText}>
+                    {membership.status === "APPROVED"
+                      ? "✅ Đã được duyệt"
+                      : membership.status === "PENDING"
+                      ? "⏳ Chờ duyệt"
+                      : "❌ Từ chối"}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.joinDate}>
+                📅 Ngày tham gia:{" "}
+                {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}
+              </Text>
+            </View>
+          ))
+        )}
       </ScrollView>
     </>
   );

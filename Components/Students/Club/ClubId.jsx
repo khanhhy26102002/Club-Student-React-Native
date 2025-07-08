@@ -19,9 +19,10 @@ const ClubId = ({ navigation }) => {
   const { clubId } = route.params;
   const [data, setData] = React.useState(null);
   const { width } = useWindowDimensions();
-
+  const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
           method: "GET",
@@ -37,6 +38,8 @@ const ClubId = ({ navigation }) => {
         }
       } catch (error) {
         Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -46,7 +49,11 @@ const ClubId = ({ navigation }) => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        {data && (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2563eb" />
+          </View>
+        ) : data ? (
           <View style={styles.card}>
             <View style={styles.logoWrapper}>
               {data.logoUrl ? (
@@ -85,7 +92,7 @@ const ClubId = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </>
   );
@@ -94,6 +101,12 @@ const ClubId = ({ navigation }) => {
 export default ClubId;
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 100
+  },
   container: {
     padding: 20,
     paddingBottom: 140,
