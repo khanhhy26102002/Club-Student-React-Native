@@ -15,15 +15,37 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
+import { Picker } from "@react-native-picker/picker";
 
 const FormRegister = () => {
+  const [data, setData] = React.useState([]);
   const [studentCode, setStudentCode] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [fullName, setFullName] = React.useState("");
   const [major, setMajor] = React.useState("");
   const [clubId, setClubId] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchBaseResponse("/majors", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setData(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.log("Error: ", error);
+        Alert.alert("Không lấy được ngành");
+      }
+    };
+    fetchData();
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -163,12 +185,36 @@ const FormRegister = () => {
               onChangeText={setFullName}
               placeholder="VD: Nguyễn Văn A"
             />
-            <FormField
-              label="🏫 Ngành học"
-              value={major}
-              onChangeText={setMajor}
-              placeholder="VD: Công nghệ thông tin"
-            />
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 16, marginBottom: 4 }}>
+                🏫 Ngành học
+              </Text>
+              <View
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#cbd5e1",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  backgroundColor: "#fff"
+                }}
+              >
+                <Picker
+                  selectedValue={major}
+                  onValueChange={(itemValue) => setMajor(itemValue)}
+                  style={{ height: 55 }}
+                >
+                  <Picker.Item label="Chọn ngành học" value="" />
+                  {data.map((item) => (
+                    <Picker.Item
+                      key={item.majorId}
+                      label={`${item.majorName}`}
+                      value={item.majorId.toString()}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
             <FormField
               label="🏷️ Mã CLB muốn tham gia"
               value={clubId}

@@ -50,16 +50,6 @@ const Club = ({ navigation }) => {
       <Image source={{ uri: item.logoUrl }} style={styles.image} />
       <View style={styles.cardContent}>
         <Text style={styles.cardTitle}>{item.name}</Text>
-        <TouchableOpacity
-          style={styles.joinButton}
-          onPress={() =>
-            navigation.navigate("Club", {
-              screen: "FormRegister"
-            })
-          }
-        >
-          <Text style={styles.joinText}>🚀 Tham gia bây giờ</Text>
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
