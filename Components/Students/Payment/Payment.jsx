@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Modal
+  Modal,
+  Alert
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import Header from "../../../Header/Header";
@@ -54,11 +55,13 @@ const Payment = () => {
 
               <TouchableOpacity
                 style={styles.paymentButton}
-                onPress={() => Linking.openURL(paymentUrl)}
+                onPress={() =>
+                  Alert.alert("Thành công", "Mời bạn thanh toán trên web")
+                }
                 activeOpacity={0.8}
               >
                 <Text style={styles.paymentButtonText}>
-                  💳 Mở trang thanh toán
+                  💳 Thanh toán
                 </Text>
               </TouchableOpacity>
             </LinearGradient>
