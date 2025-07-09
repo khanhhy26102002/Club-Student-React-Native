@@ -52,7 +52,7 @@ const ClubCreated = () => {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.heading}>🎓 Câu lạc bộ bạn đang quản lý</Text>
+          <Text style={styles.heading}>🎓 Câu lạc bộ của bạn đang quản lý</Text>
           {data.length > 0 ? (
             data.map((club) => (
               <View key={club.clubId} style={styles.card}>
@@ -112,7 +112,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 16,
-    color: "#1e293b"
+    color: "#1e293b",
+    textAlign:"center"
   },
   card: {
     backgroundColor: "#ffffff",
