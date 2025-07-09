@@ -28,8 +28,9 @@ const EventParticipate = ({ navigation }) => {
     const token = await AsyncStorage.getItem("jwt");
     const formData = new FormData();
     formData.append("eventId", Number(eventId));
-    formData.append("ticketId", Number(ticketId));
-
+    if (ticketId) {
+      formData.append("ticketId", Number(ticketId));
+    }
     setLoading(true); // 🆕 Start loading
     try {
       const response = await fetchBaseResponse("/registrations/register", {
@@ -60,15 +61,24 @@ const EventParticipate = ({ navigation }) => {
         throw new Error(`Lỗi không xác định: ${response.status}`);
       }
     } catch (error) {
-      const serverStatus = error?.response?.data?.status;
-      const serverMessage = error?.response?.data?.message || error.message;
-
+      const responseData = error?.response?.data;
+      const serverStatus = responseData?.status;
+      const serverMessage = responseData?.message;
+      console.log("📦 Full error.response.data =", responseData);
       if (serverStatus === 5005) {
         Alert.alert("Thông báo", "⚠️ Bạn đã đăng kí sự kiện này trước đó.");
+      } else if (serverStatus === 5004) {
+        Alert.alert("Thiếu thông tin", "Sự kiện này yêu cầu chọn vé.");
+      } else if (
+        serverStatus === 1000 &&
+        serverMessage === "Entity not found"
+      ) {
+        Alert.alert("Không tìm thấy", "Sự kiện hoặc vé không tồn tại.");
+      } else if (serverMessage) {
+        Alert.alert("Lỗi", serverMessage);
       } else {
-        Alert.alert("Lỗi", serverMessage || "Không đăng kí được sự kiện");
+        Alert.alert("Lỗi", "Không đăng kí được sự kiện");
       }
-      console.warn("❌ Server Error:", serverStatus, serverMessage);
     } finally {
       setLoading(false); // 🆕 End loading
     }
