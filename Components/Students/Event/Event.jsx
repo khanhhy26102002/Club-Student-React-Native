@@ -79,7 +79,15 @@ const Event = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headingRow}>
           <Text style={styles.heading}>🎉 Sự Kiện Nổi Bật</Text>
-          <TouchableOpacity style={styles.eventButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.eventButton}
+            activeOpacity={0.8}
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "History"
+              })
+            }
+          >
             <View style={styles.eventButtonContent}>
               <Icon name="calendar-check" size={18} color="#1E40AF" />
               <Text style={styles.eventButtonText}>Sự kiện đã đăng kí</Text>

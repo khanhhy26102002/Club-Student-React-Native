@@ -14,9 +14,6 @@ import {
 } from "react-native";
 import { fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-/* trang event show các sự kiện mà getAll và thêm nút xem sự kiện đã đăng kí
-   show các câu lạc bộ đã tham gia và đổi icon contact thành workspace hoặc là my club
- */
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
