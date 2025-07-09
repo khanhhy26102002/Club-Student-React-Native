@@ -1,9 +1,17 @@
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import React from "react";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
-const ClubRegisters = () => {
+const ClubRegisters = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
@@ -48,44 +56,58 @@ const ClubRegisters = () => {
           </View>
         ) : (
           data.map((membership) => (
-            <View key={membership.membershipId} style={styles.card}>
-              <Text style={styles.clubName}>
-                🏛️ Tên câu lạc bộ: {membership.clubName}
-              </Text>
-
-              <View style={styles.badgeWrapper}>
-                <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
-                <View
-                  style={[
-                    styles.badge,
-                    membership.status === "APPROVED"
-                      ? styles.approved
-                      : membership.status === "PENDING"
-                      ? styles.pending
-                      : styles.rejected
-                  ]}
-                >
-                  <Text style={styles.badgeText}>
-                    {membership.status === "APPROVED"
-                      ? "✅ Đã được duyệt"
-                      : membership.status === "PENDING"
-                      ? "⏳ Chờ duyệt"
-                      : "❌ Từ chối"}
-                  </Text>
+            <TouchableOpacity
+              key={membership.membershipId}
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubRegisterId",
+                  params: {
+                    membershipId: membership.membershipId
+                  }
+                })
+              }
+            >
+              <View style={styles.card}>
+                <Text style={styles.clubName}>
+                  🏛️ Tên câu lạc bộ: {membership.clubName}
+                </Text>
+                <Text style={styles.clubName}>
+                  Tên: {membership.userFullName}
+                </Text>
+                <View style={styles.badgeWrapper}>
+                  <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
+                  <View
+                    style={[
+                      styles.badge,
+                      membership.status === "APPROVED"
+                        ? styles.approved
+                        : membership.status === "PENDING"
+                        ? styles.pending
+                        : styles.rejected
+                    ]}
+                  >
+                    <Text style={styles.badgeText}>
+                      {membership.status === "APPROVED"
+                        ? "✅ Đã được duyệt"
+                        : membership.status === "PENDING"
+                        ? "⏳ Chờ duyệt"
+                        : "❌ Từ chối"}
+                    </Text>
+                  </View>
                 </View>
-              </View>
 
-              <Text style={styles.joinDate}>
-                📅 Ngày tham gia:{" "}
-                {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}
-              </Text>
-            </View>
+                <Text style={styles.joinDate}>
+                  📅 Ngày tham gia:{" "}
+                  {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })}
+                </Text>
+              </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
