@@ -10,15 +10,11 @@ import {
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
-import { useTranslation } from "react-i18next";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-
 const Club = ({ navigation }) => {
-  const { t } = useTranslation();
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true); // ⬅️ Loading state
-
   React.useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,7 +31,7 @@ const Club = ({ navigation }) => {
       } catch (error) {
         Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
       } finally {
-        setLoading(false); // ⬅️ Dừng loading sau khi fetch xong
+        setLoading(false);
       }
     };
     fetchData();
@@ -58,11 +54,11 @@ const Club = ({ navigation }) => {
           style={styles.joinButton}
           onPress={() =>
             navigation.navigate("Club", {
-              screen: "FormClub"
+              screen: "FormRegister"
             })
           }
         >
-          <Text style={styles.joinText}>🚀 {t("joinNow")}</Text>
+          <Text style={styles.joinText}>🚀 Tham gia bây giờ</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
