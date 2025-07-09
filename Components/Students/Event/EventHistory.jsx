@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   modalContent: {
-    width: 300,
+    width: 320,
     backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
@@ -222,18 +222,16 @@ const styles = StyleSheet.create({
   qrTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 15,
-    color: "#1f3c88"
+    marginBottom: 10
+  },
+  qrNote: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center"
   },
   qrImage: {
     width: 250, // 👉 tăng kích thước từ 200 → 250 (hoặc hơn)
     height: 250,
     marginVertical: 20
-  },
-  qrNote: {
-    marginTop: 12,
-    fontSize: 14,
-    color: "#555",
-    fontStyle: "italic"
   }
 });
