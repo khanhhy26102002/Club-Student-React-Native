@@ -5,15 +5,18 @@ import {
   Linking,
   TouchableOpacity,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import Header from "../../../Header/Header";
 import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 
 const Payment = () => {
   const route = useRoute();
   const { registrationId, paymentUrl, qrCode } = route.params;
+  const [modalVisible, setModalVisible] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,17 +62,35 @@ const Payment = () => {
                 </Text>
               </TouchableOpacity>
             </LinearGradient>
-
             {qrCode ? (
               <View style={styles.qrBox}>
-                <View style={styles.qrWrapper}>
-                  <Image
-                    source={{ uri: `data:image/png;base64,${qrCode}` }}
-                    style={styles.qrImage}
-                    resizeMode="contain"
-                  />
-                </View>
-                <Text style={styles.qrNote}>📷 Quét mã QR để thanh toán</Text>
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                  <View style={styles.qrWrapper}>
+                    <Image
+                      source={{ uri: `data:image/png;base64,${qrCode}` }}
+                      style={styles.qrImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.qrNote}>
+                  📷 Nhấn vào mã QR để xem lớn hơn
+                </Text>
+                <Modal visible={modalVisible} transparent animationType="fade">
+                  <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPressOut={() => setModalVisible(false)}
+                  >
+                    <View style={styles.modalContent}>
+                      <Image
+                        source={{ uri: `data:image/png;base64,${qrCode}` }}
+                        style={styles.modalImage}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </Modal>
               </View>
             ) : (
               <Text style={styles.noQrText}>Không có mã QR</Text>
@@ -146,35 +167,47 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   qrBox: {
-    marginTop: 16,
-    alignItems: "center"
+    alignItems: "center",
+    marginTop: 20
   },
   qrWrapper: {
+    width: 200,
+    height: 200,
+    padding: 10,
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderRadius: 10,
     elevation: 3
   },
   qrImage: {
-    width: 180,
-    height: 180,
-    borderRadius: 12
+    width: "100%",
+    height: "100%"
   },
   qrNote: {
-    marginTop: 12,
-    fontSize: 15,
-    color: "#374151",
-    fontStyle: "italic"
+    marginTop: 10,
+    fontSize: 16,
+    color: "#333"
   },
   noQrText: {
     fontSize: 16,
-    color: "#9ca3af",
-    marginTop: 16
+    color: "red",
+    textAlign: "center",
+    marginTop: 20
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modalContent: {
+    width: "80%",
+    aspectRatio: 1,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    overflow: "hidden"
+  },
+  modalImage: {
+    width: "100%",
+    height: "100%"
   }
 });

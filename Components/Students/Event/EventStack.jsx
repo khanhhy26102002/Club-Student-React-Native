@@ -6,6 +6,7 @@ import FormRegister from "../Club/FormRegister";
 import EventRegister from "./EventRegister";
 import EventParticipate from "./EventParticipate";
 import Payment from "../Payment/Payment";
+import EventHistory from "./EventHistory";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
@@ -15,6 +16,7 @@ const EventStack = () => {
       <Stack.Screen name="EventRegister" component={EventRegister} />
       <Stack.Screen name="EventRegistration" component={EventParticipate} />
       <Stack.Screen name="Payment" component={Payment} />
+      <Stack.Screen name="History" component={EventHistory} />
     </Stack.Navigator>
   );
 };

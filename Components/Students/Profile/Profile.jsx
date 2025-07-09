@@ -148,7 +148,7 @@ const Profile = () => {
               label="Đăng kí sự kiện của tôi"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventRegistration"
+                  screen: "History"
                 })
               }
             />

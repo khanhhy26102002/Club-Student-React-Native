@@ -85,7 +85,7 @@ const ClubId = ({ navigation }) => {
                 style={styles.registerButton}
                 onPress={() =>
                   navigation.navigate("Club", {
-                    screen: "FormClub"
+                    screen: "FormRegister"
                   })
                 }
               >
