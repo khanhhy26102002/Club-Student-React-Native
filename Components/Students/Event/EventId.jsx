@@ -38,7 +38,7 @@ const EventId = ({ navigation }) => {
           setData(response.data);
         }
       } catch (error) {
-        Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi.");
+        Alert.alert("Lỗi", "Không lấy được event theo id");
       } finally {
         setLoading(false);
       }

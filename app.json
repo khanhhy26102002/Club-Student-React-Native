@@ -34,13 +34,10 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "eas": {
-        "projectId": "3c9eb8cb-7e7a-4569-8ff8-7d71d0f7e11e"
-      }
+      "eas": {},
+      "API_URL": "http://103.90.226.175:8080/api"
     },
-    "plugins": [
-      "expo-asset"
-    ],
+    "plugins": ["expo-asset"],
     "owner": "ledangkhanhhy"
   }
 }
