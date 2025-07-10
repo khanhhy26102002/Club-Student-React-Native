@@ -53,7 +53,7 @@ const LoginPage = ({ navigation }) => {
 
         if (roleName === "MEMBER") {
           navigation.navigate("Main");
-        } else if (roleName === "EVENT_ORGANZERS") {
+        } else if (roleName === "ORGANIZERS") {
           navigation.navigate("Organizer");
         }
       } else {
