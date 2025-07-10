@@ -9,9 +9,6 @@ export async function fetchBaseResponse(url, config) {
   try {
     const response = await API(url, config);
     const { message, data, status: serverStatus } = response.data;
-
-    console.log("Response:", response);
-
     if (response.status >= 200 && response.status < 300) {
       return {
         status: response.status,
@@ -31,8 +28,8 @@ export async function fetchBaseResponse(url, config) {
       throw error;
     }
   } catch (error) {
-    console.error("API ERROR:", error);
-    throw error; // giữ nguyên lỗi để xử lý ở ngoài
+    console.log("❌ API Error:", err?.response?.data || err.message);
+    Alert.alert("Lỗi", err?.response?.data?.message || err.message);
   }
 }
 

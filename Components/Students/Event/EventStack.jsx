@@ -7,6 +7,7 @@ import EventRegister from "./EventRegister";
 import EventParticipate from "./EventParticipate";
 import Payment from "../Payment/Payment";
 import EventHistory from "./EventHistory";
+import PaymentWebView from "../Payment/PaymentWebView";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
@@ -17,6 +18,7 @@ const EventStack = () => {
       <Stack.Screen name="EventRegistration" component={EventParticipate} />
       <Stack.Screen name="Payment" component={Payment} />
       <Stack.Screen name="History" component={EventHistory} />
+      <Stack.Screen name="PaymentWebView" component={PaymentWebView} />
     </Stack.Navigator>
   );
 };

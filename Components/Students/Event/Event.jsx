@@ -24,8 +24,6 @@ const Event = ({ navigation }) => {
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
-    console.log("JWT Token:", token);
-
     try {
       const endpoint =
         filter === "INTERNAL"
