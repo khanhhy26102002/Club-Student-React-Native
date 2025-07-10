@@ -81,16 +81,46 @@ const ClubId = ({ navigation }) => {
                 source={{ html: data.description || "<p>Không có mô tả</p>" }}
                 tagsStyles={htmlStyles}
               />
-              <TouchableOpacity
-                style={styles.registerButton}
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "FormRegister"
-                  })
-                }
-              >
-                <Text style={styles.registerButtonText}>📝 Đăng ký</Text>
-              </TouchableOpacity>
+              <View>
+                {data.status === "APPROVED" ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("Club", {
+                        screen: "ClubGroup",
+                        params: {
+                          clubId: data.clubId
+                        }
+                      })
+                    }
+                    style={styles.accessButton}
+                  >
+                    <Text style={styles.accessButtonText}>
+                      🚪 Truy cập nhóm
+                    </Text>
+                  </TouchableOpacity>
+                ) : data.status === "PENDING" ? (
+                  <View style={styles.pendingButton}>
+                    <Text style={styles.pendingButtonText}>
+                      ⏳ Đang chờ duyệt
+                    </Text>
+                  </View>
+                ) : data.status === "REJECTED" ? (
+                  <View style={styles.rejectedButton}>
+                    <Text style={styles.rejectedButtonText}>❌ Bị từ chối</Text>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.registerButton}
+                    onPress={() =>
+                      navigation.navigate("Club", {
+                        screen: "FormRegister"
+                      })
+                    }
+                  >
+                    <Text style={styles.registerButtonText}>📝 Tham gia</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           </View>
         ) : null}
@@ -107,6 +137,54 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 100
+  },
+  accessButton: {
+    backgroundColor: "#22c55e", // Xanh lá
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  accessButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16
+  },
+  registerButton: {
+    backgroundColor: "#2563eb", // Xanh dương
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  registerButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16
+  },
+  pendingButton: {
+    backgroundColor: "#facc15", // Vàng
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  pendingButtonText: {
+    color: "#1f2937",
+    fontWeight: "600",
+    fontSize: 16
+  },
+  rejectedButton: {
+    backgroundColor: "#ef4444", // Đỏ
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  rejectedButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16
   },
   container: {
     padding: 20,

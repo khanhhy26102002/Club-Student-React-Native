@@ -149,7 +149,16 @@ const FormRegister = () => {
       setLoading(false);
     }
   };
+  /* thông tin user không cần nhập tay lần nữa 
+     sau khi đăng kí clb thì không cần hiển thị nút đăng kí nữa
+     thêm nút truy cập vào clb đó sau khi đăng kí thành công
+     cái đăng kí clb của bạn đang đợi duyệt(trừ trường hợp chưa có nút đăng kí thì sẽ hiển thị nút đăng kí)
+     status 1: Cái nút đăng kí
+     status 2: Đang đợi xét duyệt
+     status 3: Show cái nút truy cập nhóm
+     check user này đã vô clb này hay chưa
 
+*/
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       <KeyboardAvoidingView
@@ -170,7 +179,7 @@ const FormRegister = () => {
               label="🎓 Mã số sinh viên"
               value={studentCode}
               onChangeText={setStudentCode}
-              placeholder="VD: B21DCCN001"
+              placeholder="VD: SE1xxxxx"
             />
             <FormField
               label="📧 Email trường"
