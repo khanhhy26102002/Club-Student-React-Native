@@ -2,11 +2,11 @@ import {
   Alert,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  TouchableOpacity
 } from "react-native";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,7 +14,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import { useRoute } from "@react-navigation/native";
 
-const ClubGroup = () => {
+const ClubGroup = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
   const [members, setMembers] = React.useState(null);
@@ -64,7 +64,19 @@ const ClubGroup = () => {
             <Text style={styles.noData}>Không có thành viên nào.</Text>
           ) : (
             members?.map((member, index) => (
-              <View key={index} style={styles.card}>
+              <TouchableOpacity
+                key={index}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubGroupId",
+                    params: {
+                      clubId: members?.clubId,
+                      userId: member?.userId 
+                    }
+                  })
+                }
+                style={styles.card}
+              >
                 <View style={styles.row}>
                   <Text style={styles.label}>👤 Họ tên:</Text>
                   <Text style={styles.value}>{member?.fullName}</Text>
@@ -85,7 +97,7 @@ const ClubGroup = () => {
                   <Text style={styles.label}>🆔 MSSV:</Text>
                   <Text style={styles.value}>{member?.studentCode}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </ScrollView>
@@ -99,7 +111,7 @@ export default ClubGroup;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e2e8f0" // xám nhạt nhẹ nhàng
+    backgroundColor: "#e2e8f0"
   },
   content: {
     padding: 20,

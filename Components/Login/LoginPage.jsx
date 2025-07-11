@@ -18,6 +18,7 @@ const LoginPage = ({ navigation }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
+  // tab clubs đang có clubs/public
   const handleLogin = async () => {
     try {
       const response = await fetchBaseResponse("/login", {
@@ -30,7 +31,6 @@ const LoginPage = ({ navigation }) => {
         const token = response.data.token;
         const roles = response.data.roles || [];
         const roleName = roles?.[0]?.role || "GUEST";
-
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
@@ -42,7 +42,10 @@ const LoginPage = ({ navigation }) => {
         });
 
         const ownedClubs = (clubResponse.data || []).filter(
-          (c) => c.role === "CLUBLEADER"
+          (c) =>
+            c.role === "CLUBLEADER" ||
+            c.role === "MENTOR" ||
+            c.role === "MEMBER"
         );
 
         if (ownedClubs.length > 0) {

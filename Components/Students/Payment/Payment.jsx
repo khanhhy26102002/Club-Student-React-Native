@@ -14,7 +14,7 @@ import Header from "../../../Header/Header";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 
-const Payment = () => {
+const Payment = ({ navigation }) => {
   const route = useRoute();
   const { registrationId, paymentUrl, qrCode } = route.params;
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -55,14 +55,15 @@ const Payment = () => {
 
               <TouchableOpacity
                 style={styles.paymentButton}
-                onPress={() =>
-                  Alert.alert("Thành công", "Mời bạn thanh toán trên web")
-                }
                 activeOpacity={0.8}
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "PaymentWebView",
+                    params: { paymentUrl }
+                  })
+                }
               >
-                <Text style={styles.paymentButtonText}>
-                  💳 Thanh toán
-                </Text>
+                <Text style={styles.paymentButtonText}>💳 Thanh toán</Text>
               </TouchableOpacity>
             </LinearGradient>
             {qrCode ? (

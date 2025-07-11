@@ -21,18 +21,27 @@ const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState("ALL");
+  const [status, setStatus] = React.useState("");
+  const statusLabels = {
+    DRAFT: "Nháp",
+    PENDING: "Chờ duyệt",
+    APPROVED: "Đã duyệt",
+    REJECTED: "Từ chối",
+    STARTED: "Đang diễn ra",
+    COMPLETED: "Hoàn thành",
+    CANCELLED: "Đã hủy"
+  };
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
-    console.log("JWT Token:", token);
-
     try {
+      const statusParam = status ? `&status=${status}` : "";
       const endpoint =
         filter === "INTERNAL"
-          ? "/events/visibility?visibility=INTERNAL"
+          ? `/events/by-visibility-status?visibility=INTERNAL${statusParam}`
           : filter === "PUBLIC"
-            ? "/events/visibility?visibility=PUBLIC"
-            : "/events/public";
+          ? `/events/by-visibility-status?visibility=PUBLIC${statusParam}`
+          : `/events/public${status ? `?status=${status}` : ""}`;
 
       console.log("Fetching:", endpoint);
 
@@ -60,15 +69,12 @@ const Event = ({ navigation }) => {
   };
 
   useFocusEffect(
-    React.useCallback(
-      () => {
-        fetchData();
-      },
-      [filter]
-    )
+    React.useCallback(() => {
+      fetchData();
+    }, [filter])
   );
 
-  const formatDate = dateString => {
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
@@ -88,7 +94,8 @@ const Event = ({ navigation }) => {
             onPress={() =>
               navigation.navigate("Event", {
                 screen: "History"
-              })}
+              })
+            }
           >
             <View style={styles.eventButtonContent}>
               <Icon name="calendar-check" size={18} color="#1E40AF" />
@@ -98,7 +105,7 @@ const Event = ({ navigation }) => {
         </View>
         <View style={styles.filterBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {["ALL", "PUBLIC", "INTERNAL"].map(type =>
+            {["ALL", "PUBLIC", "INTERNAL"].map((type) => (
               <TouchableOpacity
                 key={type}
                 style={[
@@ -110,83 +117,102 @@ const Event = ({ navigation }) => {
                 <Text style={styles.filterText}>
                   {type === "ALL"
                     ? "Tất cả"
-                    : type === "PUBLIC" ? "Công Khai" : "Nội Bộ"}
+                    : type === "PUBLIC"
+                    ? "Công Khai"
+                    : "Nội Bộ"}
                 </Text>
               </TouchableOpacity>
-            )}
+            ))}
+            {[
+              "DRAFT",
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "STARTED",
+              "COMPLETED",
+              "CANCELLED"
+            ].map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[
+                  styles.filterChip,
+                  status === s && { backgroundColor: "#93C5FD" }
+                ]}
+                onPress={() => {
+                  setStatus(s);
+                  fetchData(filter, s);
+                }}
+              >
+                <Text style={styles.filterText}>{statusLabels[s]}</Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
-        {loading
-          ? <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#007AFF" />
-            </View>
-          : data.length === 0
-            ? <View style={styles.emptyContainer}>
-                <Image
-                  source={{
-                    uri:
-                      "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
-                  }}
-                  style={styles.emptyIcon}
-                />
-                <Text style={styles.noEventText}>Chưa có sự kiện nào</Text>
-                <Text style={styles.noEventSubText}>
-                  Hãy quay lại sau để cập nhật các sự kiện mới nhất nhé!
-                </Text>
-              </View>
-            : data.map(event => {
-                const { day, month } = formatDate(event.eventDate);
-                return (
-                  <TouchableOpacity
-                    key={event.eventId} // Sử dụng eventId làm key sẽ tốt hơn index
-                    style={styles.card}
-                    onPress={() =>
-                      navigation.navigate("EventId", {
-                        eventId: event.eventId
-                      })}
-                  >
-                    <View style={styles.imageContainer}>
-                      <Image
-                        source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
-                        style={styles.cardImage}
-                      />
-                      <View style={styles.dateOverlay}>
-                        <Text style={styles.dateDay}>
-                          {day}
-                        </Text>
-                        <Text style={styles.dateMonth}>
-                          {month}
-                        </Text>
-                      </View>
-                    </View>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        ) : data.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Image
+              source={{
+                uri: "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
+              }}
+              style={styles.emptyIcon}
+            />
+            <Text style={styles.noEventText}>Chưa có sự kiện nào</Text>
+            <Text style={styles.noEventSubText}>
+              Hãy quay lại sau để cập nhật các sự kiện mới nhất nhé!
+            </Text>
+          </View>
+        ) : (
+          data.map((event) => {
+            const { day, month } = formatDate(event.eventDate);
+            return (
+              <TouchableOpacity
+                key={event.eventId} // Sử dụng eventId làm key sẽ tốt hơn index
+                style={styles.card}
+                onPress={() =>
+                  navigation.navigate("EventId", {
+                    eventId: event.eventId
+                  })
+                }
+              >
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
+                    style={styles.cardImage}
+                  />
+                  <View style={styles.dateOverlay}>
+                    <Text style={styles.dateDay}>{day}</Text>
+                    <Text style={styles.dateMonth}>{month}</Text>
+                  </View>
+                </View>
 
-                    <View style={styles.cardContent}>
-                      <Text style={styles.title} numberOfLines={2}>
-                        {event.title}
-                      </Text>
-                      <Text style={styles.description} numberOfLines={3}>
-                        {event.description}
-                      </Text>
+                <View style={styles.cardContent}>
+                  <Text style={styles.title} numberOfLines={2}>
+                    {event.title}
+                  </Text>
+                  <Text style={styles.description} numberOfLines={3}>
+                    {event.description}
+                  </Text>
 
-                      <View style={styles.detailsContainer}>
-                        <View style={styles.detailItem}>
-                          <Text style={styles.detailIcon}>📍</Text>
-                          <Text style={styles.detailText}>
-                            {event.location}
-                          </Text>
-                        </View>
-                        <View style={styles.detailItem}>
-                          <Text style={styles.detailIcon}>💻</Text>
-                          <Text style={styles.detailText}>
-                            {event.format}
-                          </Text>
-                        </View>
-                      </View>
+                  <View style={styles.detailsContainer}>
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailIcon}>📍</Text>
+                      <Text style={styles.detailText}>{event.location}</Text>
                     </View>
-                  </TouchableOpacity>
-                );
-              })}
+                    <View style={styles.detailItem}>
+                      <Text style={styles.detailIcon}>💻</Text>
+                      <Text style={styles.detailText}>{event.format}</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );

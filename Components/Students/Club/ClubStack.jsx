@@ -1,5 +1,3 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Club from "./Club";
 import ClubId from "./ClubId";
@@ -9,6 +7,7 @@ import ClubRegisters from "./ClubRegisters";
 import ClubCreated from "./ClubCreated";
 import ClubRegistersId from "./ClubRegistersId";
 import ClubGroup from "./ClubGroup";
+import ClubGroupId from "./ClubGroupId";
 const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
@@ -43,6 +42,11 @@ const ClubStack = () => {
       <Stack.Screen
         name="ClubGroup"
         component={ClubGroup}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ClubGroupId"
+        component={ClubGroupId}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
