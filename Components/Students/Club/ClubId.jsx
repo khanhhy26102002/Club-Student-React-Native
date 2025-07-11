@@ -114,11 +114,8 @@ const ClubId = ({ navigation }) => {
                     style={styles.registerButton}
                     onPress={() =>
                       navigation.navigate("Club", {
-                        screen: "ClubGroup",
-                        params: {
-                          clubId: data.clubId,
-                          userId: data.userId
-                        }
+                        screen: "FormRegister",
+                        
                       })
                     }
                   >

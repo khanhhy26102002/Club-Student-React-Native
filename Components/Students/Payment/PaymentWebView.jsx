@@ -20,9 +20,9 @@ const PaymentWebView = ({ navigation }) => {
           />
         )}
         onNavigationStateChange={(navState) => {
-          if (navState.url.includes("status=COMPLETED")) {
+          if (navState.url.includes("return")) {
             Alert.alert("✅ Thành công", "Thanh toán thành công!");
-            navigation.navigate("Main");
+            navigation.navigate("cancel");
           } else if (navState.url.includes("status=FAILED")) {
             Alert.alert("❌ Huỷ", "Thanh toán bị huỷ");
             navigation.navigate("Main");

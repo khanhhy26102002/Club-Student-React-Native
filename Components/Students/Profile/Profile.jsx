@@ -65,7 +65,9 @@ const Profile = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.headerSectionNoGradient}>
             <Image
-              source={{ uri: "https://i.pravatar.cc/300" }}
+              source={{
+                uri: "http://res.cloudinary.com/dqlhjgisk/image/upload/865710ff-25a6-4aeb-9292-6be2a61c7f1d_Screenshot%20%281%29.png"
+              }}
               style={styles.avatar}
             />
             <Text style={styles.email}>
@@ -117,10 +119,10 @@ const Profile = () => {
             />
             <ActionItem
               icon="bar-chart-outline"
-              label="Quản lí dự án"
+              label="Quản lí sự kiện"
               onPress={() =>
-                navigation.navigate("Profile", {
-                  screen: "Project"
+                navigation.navigate("Event", {
+                  screen: "EventRoles"
                 })
               }
               color="#f44336"
@@ -136,7 +138,7 @@ const Profile = () => {
             />
             <ActionItem
               icon="ribbon-outline"
-              label="Câu lạc bộ của tôi"
+              label="Quản lí câu lạc bộ của tôi"
               onPress={() =>
                 navigation.navigate("Club", {
                   screen: "ClubCreate"
@@ -145,10 +147,19 @@ const Profile = () => {
             />
             <ActionItem
               icon="ribbon-outline"
-              label="Đăng kí sự kiện của tôi"
+              label="Đăng kí sự kiện"
               onPress={() =>
                 navigation.navigate("Event", {
                   screen: "History"
+                })
+              }
+            />
+             <ActionItem
+              icon="ribbon-outline"
+              label="Sự kiện của tôi"
+              onPress={() =>
+                navigation.navigate("Event", {
+                  screen: "EventAssign"
                 })
               }
             />

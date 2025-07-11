@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "@env";
+import { Alert } from "react-native";
 const API = axios.create({
   baseURL: API_URL,
   timeout: 15000
@@ -28,8 +29,15 @@ export async function fetchBaseResponse(url, config) {
       throw error;
     }
   } catch (error) {
-    console.log("❌ API Error:", err?.response?.data || err.message);
-    Alert.alert("Lỗi", err?.response?.data?.message || err.message);
+    console.log("❌ API Error:", error?.response?.data || error.message);
+    Alert.alert("Lỗi", error?.response?.data?.message || error.message);
+
+    // ✅ THÊM RETURN để không bị undefined
+    return {
+      status: error?.response?.data?.status || 500,
+      data: [],
+      message: error?.response?.data?.message || "Unknown error"
+    };
   }
 }
 

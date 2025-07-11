@@ -16,7 +16,8 @@ export const CustomDrawer = (props) => {
   const { t } = useTranslation();
   const user = {
     name: "Nguyễn Văn A",
-    avatar: "https://i.pravatar.cc/300",
+    avatar:
+      "http://res.cloudinary.com/dqlhjgisk/image/upload/865710ff-25a6-4aeb-9292-6be2a61c7f1d_Screenshot%20%281%29.png",
     academicYear: 2025,
     major: "Trí Tuệ Nhân Tạo",
     Skill: "Programming"
