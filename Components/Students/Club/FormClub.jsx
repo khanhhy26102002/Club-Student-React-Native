@@ -17,7 +17,9 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Markdown from "react-native-markdown-display";
 import html2md from "html-to-md";
+import QuillEditor from "../../QuillEditor";
 const FormClub = () => {
+  const quillRef = React.useRef(null);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [logoUrl, setLogoUrl] = React.useState("");
@@ -44,11 +46,16 @@ const FormClub = () => {
     const existingNames = await fetchData();
 
     // Validate client-side
-    if (!name || !description || !fullName) {
+    if (!name || !fullName) {
       Alert.alert(
         "⚠️ Thiếu thông tin",
         "Vui lòng nhập đủ các trường bắt buộc."
       );
+      return;
+    }
+    const htmlDescription = await quillRef.current.getHtml();
+    if (!htmlDescription || htmlDescription.trim() === "") {
+      Alert.alert("⚠️ Thiếu mô tả", "Vui lòng nhập mô tả cho CLB.");
       return;
     }
 
@@ -85,7 +92,7 @@ const FormClub = () => {
         method: "POST",
         data: {
           name,
-          description,
+          description: htmlDescription,
           logoUrl,
           fullName,
           mentorId: mentorNumber
@@ -201,7 +208,7 @@ const FormClub = () => {
             setName,
             "Nhập tên câu lạc bộ"
           )}
-          {renderField(
+          {/* {renderField(
             "Miêu tả *",
             "description",
             description,
@@ -226,7 +233,9 @@ const FormClub = () => {
                 {html2md(description)}
               </Markdown>
             </View>
-          )}
+          )} */}
+          <Text style={[styles.label, { marginBottom: 6 }]}>📄 Miêu tả *</Text>
+          <QuillEditor ref={quillRef} initialHtml={description} />
           {renderField(
             "Logo (link ảnh)",
             "image",
@@ -254,7 +263,6 @@ const FormClub = () => {
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleSubmit}
-            disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
