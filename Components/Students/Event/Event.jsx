@@ -69,7 +69,7 @@ const Event = ({ navigation }) => {
     }, [])
   );
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
@@ -89,8 +89,7 @@ const Event = ({ navigation }) => {
             onPress={() =>
               navigation.navigate("Event", {
                 screen: "History"
-              })
-            }
+              })}
           >
             <View style={styles.eventButtonContent}>
               <Icon name="calendar-check" size={18} color="#1E40AF" />
@@ -144,70 +143,76 @@ const Event = ({ navigation }) => {
           </ScrollView>
         </View> */}
 
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
-          </View>
-        ) : data.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Image
-              source={{
-                uri: "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
-              }}
-              style={styles.emptyIcon}
-            />
-            <Text style={styles.noEventText}>Chưa có sự kiện nào</Text>
-            <Text style={styles.noEventSubText}>
-              Hãy quay lại sau để cập nhật các sự kiện mới nhất nhé!
-            </Text>
-          </View>
-        ) : (
-          data.map((event) => {
-            const { day, month } = formatDate(event.eventDate);
-            return (
-              <TouchableOpacity
-                key={event.eventId} // Sử dụng eventId làm key sẽ tốt hơn index
-                style={styles.card}
-                onPress={() =>
-                  navigation.navigate("EventId", {
-                    eventId: event.eventId
-                  })
-                }
-              >
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
-                    style={styles.cardImage}
-                  />
-                  <View style={styles.dateOverlay}>
-                    <Text style={styles.dateDay}>{day}</Text>
-                    <Text style={styles.dateMonth}>{month}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.cardContent}>
-                  <Text style={styles.title} numberOfLines={2}>
-                    {event.title}
-                  </Text>
-                  <Text style={styles.description} numberOfLines={3}>
-                    {event.description}
-                  </Text>
-
-                  <View style={styles.detailsContainer}>
-                    <View style={styles.detailItem}>
-                      <Text style={styles.detailIcon}>📍</Text>
-                      <Text style={styles.detailText}>{event.location}</Text>
+        {loading
+          ? <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+          : data.length === 0
+            ? <View style={styles.emptyContainer}>
+                <Image
+                  source={{
+                    uri:
+                      "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
+                  }}
+                  style={styles.emptyIcon}
+                />
+                <Text style={styles.noEventText}>Chưa có sự kiện nào</Text>
+                <Text style={styles.noEventSubText}>
+                  Hãy quay lại sau để cập nhật các sự kiện mới nhất nhé!
+                </Text>
+              </View>
+            : data.map(event => {
+                const { day, month } = formatDate(event.eventDate);
+                return (
+                  <TouchableOpacity
+                    key={event.eventId} // Sử dụng eventId làm key sẽ tốt hơn index
+                    style={styles.card}
+                    onPress={() =>
+                      navigation.navigate("EventId", {
+                        eventId: event.eventId
+                      })}
+                  >
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
+                        style={styles.cardImage}
+                      />
+                      <View style={styles.dateOverlay}>
+                        <Text style={styles.dateDay}>
+                          {day}
+                        </Text>
+                        <Text style={styles.dateMonth}>
+                          {month}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.detailItem}>
-                      <Text style={styles.detailIcon}>💻</Text>
-                      <Text style={styles.detailText}>{event.format}</Text>
+
+                    <View style={styles.cardContent}>
+                      <Text style={styles.title} numberOfLines={2}>
+                        {event.title}
+                      </Text>
+                      <Text style={styles.description} numberOfLines={3}>
+                        {event.description}
+                      </Text>
+
+                      <View style={styles.detailsContainer}>
+                        <View style={styles.detailItem}>
+                          <Text style={styles.detailIcon}>📍</Text>
+                          <Text style={styles.detailText}>
+                            {event.location}
+                          </Text>
+                        </View>
+                        <View style={styles.detailItem}>
+                          <Text style={styles.detailIcon}>💻</Text>
+                          <Text style={styles.detailText}>
+                            {event.format}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })
-        )}
+                  </TouchableOpacity>
+                );
+              })}
       </ScrollView>
     </View>
   );
