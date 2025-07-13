@@ -15,33 +15,66 @@ import Header from "../../../Header/Header";
 const ClubRegisters = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  React.useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const token = await AsyncStorage.getItem("jwt");
-      try {
-        const response = await fetchBaseResponse("/memberships", {
+  const [membershipStatus, setMembershipStatus] = React.useState({}); // Trạng thái tham gia
+  const fetchData = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse("/memberships", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setData(response.data);
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      Alert.alert("Lỗi", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const statusData = async (clubId) => {
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse(
+        `/memberships/status?clubId=${clubId}`,
+        {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           }
-        });
-        if (response.status === 200) {
-          setData(response.data);
-        } else {
-          throw new Error(`HTTP Status:${response.status}`);
         }
-      } catch (error) {
-        console.error("Error: ", error);
-        Alert.alert("Lỗi", error.message);
-      } finally {
-        setLoading(false);
+      );
+      console.log("Membership API data:", response.data);
+      if (response.status === 200) {
+        setMembershipStatus((prev) => ({
+          ...prev,
+          [clubId]: response.data
+        }));
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
       }
-    };
+    } catch (error) {
+      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+    }
+  };
+  React.useEffect(() => {
     fetchData();
   }, []);
-
+  React.useEffect(() => {
+    data.forEach((item) => {
+      if (item.clubId) {
+        statusData(item.clubId);
+      }
+    });
+  }, [data]);
   return (
     <>
       <Header />
@@ -56,60 +89,82 @@ const ClubRegisters = ({ navigation }) => {
             <ActivityIndicator size="large" color="#2563EB" />
           </View>
         ) : (
-          data.map((membership) => (
-            <TouchableOpacity
-              key={membership.membershipId}
-              onPress={() =>
-                navigation.navigate("Club", {
-                  screen: "ClubRegisterId",
-                  params: {
-                    membershipId: membership.membershipId
-                  }
-                })
-              }
-            >
-              <View style={styles.card}>
-                <Text style={styles.clubName}>
-                  🏛️ Tên câu lạc bộ: {membership.clubName}
-                </Text>
-                <Text style={styles.clubName}>
-                  Tên: {membership.userFullName}
-                </Text>
-                <View style={styles.badgeWrapper}>
-                  <Text style={styles.statusLabel}>📌 Trạng thái:</Text>
-                  <View
-                    style={[
-                      styles.badge,
-                      membership.status === "APPROVED"
-                        ? styles.approved
-                        : membership.status === "PENDING"
-                        ? styles.pending
-                        : styles.rejected
-                    ]}
-                  >
-                    <Text style={styles.badgeText}>
-                      {membership.status === "APPROVED"
-                        ? "✅ Đã được duyệt"
-                        : membership.status === "PENDING"
-                        ? "⏳ Chờ duyệt"
-                        : "❌ Từ chối"}
-                    </Text>
+          data.map((membership) => {
+            const status = membershipStatus[membership.clubId];
+            return (
+              <TouchableOpacity
+                key={membership.membershipId}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubRegisterId",
+                    params: {
+                      membershipId: membership.membershipId
+                    }
+                  })
+                }
+              >
+                <View style={styles.card}>
+                  <View style={styles.cardTop}>
+                    <Image
+                      source={{
+                        uri:
+                          membership.clubImage ||
+                          "https://via.placeholder.com/80"
+                      }}
+                      style={styles.clubImage}
+                    />
+                    <View style={styles.clubInfo}>
+                      <Text style={styles.clubName}>{membership.clubName}</Text>
+                      <Text style={styles.joinDate}>
+                        ID: {membership.membershipId}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.statusContainer}>
+                    {status === "APPROVED" ? (
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate("Club", {
+                            screen: "ClubGroup",
+                            params: {
+                              clubId: membership.clubId,
+                              userId: membership.userId
+                            }
+                          })
+                        }
+                        style={[styles.statusBadge, styles.approved]}
+                      >
+                        <Text style={styles.statusText}>✅ Đã duyệt</Text>
+                      </TouchableOpacity>
+                    ) : status === "PENDING" ? (
+                      <View style={[styles.statusBadge, styles.pending]}>
+                        <Text style={styles.statusText}>⏳ Đang chờ</Text>
+                      </View>
+                    ) : status === "REJECTED" ? (
+                      <View style={[styles.statusBadge, styles.rejected]}>
+                        <Text style={styles.statusText}>❌ Bị từ chối</Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.statusBadge, styles.register]}
+                        onPress={() =>
+                          navigation.navigate("Club", {
+                            screen: "FormRegister",
+                            params: {
+                              clubId: membership.clubId
+                            }
+                          })
+                        }
+                      >
+                        <Text style={styles.statusText}>📝 Tham gia</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
-
-                <Text style={styles.joinDate}>
-                  📅 Ngày tham gia:{" "}
-                  {new Date(membership.joinDate).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                  })}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))
+              </TouchableOpacity>
+            );
+          })
         )}
       </ScrollView>
     </>
@@ -119,87 +174,67 @@ const ClubRegisters = ({ navigation }) => {
 export default ClubRegisters;
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    paddingBottom: 230,
-    backgroundColor: "#F9FAFB"
-  },
-  sectionTitleContainer: {
-    marginBottom: 20,
-    marginTop: 10,
-    alignItems: "center"
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#2563EB",
-    textAlign: "center"
-  },
-  sectionUnderline: {
-    width: 60,
-    height: 4,
-    backgroundColor: "#3B82F6",
-    borderRadius: 4,
-    marginTop: 6
-  },
+  // ... giữ nguyên styles cũ
   card: {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    padding: 20,
-    borderRadius: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
-  clubName: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1E3A8A",
-    textAlign: "center",
-    marginBottom: 10
-  },
-  badgeWrapper: {
+  cardTop: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginBottom: 12,
-    flexWrap: "wrap"
+    marginBottom: 12
   },
-  statusLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#374151"
+  clubImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 16,
+    backgroundColor: "#E5E7EB"
   },
-  badge: {
+  clubInfo: {
+    flex: 1
+  },
+  clubName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E3A8A"
+  },
+  joinDate: {
+    fontSize: 14,
+    color: "#6B7280"
+  },
+  statusContainer: {
+    alignItems: "flex-end"
+  },
+  statusBadge: {
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 20,
-    backgroundColor: "#E5E7EB"
+    alignSelf: "flex-start"
   },
-  badgeText: {
-    fontSize: 14,
+  statusText: {
     fontWeight: "600",
+    fontSize: 14,
     color: "#fff"
   },
   approved: {
-    backgroundColor: "#10B981" // xanh lá
+    backgroundColor: "#10B981"
   },
   pending: {
-    backgroundColor: "#F59E0B" // vàng
+    backgroundColor: "#F59E0B"
   },
   rejected: {
-    backgroundColor: "#EF4444" // đỏ
+    backgroundColor: "#EF4444"
   },
-
-  joinDate: {
-    fontSize: 14,
-    color: "#4B5563",
-    textAlign: "center"
+  register: {
+    backgroundColor: "#3B82F6"
   }
 });
 

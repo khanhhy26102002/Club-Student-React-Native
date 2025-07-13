@@ -20,28 +20,23 @@ const DEFAULT_EVENT_IMAGE =
 const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [filter, setFilter] = React.useState("ALL");
-  const [status, setStatus] = React.useState("");
-  const statusLabels = {
-    DRAFT: "Nháp",
-    PENDING: "Chờ duyệt",
-    APPROVED: "Đã duyệt",
-    REJECTED: "Từ chối",
-    STARTED: "Đang diễn ra",
-    COMPLETED: "Hoàn thành",
-    CANCELLED: "Đã hủy"
-  };
+  // const [filter, setFilter] = React.useState("ALL");
+  // const [status, setStatus] = React.useState("");
+  // const statusLabels = {
+  //   DRAFT: "Nháp",
+  //   PENDING: "Chờ duyệt",
+  //   APPROVED: "Đã duyệt",
+  //   REJECTED: "Từ chối",
+  //   STARTED: "Đang diễn ra",
+  //   COMPLETED: "Hoàn thành",
+  //   CANCELLED: "Đã hủy"
+  // };
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const statusParam = status ? `&status=${status}` : "";
-      const endpoint =
-        filter === "INTERNAL"
-          ? `/events/by-visibility-status?visibility=INTERNAL${statusParam}`
-          : filter === "PUBLIC"
-          ? `/events/by-visibility-status?visibility=PUBLIC${statusParam}`
-          : `/events/public${status ? `?status=${status}` : ""}`;
+      // const statusParam = status ? `&status=${status}` : "";
+      const endpoint = "/events/public";
 
       console.log("Fetching:", endpoint);
 
@@ -53,7 +48,7 @@ const Event = ({ navigation }) => {
         }
       });
 
-      console.log("📌 filter:", filter);
+      // console.log("📌 filter:", filter);
       console.log("✅ RESPONSE RAW:", response);
 
       // 🔐 Luôn đảm bảo response.data là array
@@ -71,7 +66,7 @@ const Event = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       fetchData();
-    }, [filter])
+    }, [])
   );
 
   const formatDate = (dateString) => {
@@ -103,7 +98,7 @@ const Event = ({ navigation }) => {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={styles.filterBar}>
+        {/* <View style={styles.filterBar}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {["ALL", "PUBLIC", "INTERNAL"].map((type) => (
               <TouchableOpacity
@@ -147,7 +142,7 @@ const Event = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
+        </View> */}
 
         {loading ? (
           <View style={styles.loadingContainer}>
