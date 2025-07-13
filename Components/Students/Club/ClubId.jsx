@@ -10,41 +10,76 @@ import {
   TouchableOpacity,
   ActivityIndicator
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import RenderHTML from "react-native-render-html";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // mai hỏi cái image-controller
 const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
   const [data, setData] = React.useState(null);
+  const [membershipStatus, setMembershipStatus] = React.useState(null); // Trạng thái tham gia
   const { width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
-  React.useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      console.log("API response:", response);
+
+      // 👉 Thêm check cho response.status
+      if (!response || response.status !== 200 || !response.data) {
+        Alert.alert(
+          "Không thể hiển thị câu lạc bộ",
+          response?.message || "Dữ liệu không hợp lệ"
+        );
+        setData(null);
+      } else {
+        setData(response.data);
+      }
+    } catch (error) {
+      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statusData = async () => {
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse(
+        `/memberships/status?clubId=${clubId}`,
+        {
           method: "GET",
           headers: {
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           }
-        });
-        if (!response || !response.data) {
-          Alert.alert("Không hiển thị được dữ liệu theo clubId");
-          setData(null);
-        } else {
-          setData(response.data);
         }
-      } catch (error) {
-        Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
-      } finally {
-        setLoading(false);
+      );
+      console.log("Membership API data:", response.data);
+      if (response.status === 200) {
+        setMembershipStatus(response.data);
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
       }
-    };
-    fetchData();
-  }, [clubId]);
+    } catch (error) {
+      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+    }
+  };
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+      statusData();
+    }, [clubId])
+  );
 
   return (
     <>
@@ -82,7 +117,7 @@ const ClubId = ({ navigation }) => {
                 tagsStyles={htmlStyles}
               />
               <View>
-                {data.status === "APPROVED" ? (
+                {membershipStatus === "APPROVED" ? (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate("Club", {
@@ -99,13 +134,13 @@ const ClubId = ({ navigation }) => {
                       🚪 Truy cập nhóm
                     </Text>
                   </TouchableOpacity>
-                ) : data.status === "PENDING" ? (
+                ) : membershipStatus === "PENDING" ? (
                   <View style={styles.pendingButton}>
                     <Text style={styles.pendingButtonText}>
                       ⏳ Đang chờ duyệt
                     </Text>
                   </View>
-                ) : data.status === "REJECTED" ? (
+                ) : membershipStatus === "REJECTED" ? (
                   <View style={styles.rejectedButton}>
                     <Text style={styles.rejectedButtonText}>❌ Bị từ chối</Text>
                   </View>
@@ -115,7 +150,9 @@ const ClubId = ({ navigation }) => {
                     onPress={() =>
                       navigation.navigate("Club", {
                         screen: "FormRegister",
-                        
+                        params: {
+                          clubId: data.clubId
+                        }
                       })
                     }
                   >
