@@ -3,6 +3,7 @@ import Profile from "./Profile";
 import Contact from "../Contact/Contact";
 import ProjectStack from "../Projects/ProjectStack";
 import Feedback from "../Feedback/Feedback";
+import ImageController from "../ImageController";
 const Stack = createNativeStackNavigator();
 const ProfileStack = () => {
   return (
@@ -21,6 +22,11 @@ const ProfileStack = () => {
       <Stack.Screen
         name="FeedBack"
         component={Feedback}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="image"
+        component={ImageController}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
