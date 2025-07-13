@@ -137,7 +137,7 @@ const Profile = () => {
               }
             />
             <ActionItem
-              icon="ribbon-outline"
+              icon="briefcase-outline"
               label="Quản lí câu lạc bộ của tôi"
               onPress={() =>
                 navigation.navigate("Club", {
@@ -146,7 +146,7 @@ const Profile = () => {
               }
             />
             <ActionItem
-              icon="ribbon-outline"
+              icon="ticket-outline"
               label="Đăng kí sự kiện"
               onPress={() =>
                 navigation.navigate("Event", {
@@ -154,12 +154,21 @@ const Profile = () => {
                 })
               }
             />
-             <ActionItem
-              icon="ribbon-outline"
+            <ActionItem
+              icon="list-circle-outline"
               label="Sự kiện của tôi"
               onPress={() =>
                 navigation.navigate("Event", {
                   screen: "EventAssign"
+                })
+              }
+            />
+            <ActionItem
+              icon="calendar"
+              label="Tạo task sự kiện của bạn"
+              onPress={() =>
+                navigation.navigate("Event", {
+                  screen: "EventTask"
                 })
               }
             />

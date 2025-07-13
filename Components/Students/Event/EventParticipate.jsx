@@ -53,18 +53,34 @@ const EventParticipate = ({ navigation }) => {
           }
         });
       } else if (response.status === 400 || response.status === 422) {
-        throw new Error(
-          response.data?.message ||
+        throw {
+          ...response,
+          message:
+            response.data?.message ||
             "Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại."
-        );
+        };
       } else {
-        throw new Error(`Lỗi không xác định: ${response.status}`);
+        throw response;
       }
     } catch (error) {
-      const responseData = error?.response?.data;
-      const serverStatus = responseData?.status;
-      const serverMessage = responseData?.message;
-      console.log("📦 Full error.response.data =", responseData);
+      // Xử lý dữ liệu lỗi linh hoạt và an toàn hơn
+      const responseData =
+        error?.response?.data && typeof error.response.data === "object"
+          ? error.response.data
+          : error?.data && typeof error.data === "object"
+          ? error.data
+          : {};
+
+      const serverStatus = responseData.status ?? error?.status ?? null;
+      const serverMessage =
+        responseData.message ?? error?.message ?? "Không xác định";
+
+      console.log("📦 error =", error);
+      console.log("📦 responseData =", responseData);
+      console.log("📦 serverStatus =", serverStatus);
+      console.log("📦 serverMessage =", serverMessage);
+
+      // ✅ Hiển thị alert dựa trên status
       if (serverStatus === 5005) {
         Alert.alert("Thông báo", "⚠️ Bạn đã đăng kí sự kiện này trước đó.");
       } else if (serverStatus === 5004) {

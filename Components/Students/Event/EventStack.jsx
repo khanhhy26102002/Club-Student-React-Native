@@ -11,6 +11,7 @@ import PaymentWebView from "../Payment/PaymentWebView";
 import EventRoles from "./EventRoles";
 import EventRolesId from "./EventRolesId";
 import EventAssign from "./EventAssign";
+import EventTask from "./EventTask";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
@@ -25,6 +26,7 @@ const EventStack = () => {
       <Stack.Screen name="EventRoles" component={EventRoles} />
       <Stack.Screen name="EventRolesId" component={EventRolesId} />
       <Stack.Screen name="EventAssign" component={EventAssign} />
+      <Stack.Screen name="EventTask" component={EventTask} />
     </Stack.Navigator>
   );
 };
