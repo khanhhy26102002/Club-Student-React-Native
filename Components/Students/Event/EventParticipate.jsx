@@ -13,24 +13,17 @@ import {
 } from "react-native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import { useRoute } from "@react-navigation/native";
 
 const EventParticipate = ({ navigation }) => {
-  const [eventId, setEventId] = React.useState("");
+  const route = useRoute();
+  const { eventId } = route.params;
   const [ticketId, setTicketId] = React.useState("");
   const [loading, setLoading] = React.useState(false); // 🆕 Loading state
 
-  const handleOpenPayment = async () => {
-    if (!eventId) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập cả Mã sự kiện và Mã vé.");
-      return;
-    }
-
+  const handleOpenPayment = async (e) => {
+    e.preventDefault();
     const token = await AsyncStorage.getItem("jwt");
-    const formData = new FormData();
-    formData.append("eventId", Number(eventId));
-    if (ticketId) {
-      formData.append("ticketId", Number(ticketId));
-    }
     setLoading(true); // 🆕 Start loading
     try {
       const response = await fetchBaseResponse("/registrations/register", {
@@ -39,7 +32,7 @@ const EventParticipate = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         },
-        data: formData
+        data: eventId
       });
 
       if (response.status === 200) {
@@ -105,19 +98,7 @@ const EventParticipate = ({ navigation }) => {
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎟️ Đăng ký sự kiện</Text>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>📌 Mã sự kiện</Text>
-          <TextInput
-            style={styles.input}
-            value={eventId}
-            onChangeText={setEventId}
-            placeholder="Nhập mã sự kiện"
-            keyboardType="numeric"
-            placeholderTextColor="#9ca3af"
-          />
-        </View>
-
+        <Text style={styles.title}>Mã sự kiện: {eventId}</Text>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>🎫 Mã vé</Text>
           <TextInput

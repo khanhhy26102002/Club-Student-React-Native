@@ -110,7 +110,10 @@ const EventId = ({ navigation }) => {
             style={styles.registerButton}
             onPress={() =>
               navigation.navigate("Event", {
-                screen: "EventRegistration"
+                screen: "EventRegistration",
+                params: {
+                  eventId: data.eventId
+                }
               })
             }
           >

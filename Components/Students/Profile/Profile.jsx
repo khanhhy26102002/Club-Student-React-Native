@@ -57,7 +57,14 @@ const Profile = () => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={{ marginTop: 12, fontSize: 16, color: "#333" }}>
+          <Text
+            style={{
+              marginTop: 12,
+              fontSize: 16,
+              color: "#333",
+              textAlign: "center"
+            }}
+          >
             Đang tải...
           </Text>
         </View>
