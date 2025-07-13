@@ -164,7 +164,7 @@ const Profile = () => {
               }
             />
             <ActionItem
-              icon="calendar"
+              icon="clipboard-outline"
               label="Tạo task sự kiện của bạn"
               onPress={() =>
                 navigation.navigate("Event", {
