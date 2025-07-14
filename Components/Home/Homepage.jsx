@@ -37,19 +37,6 @@ const Homepage = ({ navigation }) => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.greeting}>
-            {user ? `Hi, ${user.email}` : "Hi 👋"}
-          </Text>
-          <Text style={styles.subtitle}>
-            What would you like to manage today?
-          </Text>
-          <TouchableOpacity style={styles.notification}>
-            <Ionicons name="notifications-outline" size={24} color="#2563EB" />
-          </TouchableOpacity>
-        </View>
-
         {/* Search */}
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#94A3B8" />
@@ -103,7 +90,7 @@ const Homepage = ({ navigation }) => {
         </ScrollView>
 
         {/* Top Mentors */}
-        <View style={styles.sectionRow}>
+        {/* <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Ban chủ nhiệm</Text>
           <TouchableOpacity>
             <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
@@ -116,7 +103,8 @@ const Homepage = ({ navigation }) => {
               <Text style={styles.mentorName}>{name}</Text>
             </View>
           ))}
-        </View>
+        </View> */}
+        
       </ScrollView>
     </>
   );

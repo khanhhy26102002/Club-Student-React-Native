@@ -179,6 +179,15 @@ const Profile = () => {
                 })
               }
             />
+             <ActionItem
+              icon="clipboard-outline"
+              label="Tạo task sự kiện của bạn"
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  screen: "image"
+                })
+              }
+            />
           </View>
         </ScrollView>
       ) : (
