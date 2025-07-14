@@ -28,7 +28,7 @@ const FormClub = () => {
   const [loading, setLoading] = React.useState(false);
   const fetchData = async () => {
     const token = await AsyncStorage.getItem("jwt");
-    const response = await fetchBaseResponse("/clubs", {
+    const response = await fetchBaseResponse("/api/clubs", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +88,7 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await fetchBaseResponse(`/clubs/create-club-request`, {
+      const response = await fetchBaseResponse(`/api/clubs/create-club-request`, {
         method: "POST",
         data: {
           name,

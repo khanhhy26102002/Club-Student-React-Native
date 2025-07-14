@@ -28,7 +28,7 @@ const Blog = ({ navigation }) => {
       const fetchData = async () => {
         try {
           setLoading(true);
-          const response = await fetchBaseResponse(`/blogs`, {
+          const response = await fetchBaseResponse(`/api/blogs`, {
             method: "GET"
           });
           if (!response || response.length === 0) {

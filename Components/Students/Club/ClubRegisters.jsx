@@ -22,7 +22,7 @@ const ClubRegisters = ({ navigation }) => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse("/memberships", {
+      const response = await fetchBaseResponse("/api/memberships", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -46,7 +46,7 @@ const ClubRegisters = ({ navigation }) => {
     const token = await AsyncStorage.getItem("jwt");
     try {
       const response = await fetchBaseResponse(
-        `/memberships/status?clubId=${clubId}`,
+        `/api/memberships/status?clubId=${clubId}`,
         {
           method: "GET",
           headers: {

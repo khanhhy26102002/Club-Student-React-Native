@@ -38,7 +38,7 @@ const FormRegister = ({ navigation }) => {
             setLoading(true);
             try {
               const response = await fetchBaseResponse(
-                "/memberships/membership-register",
+                "/api/memberships/membership-register",
                 {
                   method: "POST",
                   headers: {

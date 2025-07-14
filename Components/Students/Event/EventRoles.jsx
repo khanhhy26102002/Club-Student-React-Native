@@ -15,7 +15,7 @@ const EventRoles = () => {
       setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/event-roles/my/${eventId}`, {
+        const response = await fetchBaseResponse(`/api/event-roles/my/${eventId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

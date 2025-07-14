@@ -26,7 +26,7 @@ const ClubId = ({ navigation }) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
+      const response = await fetchBaseResponse(`/api/clubs/public/${clubId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json"
@@ -55,7 +55,7 @@ const ClubId = ({ navigation }) => {
     const token = await AsyncStorage.getItem("jwt");
     try {
       const response = await fetchBaseResponse(
-        `/memberships/status?clubId=${clubId}`,
+        `/api/memberships/status?clubId=${clubId}`,
         {
           method: "GET",
           headers: {

@@ -1,245 +1,268 @@
+import React from "react";
 import {
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
-  SafeAreaView,
-  StatusBar,
-  TouchableOpacity
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Image
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Header from "../../Header/Header";
-import ClubCard from "../Home/ClubCard";
-const clubsData = [
-  {
-    id: "1",
-    image:
-      "https://vinschool.edu.vn/wp-content/uploads/2019/09/12/CLB-STEM-CODING-800.jpg",
-    titleKey: "club.coding.title",
-    descriptionKey: "club.coding.description",
-    members: 124,
-    tags: ["STEM", "Coding", "Robotics"]
-  },
-  {
-    id: "2",
-    image:
-      "https://cdn.sforum.vn/sforum/wp-content/uploads/2023/10/clb-anh-thumb.jpg",
-    titleKey: "club.photography.title",
-    descriptionKey: "club.photography.description",
-    members: 87,
-    tags: ["Photography", "Art", "Creativity"]
-  },
-  {
-    id: "3",
-    image:
-      "https://i.pinimg.com/736x/42/99/1e/42991ed60fd7a37fa9d02b63f50f83ee.jpg",
-    titleKey: "club.music.title",
-    descriptionKey: "club.music.description",
-    members: 152,
-    tags: ["Music", "Performance", "Teamwork"]
-  },
-  {
-    id: "4",
-    image:
-      "https://media.vov.vn/sites/default/files/styles/large/public/2023-10/bong-da-vov-2.jpg",
-    titleKey: "club.football.title",
-    descriptionKey: "club.football.description",
-    members: 98,
-    tags: ["Sports", "Football", "Fitness"]
-  },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const newClubsData = [
-  {
-    id: "1",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTasLPrX4mgct1VbqpUE6TbLxd-yT2Oo1rtCA&s",
-    titleKey: "title74",
-    descriptionKey: "title75"
-  },
-  {
-    id: "2",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbZ1PPFAsYs0Cu6frNKVzL8EHysnVtd3K7vg&s",
-    titleKey: "title76",
-    descriptionKey: "title77"
-  },
-  {
-    id: "3",
-    image:
-      "https://btec.fpt.edu.vn/wp-content/uploads/2021/10/IMG_9481-scaled.jpg.webp",
-    titleKey: "title78",
-    descriptionKey: "title79"
-  },
-  {
-    id: "4",
-    image:
-      "https://img.hoidap247.com/picture/question/20220223/large_1645585801133.jpg",
-    titleKey: "title80",
-    descriptionKey: "title81"
-  },
-  {
-    id: "5",
-    image:
-      "https://cdn.tgdd.vn/Files/2022/10/03/1475483/clb-la-gi-cac-clb-truong-dai-hoc-o-viet-nam-hien-nay-202210032134042879.jpg",
-    titleKey: "title82",
-    descriptionKey: "title83"
-  },
-  {
-    id: "6",
-    image: "https://media.baodautu.vn/Images/duonglinh/2021/12/04/huflit.jpg",
-    titleKey: "title84",
-    descriptionKey: "title85"
-  }
-];
-
-const ClubData = [
-  {
-    id: "1",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTasLPrX4mgct1VbqpUE6TbLxd-yT2Oo1rtCA&s",
-    titleKey: "title12",
-    descriptionKey: "title75"
-  },
-  {
-    id: "2",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDZu1HSKySbNHs4-jckUrmCaLgggfUjBPEyQ&s",
-    titleKey: "title12",
-    descriptionKey: "title77"
-  },
-  {
-    id: "3",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_MgHjpDBjydEzQEt0fp8eYofcPCQg9XvylA&s",
-    titleKey: "title12",
-    descriptionKey: "title79"
-  },
-  {
-    id: "4",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_MgHjpDBjydEzQEt0fp8eYofcPCQg9XvylA&s",
-    titleKey: "title12",
-    descriptionKey: "title79"
-  },
-  {
-    id: "5",
-    image:
-      "https://img.vietcetera.com/uploads/images/02-oct-2023/z4759647852955-b038c22c8ab7353bc4b1993348ad1c04.jpg",
-    titleKey: "title84",
-    descriptionKey: "title85"
-  },
-  {
-    id: "6",
-    image:
-      "https://daihoc.fpt.edu.vn/wp-content/uploads/2021/06/CLB-truyen-thong.jpg",
-    titleKey: "title86",
-    descriptionKey: "title87"
-  }
-];
-
-const Homepage = () => {
-  const renderClubItem = ({ item }) => <ClubCard item={item} />;
-
-  const renderList = (title, data) => (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <TouchableOpacity>
-          <Text style={styles.viewAll}>Xem tất cả</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={data}
-        renderItem={renderClubItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        scrollEnabled={false}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={{ gap: 16 }}
-      />
-    </View>
-  );
-
+const Homepage = ({ navigation }) => {
+  const [user, setUser] = React.useState(null);
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      const storedEmail = await AsyncStorage.getItem("email");
+      const storedToken = await AsyncStorage.getItem("jwt");
+      if (storedEmail && storedToken) {
+        setUser({ email: storedEmail, token: storedToken });
+      }
+    };
+    // lên mạng task manager cho mobile
+    //
+    fetchUser();
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchUser();
+    });
+    return unsubscribe;
+  }, []);
   return (
-    <SafeAreaView style={styles.screen}>
-      <StatusBar backgroundColor="#f4f6f8" barStyle="dark-content" />
+    <>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        {renderList("\u{1F195} Câu lạc bộ nổi bật", clubsData)}
-        {renderList("\u{1F195} Sự kiện nổi bật", newClubsData)}
-        {/* <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>
-            Tham gia CLB để phát triển bản thân
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.greeting}>
+            {user ? `Hi, ${user.email}` : "Hi 👋"}
           </Text>
-          <Text style={styles.infoSubtitle}>
-            Kết nối, học hỏi, và cùng nhau tạo nên những giá trị tuyệt vời.
+          <Text style={styles.subtitle}>
+            What would you like to manage today?
           </Text>
-        </View> */}
-        {/* {renderList("\u{1F3AF} Gợi ý cho bạn", ClubData)} */}
+          <TouchableOpacity style={styles.notification}>
+            <Ionicons name="notifications-outline" size={24} color="#2563EB" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Search */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#94A3B8" />
+          <TextInput placeholder="Search Club..." style={styles.searchInput} />
+          <TouchableOpacity>
+            <Ionicons name="options-outline" size={20} color="#2563EB" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Banner */}
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>🔥 CLB Tuần Này</Text>
+          <Text style={styles.bannerDesc}>
+            Xem ngay những CLB đang nổi bật trong tuần và xu hướng hoạt động.
+          </Text>
+        </View>
+
+        {/* Categories */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Loại CLB</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.categoryList}>
+          {["Kỹ năng", "Học thuật", "Tình nguyện"].map((c, i) => (
+            <TouchableOpacity key={i} style={styles.categoryItem}>
+              <Text style={styles.categoryText}>{c}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Popular Clubs */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>CLB nổi bật</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {[1, 2].map((item, idx) => (
+            <View key={idx} style={styles.card}>
+              <View style={styles.cardImage} />
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTag}>Kỹ năng</Text>
+                <Text style={styles.cardTitle}>CLB Thuyết trình</Text>
+                <Text style={styles.cardSub}>120 thành viên</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Top Mentors */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Ban chủ nhiệm</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.mentorRow}>
+          {["Trang", "Minh", "Ngọc", "Quân"].map((name, index) => (
+            <View key={index} style={styles.mentorCard}>
+              <View style={styles.mentorAvatar} />
+              <Text style={styles.mentorName}>{name}</Text>
+            </View>
+          ))}
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </>
   );
 };
 
+export default Homepage;
+
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#f4f6f8"
-  },
   container: {
-    paddingVertical: 24,
     paddingHorizontal: 20,
-    gap: 28
+    paddingTop: 20,
+    paddingBottom: 40 // thêm padding dưới cho dễ cuộn
   },
-  section: {
-    marginBottom: -24
+  header: {
+    marginBottom: 20
   },
-  sectionHeader: {
+  greeting: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0F172A"
+  },
+  subtitle: {
+    color: "#64748B",
+    marginTop: 4
+  },
+  notification: {
+    position: "absolute",
+    top: 0,
+    right: 0
+  },
+  searchContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  searchInput: {
+    flex: 1,
+    marginHorizontal: 8
+  },
+  banner: {
+    backgroundColor: "#2563EB",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20
+  },
+  bannerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700"
+  },
+  bannerDesc: {
+    color: "#E0F2FE",
+    marginTop: 4
+  },
+  sectionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12
+    marginBottom: 10,
+    marginTop:10
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#1a1a1a"
+    color: "#1E3A8A"
   },
-  viewAll: {
-    fontSize: 14,
-    color: "#3366FF",
-    fontWeight: "500"
+  seeAll: {
+    color: "#2563EB",
+    fontWeight: "600"
   },
-  row: {
-    justifyContent: "space-between",
-    gap: 12
+  categoryList: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 20
   },
-  infoCard: {
-    marginTop: -20,
-    backgroundColor: "#DCEBFF",
-    borderRadius: 20,
-    padding: 24,
-    alignItems: "center",
+  categoryItem: {
+    backgroundColor: "#E0F2FE",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20
+  },
+  categoryText: {
+    color: "#0369A1",
+    fontWeight: "600"
+  },
+  card: {
+    backgroundColor: "#fff",
+    width: 200,
+    borderRadius: 12,
+    marginRight: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
-  infoTitle: {
-    fontSize: 18,
+  cardImage: {
+    height: 100,
+    backgroundColor: "#CBD5E1",
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12
+  },
+  cardContent: {
+    padding: 12
+  },
+  cardTag: {
+    color: "#64748B",
+    fontSize: 12,
+    marginBottom: 4
+  },
+  cardTitle: {
+    fontSize: 16,
     fontWeight: "700",
-    color: "#3366FF",
-    marginBottom: 10,
-    textAlign: "center"
+    color: "#1E3A8A"
   },
-  infoSubtitle: {
-    fontSize: 14,
-    color: "#4f4f4f",
-    textAlign: "center",
-    lineHeight: 20
+  cardSub: {
+    fontSize: 12,
+    color: "#64748B",
+    marginTop: 4
+  },
+  mentorRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10
+  },
+  mentorCard: {
+    alignItems: "center",
+    flex: 1
+  },
+  mentorAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#CBD5E1",
+    marginBottom: 6
+  },
+  mentorName: {
+    fontSize: 12,
+    color: "#0F172A",
+    fontWeight: "600"
   }
 });
-
-export default Homepage;

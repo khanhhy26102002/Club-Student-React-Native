@@ -36,7 +36,7 @@ const EventHistory = () => {
     }
     try {
       const response = await fetchBaseResponse(
-        `/registrations/registrations/myqr?eventId=${eventId}`,
+        `/api/registrations/registrations/myqr?eventId=${eventId}`,
         {
           method: "GET",
           headers: {

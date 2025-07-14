@@ -11,7 +11,7 @@ const AboutId = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchBaseResponse(`/clubs/public/${clubId}`, {
+        const response = await fetchBaseResponse(`/api/clubs/public/${clubId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json"

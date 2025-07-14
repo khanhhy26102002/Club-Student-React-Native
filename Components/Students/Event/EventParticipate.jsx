@@ -25,7 +25,7 @@ const EventParticipate = ({ navigation }) => {
   const fetchData = async () => {
   const token = await AsyncStorage.getItem("jwt");
   try {
-    const response = await fetchBaseResponse(`/tickets/event/${eventId}`, {
+    const response = await fetchBaseResponse(`/api/tickets/event/${eventId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -73,7 +73,7 @@ const EventParticipate = ({ navigation }) => {
     formData.append("eventId", eventId);
     formData.append("ticketId", ticketId);
     try {
-      const response = await fetchBaseResponse("/registrations/register", {
+      const response = await fetchBaseResponse("/api/registrations/register", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -99,12 +99,6 @@ const EventParticipate = ({ navigation }) => {
           message: response.data?.message ?? "Có lỗi xảy ra"
         };
       }
-
-      throw {
-        ...response,
-        status: response.data?.status ?? response.status,
-        message: response.data?.message ?? "Có lỗi xảy ra"
-      };
     } catch (error) {
       const responseData =
         error?.response?.data && typeof error.response.data === "object"
