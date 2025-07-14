@@ -14,7 +14,7 @@ const PaymentWebView = ({ navigation }) => {
     return match ? decodeURIComponent(match[1]) : null;
   };
 
-  const notifyBackend = async (orderCode) => {
+  const notifyBackend = async orderCode => {
     try {
       const token = await AsyncStorage.getItem("jwt");
       const response = await fetchBaseResponse(
@@ -30,7 +30,7 @@ const PaymentWebView = ({ navigation }) => {
     }
   };
 
-  const handleNavigation = (navState) => {
+  const handleNavigation = navState => {
     const url = navState.url;
     const status = getQueryParam(url, "status");
     const cancel = getQueryParam(url, "cancel");
@@ -58,13 +58,12 @@ const PaymentWebView = ({ navigation }) => {
       <WebView
         source={{ uri: paymentUrl }}
         startInLoadingState
-        renderLoading={() => (
+        renderLoading={() =>
           <ActivityIndicator
             size="large"
             color="#2563eb"
             style={styles.loader}
-          />
-        )}
+          />}
         onNavigationStateChange={handleNavigation}
       />
     </View>
