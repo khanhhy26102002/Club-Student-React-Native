@@ -14,17 +14,44 @@ import {
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import { useRoute } from "@react-navigation/native";
+import { Picker } from "@react-native-picker/picker";
 
 const EventParticipate = ({ navigation }) => {
   const route = useRoute();
-  const { eventId } = route.params;
+  const { eventId, title } = route.params;
+  const [data, setData] = React.useState([]);
   const [ticketId, setTicketId] = React.useState("");
   const [loading, setLoading] = React.useState(false); // 🆕 Loading state
-
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse(`/tickets/event/${eventId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setData(response.data);
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      Alert.alert("Không fetching được data");
+    }
+  };
+  React.useEffect(() => {
+    fetchData();
+  }, []);
   const handleOpenPayment = async (e) => {
     e.preventDefault();
     const token = await AsyncStorage.getItem("jwt");
     setLoading(true); // 🆕 Start loading
+    const formData = new FormData();
+    formData.append("eventId", eventId);
+    formData.append("ticketId", ticketId);
     try {
       const response = await fetchBaseResponse("/registrations/register", {
         method: "POST",
@@ -32,7 +59,7 @@ const EventParticipate = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         },
-        data: eventId
+        data: formData
       });
 
       if (response.status === 200) {
@@ -98,17 +125,26 @@ const EventParticipate = ({ navigation }) => {
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎟️ Đăng ký sự kiện</Text>
-        <Text style={styles.title}>Mã sự kiện: {eventId}</Text>
+        <Text style={styles.title}>Tên sự kiện: {title}</Text>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>🎫 Mã vé</Text>
-          <TextInput
-            style={styles.input}
-            value={ticketId}
-            onChangeText={setTicketId}
-            placeholder="Nhập mã vé"
-            keyboardType="numeric"
-            placeholderTextColor="#9ca3af"
-          />
+          <Text style={styles.label}>🎫 Chọn vé</Text>
+          <View style={styles.pickerWrapper}>
+            <Picker
+              key={ticketId}
+              selectedValue={ticketId}
+              onValueChange={(itemValue) => setTicketId(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="-- Chọn vé --" value="" />
+              {data.map((ticket) => (
+                <Picker.Item
+                  key={ticket.ticketId}
+                  label={`${ticket.name} - ${ticket.price} VNĐ`}
+                  value={ticket.ticketId}
+                />
+              ))}
+            </Picker>
+          </View>
         </View>
 
         <TouchableOpacity
