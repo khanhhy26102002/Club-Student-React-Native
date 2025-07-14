@@ -86,7 +86,7 @@ const EventRegister = () => {
     const token = await AsyncStorage.getItem("jwt");
     const isoDate = new Date(eventDate).toISOString();
     try {
-      const response = await fetchBaseResponse("/events/create-event-request", {
+      const response = await fetchBaseResponse("/api/events/create-event-request", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

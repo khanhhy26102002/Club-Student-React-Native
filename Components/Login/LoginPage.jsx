@@ -23,7 +23,7 @@ const LoginPage = ({ navigation }) => {
   // tab clubs đang có clubs/public
   const handleLogin = async () => {
     try {
-      const response = await fetchBaseResponse("/login", {
+      const response = await fetchBaseResponse("/api/login", {
         method: "POST",
         data: { email, password }
       });
@@ -38,7 +38,7 @@ const LoginPage = ({ navigation }) => {
         await AsyncStorage.setItem("email", email);
         setRoleName(roleName);
 
-        const clubResponse = await fetchBaseResponse("/clubs/my-club-roles", {
+        const clubResponse = await fetchBaseResponse("/api/clubs/my-club-roles", {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -61,8 +61,6 @@ const LoginPage = ({ navigation }) => {
         } else if (roleName === "ORGANIZERS") {
           navigation.navigate("Organizer");
         }
-      } else {
-        throw new Error(`HTTP Status:${response.status}`);
       }
     } catch (err) {
       Alert.alert("Đăng nhập thất bại", err.message);

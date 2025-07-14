@@ -20,7 +20,7 @@ const BlogId = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchBaseResponse(`/blogs/${id}`, {
+        const response = await fetchBaseResponse(`/api/blogs/${id}`, {
           method: "GET"
         });
         if (!response || response.length === 0) {

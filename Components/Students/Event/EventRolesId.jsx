@@ -16,7 +16,7 @@ const EventRolesId = () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse(
-          `/event-roles/event/${eventId}`,
+          `/api/event-roles/event/${eventId}`,
           {
             method: "GET",
             headers: {

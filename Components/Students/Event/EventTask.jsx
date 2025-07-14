@@ -61,7 +61,7 @@ const EventTask = () => {
     const isoDate = new Date(dueDate).toISOString();
 
     try {
-      const response = await fetchBaseResponse("/tasks/create", {
+      const response = await fetchBaseResponse("/api/tasks/create", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

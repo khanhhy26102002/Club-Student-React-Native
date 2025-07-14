@@ -21,7 +21,7 @@ const About = ({ navigation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchBaseResponse("/clubs/public", {
+        const response = await fetchBaseResponse("/api/clubs/public", {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         });

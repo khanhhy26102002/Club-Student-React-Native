@@ -31,7 +31,7 @@ const RegisterPage = ({ navigation }) => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchBaseResponse("/majors", {
+        const response = await fetchBaseResponse("/api/majors", {
           method: "GET",
           headers: {
             "Content-Type": "application/json"
@@ -61,7 +61,7 @@ const RegisterPage = ({ navigation }) => {
     }
 
     try {
-      const response = await fetchBaseResponse("/register", {
+      const response = await fetchBaseResponse("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -92,7 +92,7 @@ const RegisterPage = ({ navigation }) => {
   };
   const handleVerifyOtp = async (otp) => {
     try {
-      const response = await fetchBaseResponse("/verify-otp", {
+      const response = await fetchBaseResponse("/api/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

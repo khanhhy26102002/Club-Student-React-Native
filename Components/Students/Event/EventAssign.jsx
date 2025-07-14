@@ -24,7 +24,7 @@ const EventAssign = () => {
     const token = await AsyncStorage.getItem("jwt");
     try {
       const response = await fetchBaseResponse(
-        `/event-roles/assign/${eventId}`,
+        `/api/event-roles/assign/${eventId}`,
         {
           method: "POST",
           headers: {

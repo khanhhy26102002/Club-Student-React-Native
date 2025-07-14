@@ -24,7 +24,7 @@ const EventId = ({ navigation }) => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/events/public/${eventId}`, {
+        const response = await fetchBaseResponse(`/api/events/public/${eventId}`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

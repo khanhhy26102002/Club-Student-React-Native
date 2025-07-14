@@ -25,7 +25,7 @@ const ClubGroup = ({ navigation }) => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/clubs/${clubId}/members`, {
+        const response = await fetchBaseResponse(`/api/clubs/${clubId}/members`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

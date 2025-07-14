@@ -25,7 +25,7 @@ const ClubRegistersId = () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse(
-          `/memberships/${membershipId}`,
+          `/api/memberships/${membershipId}`,
           {
             method: "GET",
             headers: {
