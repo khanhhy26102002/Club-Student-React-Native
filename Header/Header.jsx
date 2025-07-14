@@ -25,6 +25,8 @@ const Header = () => {
         setUser({ email: storedEmail, token: storedToken });
       }
     };
+    // lên mạng task manager cho mobile
+    // 
     fetchUser();
     const unsubscribe = navigation.addListener("focus", () => {
       fetchUser();

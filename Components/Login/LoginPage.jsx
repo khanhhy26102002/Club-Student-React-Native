@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Modal
+  Modal,
+  Image
 } from "react-native";
 import { fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -18,6 +19,7 @@ const LoginPage = ({ navigation }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   // tab clubs đang có clubs/public
   const handleLogin = async () => {
     try {
@@ -76,9 +78,19 @@ const LoginPage = ({ navigation }) => {
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Chào mừng bạn trở lại!</Text>
-        <Text style={styles.subtitle}>Đăng nhập để tiếp tục</Text>
-
+        <View style={styles.logoWrapper}>
+          <Image
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2d/Logo_Tr%C6%B0%E1%BB%9Dng_%C4%90%E1%BA%A1i_h%E1%BB%8Dc_FPT.svg/2560px-Logo_Tr%C6%B0%E1%BB%9Dng_%C4%90%E1%BA%A1i_h%E1%BB%8Dc_FPT.svg.png"
+            }}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.title}>Hãy đăng nhập để tiếp tục</Text>
+        <Text style={styles.subtitle}>
+          Đăng nhập để tiếp tục cái câu lạc bộ của bạn
+        </Text>
         <View style={styles.formGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -94,14 +106,33 @@ const LoginPage = ({ navigation }) => {
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Mật khẩu</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Mật khẩu"
-            placeholderTextColor="#a3a3a3"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.passwordWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Mật khẩu"
+              placeholderTextColor="#a3a3a3"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <FontAwesome
+                name={showPassword ? "eye-slash" : "eye"}
+                size={20}
+                color="#a3a3a3"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.forgotWrapper}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ForgotPassword")}
+          >
+            <Text style={styles.forgotText}>Quên mật khẩu?</Text>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -132,7 +163,7 @@ const LoginPage = ({ navigation }) => {
                 color="#fff"
                 style={styles.icon}
               />
-              <Text style={styles.socialText}>Đăng nhập với Google</Text>
+              <Text style={styles.socialText}>Google</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -143,6 +174,27 @@ const LoginPage = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  logoWrapper: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 40
+  },
+  forgotWrapper: {
+    alignItems: "flex-end",
+    marginBottom: 14
+  },
+  forgotText: {
+    color: "#2563eb", // bạn có thể đổi sang màu cam FPT: "#ff5722"
+    fontSize: 14,
+    fontWeight: "500",
+    textDecorationLine: "none"
+  },
+  logoImage: {
+    width: 220,
+    height: 80,
+    borderRadius: 12
+  },
+
   container: {
     flexGrow: 1,
     backgroundColor: "#e6f0ff",
@@ -151,10 +203,10 @@ const styles = StyleSheet.create({
     paddingVertical: 40
   },
   title: {
-    fontSize: 28,
+    fontSize: 16,
     fontWeight: "800",
     color: "#004aad",
-    marginBottom: 8,
+    marginBottom: 20,
     textAlign: "center"
   },
   subtitle: {
@@ -164,7 +216,16 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   formGroup: {
-    marginBottom: 20
+    marginBottom: 16
+  },
+  passwordWrapper: {
+    position: "relative"
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 18,
+    top: "50%",
+    transform: [{ translateY: -10 }]
   },
   label: {
     fontSize: 15,
@@ -186,6 +247,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
     color: "#222"
+  },
+  passwordWrapper: {
+    position: "relative",
+    marginBottom: 16
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 16,
+    top: "50%",
+    transform: [{ translateY: -10 }]
   },
   loginButton: {
     backgroundColor: "#004aad",
@@ -217,7 +288,6 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 14,
     color: "#004aad",
-    fontWeight: "700"
   },
   socialWrapper: {
     marginTop: 36,
