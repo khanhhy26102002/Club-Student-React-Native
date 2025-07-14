@@ -112,7 +112,8 @@ const EventId = ({ navigation }) => {
               navigation.navigate("Event", {
                 screen: "EventRegistration",
                 params: {
-                  eventId: data.eventId
+                  eventId: data.eventId,
+                  title: data.title,
                 }
               })
             }

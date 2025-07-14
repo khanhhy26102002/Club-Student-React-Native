@@ -9,11 +9,13 @@ import {
   Alert,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image
 } from "react-native";
 import { fetchBaseResponse } from "../../utils/api";
 import { Picker } from "@react-native-picker/picker";
 import OtpModal from "./OtpModal";
+import { LinearGradient } from "expo-linear-gradient";
 
 const RegisterPage = ({ navigation }) => {
   const [studentCode, setStudentCode] = React.useState("");
@@ -25,6 +27,7 @@ const RegisterPage = ({ navigation }) => {
   const [major, setMajor] = React.useState("");
   const [majors, setMajors] = React.useState([]);
   const [showOtpModal, setShowOtpModal] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   React.useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,175 +114,201 @@ const RegisterPage = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboardAvoid}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <LinearGradient
+      colors={["#f0f4ff", "#dbeafe", "#e0f2fe"]} // hoặc tone FPT như ["#fff0e0", "#ffe0cc"]
+      style={{ flex: 1 }}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <Text style={styles.title}>Chào mừng bạn tới trang đăng ký</Text>
-        <Text style={styles.subtitle}>
-          Hãy điền thông tin bên dưới để tạo tài khoản mới
-        </Text>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Mã số Sinh Viên</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập mã số sinh viên"
-            placeholderTextColor="#bbb"
-            keyboardType="default"
-            value={studentCode}
-            onChangeText={setStudentCode}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập email"
-            placeholderTextColor="#bbb"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Họ và Tên</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập họ và tên"
-            placeholderTextColor="#bbb"
-            keyboardType="default"
-            value={fullName}
-            onChangeText={setFullName}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Năm học</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={academicYear}
-              onValueChange={(itemValue) => setAcademicYear(itemValue)}
-              style={styles.picker}
-              dropdownIconColor="#555"
-            >
-              <Picker.Item label="Chọn năm học..." value="" />
-              <Picker.Item label="Năm nhất" value="YEAR_ONE" />
-              <Picker.Item label="Năm hai" value="YEAR_TWO" />
-              <Picker.Item label="Năm ba" value="YEAR_THREE" />
-              <Picker.Item label="Năm bốn" value="YEAR_FOUR" />
-            </Picker>
-            <FontAwesome
-              name="caret-down"
-              size={20}
-              color="#777"
-              style={styles.pickerIcon}
-              pointerEvents="none"
-            />
-          </View>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Ngành học</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={major}
-              onValueChange={(itemValue) => setMajor(itemValue)}
-              style={styles.picker}
-              dropdownIconColor="#555"
-            >
-              <Picker.Item label="Chọn ngành học..." value="" />
-              {majors.map((item) => (
-                <Picker.Item
-                  key={item.majorId}
-                  label={item.majorName}
-                  value={item.majorId}
-                />
-              ))}
-            </Picker>
-            <FontAwesome
-              name="caret-down"
-              size={20}
-              color="#777"
-              style={styles.pickerIcon}
-              pointerEvents="none"
-            />
-          </View>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Mật khẩu</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập mật khẩu"
-            placeholderTextColor="#bbb"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Nhập lại mật khẩu</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nhập lại mật khẩu"
-            placeholderTextColor="#bbb"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-        </View>
-        <TouchableOpacity
-          style={styles.registerButton}
-          onPress={handleRegister}
-          activeOpacity={0.8}
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.registerButtonText}>Đăng ký</Text>
-        </TouchableOpacity>
-        <OtpModal
-          visible={showOtpModal}
-          onSubmit={handleVerifyOtp}
-          onCancel={() => setShowOtpModal(false)}
-        />
-
-        <View style={styles.socialWrapper}>
-          <Text style={styles.orText}>Hoặc đăng ký bằng</Text>
-          <View style={styles.socialContainer}>
-            <TouchableOpacity
-              style={[styles.socialButton, styles.google]}
-              activeOpacity={0.8}
-            >
-              <FontAwesome
-                name="google"
-                size={20}
-                color="#fff"
-                style={styles.icon}
-              />
-              <Text style={styles.socialText}>Đăng nhập với Google</Text>
-            </TouchableOpacity>
+          <View style={styles.logoWrapper}>
+            <Image
+              source={{
+                uri: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2d/Logo_Tr%C6%B0%E1%BB%9Dng_%C4%90%E1%BA%A1i_h%E1%BB%8Dc_FPT.svg/2560px-Logo_Tr%C6%B0%E1%BB%9Dng_%C4%90%E1%BA%A1i_h%E1%BB%8Dc_FPT.svg.png"
+              }}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
-        </View>
+          <Text style={styles.title}>Chào mừng bạn tới trang đăng ký</Text>
+          <Text style={styles.subtitle}>
+            Tạo tài khoản để tiếp tục cái câu lạc bộ của bạn
+          </Text>
 
-        <View style={styles.wrapper}>
-          <Text style={styles.infoText}>Bạn đã có tài khoản?</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Mã số Sinh Viên</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập mã số sinh viên"
+              placeholderTextColor="#bbb"
+              keyboardType="default"
+              value={studentCode}
+              onChangeText={setStudentCode}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập email trường"
+              placeholderTextColor="#bbb"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Họ và Tên</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập họ và tên"
+              placeholderTextColor="#bbb"
+              keyboardType="default"
+              value={fullName}
+              onChangeText={setFullName}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Năm học</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={academicYear}
+                onValueChange={(itemValue) => setAcademicYear(itemValue)}
+                style={styles.picker}
+                dropdownIconColor="#555"
+              >
+                <Picker.Item label="Chọn năm học..." value="" />
+                <Picker.Item label="Năm nhất" value="YEAR_ONE" />
+                <Picker.Item label="Năm hai" value="YEAR_TWO" />
+                <Picker.Item label="Năm ba" value="YEAR_THREE" />
+                <Picker.Item label="Năm bốn" value="YEAR_FOUR" />
+              </Picker>
+              <FontAwesome
+                name="caret-down"
+                size={20}
+                color="#777"
+                style={styles.pickerIcon}
+                pointerEvents="none"
+              />
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Ngành học</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={major}
+                onValueChange={(itemValue) => setMajor(itemValue)}
+                style={styles.picker}
+                dropdownIconColor="#555"
+              >
+                <Picker.Item label="Chọn ngành học..." value="" />
+                {majors.map((item) => (
+                  <Picker.Item
+                    key={item.majorId}
+                    label={item.majorName}
+                    value={item.majorId}
+                  />
+                ))}
+              </Picker>
+              <FontAwesome
+                name="caret-down"
+                size={20}
+                color="#777"
+                style={styles.pickerIcon}
+                pointerEvents="none"
+              />
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Mật khẩu</Text>
+            <View style={styles.passwordWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Mật khẩu"
+                placeholderTextColor="#a3a3a3"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <FontAwesome
+                  name={showPassword ? "eye-slash" : "eye"}
+                  size={20}
+                  color="#a3a3a3"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Nhập lại mật khẩu</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập lại mật khẩu"
+              placeholderTextColor="#bbb"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+          </View>
           <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("Login")}
+            style={styles.registerButton}
+            onPress={handleRegister}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Đăng nhập tại đây</Text>
+            <Text style={styles.registerButtonText}>Tạo tài khoản</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <OtpModal
+            visible={showOtpModal}
+            onSubmit={handleVerifyOtp}
+            onCancel={() => setShowOtpModal(false)}
+          />
+
+          <View style={styles.socialWrapper}>
+            <Text style={styles.orText}>Hoặc tạo bằng</Text>
+            <View style={styles.socialContainer}>
+              <TouchableOpacity
+                style={[styles.socialButton, styles.google]}
+                activeOpacity={0.8}
+              >
+                <FontAwesome
+                  name="google"
+                  size={20}
+                  color="#fff"
+                  style={styles.icon}
+                />
+                <Text style={styles.socialText}>Google</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.wrapper}>
+            <Text style={styles.infoText}>Bạn đã có tài khoản?</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate("Login")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>Đăng nhập tại đây</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 };
 
@@ -288,12 +317,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f0f4f8"
   },
+  logoWrapper: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 10
+  },
+  passwordWrapper: {
+    position: "relative"
+  },
+  eyeButton: {
+    position: "absolute",
+    right: 18,
+    top: "50%",
+    transform: [{ translateY: -10 }]
+  },
+  logoWrapper: {
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 32
+  },
+  logoImage: {
+    width: 200,
+    height: 60,
+    resizeMode: "contain"
+  },
   container: {
-    padding: 24,
-    paddingBottom: 50
+    paddingHorizontal: 24,
+    paddingBottom: 40
   },
   title: {
-    fontSize: 30,
+    fontSize: 20,
     fontWeight: "800",
     color: "#2c3e50",
     marginBottom: 8,
@@ -316,19 +369,19 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   input: {
-    height: 48,
     backgroundColor: "#fff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#d1d8e0",
+    paddingVertical: 14,
     paddingHorizontal: 18,
+    borderRadius: 14,
     fontSize: 16,
-    color: "#2d3436",
-    shadowColor: "#2d3436",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    borderWidth: 1,
+    borderColor: "#c3cfe0",
+    shadowColor: "#004aad",
+    shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 3
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+    color: "#222"
   },
   pickerWrapper: {
     position: "relative",
@@ -356,32 +409,31 @@ const styles = StyleSheet.create({
     pointerEvents: "none"
   },
   registerButton: {
-    backgroundColor: "#0984e3",
+    backgroundColor: "#5B9DF9",
+    paddingVertical: 14,
     borderRadius: 14,
-    height: 52,
-    justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 40,
-    shadowColor: "#0984e3",
-    shadowOffset: { width: 0, height: 6 },
+    marginTop: 12,
+    shadowColor: "#ff5722",
     shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3
   },
   registerButtonText: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "800",
-    letterSpacing: 1
+    fontWeight: "700"
   },
+
   socialWrapper: {
     alignItems: "center",
-    marginBottom: 40
+    marginBottom: 40,
+    marginTop: 30
   },
   orText: {
-    fontSize: 14,
-    color: "#95a5a6",
+    fontSize: 15,
+    color: "#FF8C42",
     marginBottom: 20,
     fontWeight: "600"
   },
@@ -392,15 +444,17 @@ const styles = StyleSheet.create({
   socialButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#db4437",
-    paddingVertical: 12,
-    paddingHorizontal: 28,
-    borderRadius: 14,
-    shadowColor: "#db4437",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 7
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 40,
+    width: "70%",
+    marginVertical: 8,
+    shadowColor: "#aaa",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5
   },
   google: {
     backgroundColor: "#db4437"
@@ -414,29 +468,20 @@ const styles = StyleSheet.create({
     fontSize: 18
   },
   wrapper: {
-    alignItems: "center"
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: -10
   },
   infoText: {
-    fontSize: 16,
-    color: "#34495e",
-    marginBottom: 14,
-    fontWeight: "600"
-  },
-  button: {
-    backgroundColor: "#0984e3",
-    paddingVertical: 14,
-    paddingHorizontal: 60,
-    borderRadius: 30,
-    shadowColor: "#0984e3",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6
+    fontSize: 14,
+    color: "#444"
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700"
+    fontSize: 14,
+    color: "#2563eb",
+    marginLeft: 6,
+    textDecorationLine: "none"
   }
 });
 

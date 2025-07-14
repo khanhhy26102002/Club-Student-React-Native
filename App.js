@@ -8,6 +8,7 @@ import React from "react";
 import Feedback from "./Components/Students/Feedback/Feedback";
 import * as Notifications from "expo-notifications";
 import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
+import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -52,7 +53,11 @@ export default function App() {
             headerShown: false
           }}
         />
-
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPassword}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Organizer" component={StudentOrganizer} />
       </Stack.Navigator>
     </NavigationContainer>
