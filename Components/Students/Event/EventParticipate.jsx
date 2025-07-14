@@ -23,30 +23,50 @@ const EventParticipate = ({ navigation }) => {
   const [ticketId, setTicketId] = React.useState("");
   const [loading, setLoading] = React.useState(false); // 🆕 Loading state
   const fetchData = async () => {
-    const token = await AsyncStorage.getItem("jwt");
-    try {
-      const response = await fetchBaseResponse(`/tickets/event/${eventId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (response.status === 200) {
-        setData(response.data);
-      } else {
-        throw new Error(`HTTP Status:${response.status}`);
+  const token = await AsyncStorage.getItem("jwt");
+  try {
+    const response = await fetchBaseResponse(`/tickets/event/${eventId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
-    } catch (error) {
-      console.error("Error: ", error);
-      Alert.alert("Không fetching được data");
+    });
+    if (response.status === 200) {
+      setData(response.data);
     }
-  };
+  } catch (error) {
+    const responseData =
+      error?.response?.data && typeof error.response.data === "object"
+        ? error.response.data
+        : error?.data && typeof error.data === "object"
+        ? error.data
+        : error;
+
+    const serverStatus =
+      typeof responseData.status === "number"
+        ? responseData.status
+        : typeof error?.status === "number"
+        ? error.status
+        : null;
+
+    const serverMessage =
+      responseData.message ?? error?.message ?? "Không xác định";
+
+    console.log("🚨 FetchData Error:", serverStatus, serverMessage);
+
+    if (serverStatus === 5003) {
+      Alert.alert("Thông báo", "Sự kiện này không có vé.");
+    } else {
+      Alert.alert("Lỗi", "Không fetching được data");
+    }
+  }
+};
+
   React.useEffect(() => {
     fetchData();
   }, []);
-  const handleOpenPayment = async (e) => {
-    e.preventDefault();
+  const handleOpenPayment = async () => {
     const token = await AsyncStorage.getItem("jwt");
     setLoading(true); // 🆕 Start loading
     const formData = new FormData();
@@ -72,39 +92,46 @@ const EventParticipate = ({ navigation }) => {
             qrCode: response.data.qrCode
           }
         });
-      } else if (response.status === 400 || response.status === 422) {
+      } else {
         throw {
           ...response,
-          message:
-            response.data?.message ||
-            "Thông tin đăng ký không hợp lệ. Vui lòng kiểm tra lại."
+          status: response.data?.status ?? response.status,
+          message: response.data?.message ?? "Có lỗi xảy ra"
         };
-      } else {
-        throw response;
       }
+
+      throw {
+        ...response,
+        status: response.data?.status ?? response.status,
+        message: response.data?.message ?? "Có lỗi xảy ra"
+      };
     } catch (error) {
-      // Xử lý dữ liệu lỗi linh hoạt và an toàn hơn
       const responseData =
         error?.response?.data && typeof error.response.data === "object"
           ? error.response.data
           : error?.data && typeof error.data === "object"
           ? error.data
-          : {};
+          : error;
 
-      const serverStatus = responseData.status ?? error?.status ?? null;
+      const serverStatus =
+        typeof responseData.status === "number"
+          ? responseData.status
+          : typeof error?.status === "number"
+          ? error.status
+          : null;
+
       const serverMessage =
         responseData.message ?? error?.message ?? "Không xác định";
-
-      console.log("📦 error =", error);
-      console.log("📦 responseData =", responseData);
+      console.log("❌ FULL ERROR:", JSON.stringify(error, null, 2));
       console.log("📦 serverStatus =", serverStatus);
       console.log("📦 serverMessage =", serverMessage);
 
-      // ✅ Hiển thị alert dựa trên status
       if (serverStatus === 5005) {
         Alert.alert("Thông báo", "⚠️ Bạn đã đăng kí sự kiện này trước đó.");
       } else if (serverStatus === 5004) {
         Alert.alert("Thiếu thông tin", "Sự kiện này yêu cầu chọn vé.");
+      } else if (serverStatus === 5003) {
+        Alert.alert("Lỗi", "Sự kiện này không có vé");
       } else if (
         serverStatus === 1000 &&
         serverMessage === "Entity not found"
@@ -150,7 +177,6 @@ const EventParticipate = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.button, loading && { opacity: 0.6 }]}
           onPress={handleOpenPayment}
-          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
