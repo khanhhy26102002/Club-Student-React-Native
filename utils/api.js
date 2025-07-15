@@ -1,6 +1,5 @@
 import axios from "axios";
 import { API_URL } from "@env";
-import { Alert } from "react-native";
 const API = axios.create({
   baseURL: API_URL,
   timeout: 15000

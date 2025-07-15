@@ -29,7 +29,7 @@ const ClubCreated = () => {
           }
         });
         if (response.status === 200) {
-          setData(response.data);
+          setData(response.data.filter((c) => c.role === "CLUBLEADER"));
         } else {
           throw new Error(`HTTP Status: ${response.status}`);
         }
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 16,
     color: "#1e293b",
-    textAlign:"center"
+    textAlign: "center"
   },
   card: {
     backgroundColor: "#ffffff",

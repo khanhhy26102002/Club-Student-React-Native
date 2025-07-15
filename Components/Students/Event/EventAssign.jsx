@@ -1,27 +1,82 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Alert,
-  ScrollView
+  ScrollView,
+  ActivityIndicator,
+  TextInput
 } from "react-native";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import { Picker } from "@react-native-picker/picker";
-
-const EventAssign = () => {
-  const [userId, setUserId] = useState(0);
-  const [roleName, setRoleName] = useState("VOLUNTEER");
-  const [eventId, setEventId] = useState("");
+// bị lỗi create-event-request
+// lỗi assign-role khi đã làm chủ event là eventId 2
+const EventAssign = ({ route }) => {
+  const [selectedUserId, setSelectedUserId] = React.useState(null);
+  const [roleName, setRoleName] = React.useState("VOLUNTEER");
+  const { eventId, title } = route.params;
   const [loading, setLoading] = React.useState(false);
-  const handleAssign = async (e) => {
-    e.preventDefault();
+  const [data, setData] = React.useState([]);
+  const [hasPermission, setHasPermission] = React.useState(false);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
+      try {
+        const response = await fetchBaseResponse(
+          `/api/event-roles/my/${eventId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        if (response.status === 200 && response.data.roleName === "ORGANIZER") {
+          setHasPermission(true);
+        } else {
+          Alert.alert(
+            "🚫 Không đủ quyền",
+            "Bạn không có quyền phân vai trong sự kiện này."
+          );
+        }
+        const listRes = await fetchBaseResponse(
+          `/api/event-roles/event/${eventId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (listRes.status === 200) {
+          setData(listRes.data);
+        } else {
+          throw new Error(`HTTP Status:${listRes.status}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+        Alert.alert("Không fetching được data");
+      }
+    };
+    fetchData();
+  }, [eventId]);
+
+  const handleAssign = async () => {
+    if (!selectedUserId) {
+      Alert.alert("⚠️ Thiếu thông tin", "Vui lòng chọn người dùng.");
+      return;
+    }
+
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
+
     try {
       const response = await fetchBaseResponse(
         `/api/event-roles/assign/${eventId}`,
@@ -31,25 +86,32 @@ const EventAssign = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           },
-          data: { userId, roleName }
+          data: { userId: selectedUserId, roleName }
         }
       );
-      console.log("📦 Payload gửi lên:", {
-        userId: Number(userId),
-        roleName: roleName.trim()
-      });
-      if (response.status === 200) {
-        Alert.alert("Thành công", "Bạn đã phân chia task thành công");
-      } else if (response.status === 6003) {
-        Alert.alert(
-          "Thất bại",
-          "User Id này đã có phân role trong sự kiện này"
-        );
-      } else {
-        throw new Error(`HTTP Status:${response.status}`);
+
+      const resStatus = response?.status;
+      const resMessage = response?.message || "";
+
+      if (resStatus === 200) {
+        Alert.alert("🎉 Thành công", "Bạn đã phân role thành công.");
+        navigation.navigate("Event", {
+          screen: "EventTask",
+          params: {
+            eventId: data.eventId
+          }
+        });
       }
     } catch (error) {
-      Alert.alert("⚠️ Lỗi", error.message || "Đã xảy ra lỗi.");
+      const fallbackMsg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Đã xảy ra lỗi không xác định.";
+      if (fallbackMsg === "You do not have permission to use this") {
+        Alert.alert("🚫 Không được phép", "Bạn không có quyền gán vai trò.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,32 +119,31 @@ const EventAssign = () => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>🎯 Phân vai trò cho thành viên</Text>
+        <Text style={styles.title}>🎯 Phân vai trò thành viên</Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>🎟️ Mã sự kiện (Event ID)</Text>
-          <TextInput
-            placeholder="Nhập mã sự kiện"
-            value={eventId}
-            onChangeText={setEventId}
-            keyboardType="numeric"
-            style={styles.input}
-          />
+        <View style={styles.card}>
+          <Text style={styles.eventLabel}>🎟️ Tên sự kiện:</Text>
+          <Text style={styles.eventTitle}>{title}</Text>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>👤 Mã người dùng (User ID)</Text>
-          <TextInput
-            placeholder="Nhập mã người dùng"
-            value={userId}
-            onChangeText={setUserId}
-            keyboardType="numeric"
-            style={styles.input}
-          />
+        <View style={styles.card}>
+          <Text style={styles.label}>👥 Chọn người dùng:</Text>
+          <View style={styles.pickerWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập mã số người dùng"
+              value={selectedUserId ? selectedUserId.toString() : ""}
+              onChangeText={(text) => {
+                const parsed = parseInt(text);
+                setSelectedUserId(isNaN(parsed) ? null : parsed);
+              }}
+              keyboardType="numeric"
+            />
+          </View>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>🎖️ Vai trò</Text>
+        <View style={styles.card}>
+          <Text style={styles.label}>🎖️ Vai trò:</Text>
           <View style={styles.pickerWrapper}>
             <Picker
               selectedValue={roleName}
@@ -98,13 +159,23 @@ const EventAssign = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.button, loading && { backgroundColor: "#9CA3AF" }]}
+          style={[
+            styles.button,
+            (!hasPermission || loading) && {
+              backgroundColor: "#93C5FD",
+              opacity: 0.6
+            }
+          ]}
           onPress={handleAssign}
-          disabled={loading}
+          disabled={!hasPermission || loading}
         >
-          <Text style={styles.buttonText}>
-            {loading ? "Đang xử lý..." : "🚀 Gán vai trò"}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {hasPermission ? "🚀 Gán vai trò" : "⛔ Không đủ quyền"}
+            </Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </>
@@ -116,18 +187,37 @@ export default EventAssign;
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F9FAFB",
     padding: 20
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "800",
     textAlign: "center",
-    color: "#1D4ED8",
-    marginBottom: 24
+    color: "#2563EB",
+    marginBottom: 28
   },
-  inputGroup: {
+  card: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     marginBottom: 20
+  },
+  eventLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#6B7280"
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginTop: 6
   },
   label: {
     fontSize: 16,
@@ -135,30 +225,27 @@ const styles = StyleSheet.create({
     color: "#374151",
     marginBottom: 6
   },
-  input: {
-    backgroundColor: "#fff",
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    fontSize: 16
-  },
   pickerWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#D1D5DB",
+    borderRadius: 12,
+    overflow: "hidden"
   },
   picker: {
-    height: 55,
-    width: "100%"
+    height: 56,
+    backgroundColor: "#F3F4F6"
   },
   button: {
     backgroundColor: "#2563EB",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
-    marginTop: 10
+    marginTop: 10,
+    shadowColor: "#2563EB",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4
   },
   buttonText: {
     color: "#fff",

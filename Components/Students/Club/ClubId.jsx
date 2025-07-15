@@ -15,12 +15,15 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import RenderHTML from "react-native-render-html";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// mai hỏi cái image-controller
 const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
+  const [membershipStatus, setMembershipStatus] = React.useState({
+    status: null,
+    role: null
+  });
+
   const [data, setData] = React.useState(null);
-  const [membershipStatus, setMembershipStatus] = React.useState(null); // Trạng thái tham gia
   const { width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
   const fetchData = async () => {
@@ -54,7 +57,8 @@ const ClubId = ({ navigation }) => {
   const statusData = async () => {
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse(
+      // 1. Gọi membership status
+      const statusRes = await fetchBaseResponse(
         `/api/memberships/status?clubId=${clubId}`,
         {
           method: "GET",
@@ -64,16 +68,34 @@ const ClubId = ({ navigation }) => {
           }
         }
       );
-      console.log("Membership API data:", response.data);
-      if (response.status === 200) {
-        setMembershipStatus(response.data);
-      } else {
-        throw new Error(`HTTP Status:${response.status}`);
+
+      let status = null;
+      if (statusRes.status === 200) {
+        status = statusRes.data;
       }
+
+      // 2. Gọi club roles
+      const rolesRes = await fetchBaseResponse("/api/clubs/my-club-roles", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      let role = null;
+      if (rolesRes.status === 200 && Array.isArray(rolesRes.data)) {
+        const matched = rolesRes.data.find((r) => r.clubId === clubId);
+        if (matched) role = matched.role;
+      }
+
+      // 3. Gộp lại
+      setMembershipStatus({ status, role });
     } catch (error) {
-      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+      Alert.alert("Lỗi khi tải trạng thái", error?.message || "Unknown error");
     }
   };
+
   useFocusEffect(
     React.useCallback(() => {
       fetchData();
@@ -117,7 +139,7 @@ const ClubId = ({ navigation }) => {
                 tagsStyles={htmlStyles}
               />
               <View>
-                {membershipStatus === "APPROVED" ? (
+                {membershipStatus.status === "APPROVED" ? (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate("Club", {
@@ -134,13 +156,13 @@ const ClubId = ({ navigation }) => {
                       🚪 Truy cập nhóm
                     </Text>
                   </TouchableOpacity>
-                ) : membershipStatus === "PENDING" ? (
+                ) : membershipStatus.status === "PENDING" ? (
                   <View style={styles.pendingButton}>
                     <Text style={styles.pendingButtonText}>
                       ⏳ Đang chờ duyệt
                     </Text>
                   </View>
-                ) : membershipStatus === "REJECTED" ? (
+                ) : membershipStatus.status === "REJECTED" ? (
                   <View style={styles.rejectedButton}>
                     <Text style={styles.rejectedButtonText}>❌ Bị từ chối</Text>
                   </View>
@@ -157,6 +179,23 @@ const ClubId = ({ navigation }) => {
                     }
                   >
                     <Text style={styles.registerButtonText}>📝 Tham gia</Text>
+                  </TouchableOpacity>
+                )}
+
+                {membershipStatus.role === "CLUBLEADER" && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("Club", {
+                        screen: "ClubAdmin",
+                        params: { clubId: data.clubId }
+                      })
+                    }
+                    style={[
+                      styles.accessButton,
+                      { backgroundColor: "#0f172a", marginTop: 16 }
+                    ]}
+                  >
+                    <Text style={styles.accessButtonText}>⚙️ Quản lý CLB</Text>
                   </TouchableOpacity>
                 )}
               </View>

@@ -16,11 +16,10 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-const EventTask = () => {
-  const [eventId, setEventId] = React.useState(""); // string
+const EventTask = ({ route }) => {
+  const { eventId, title } = route.params;
   const [userId, setUserId] = React.useState(""); // string
   const [parentId, setParentId] = React.useState(""); // string
-  const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [dueDate, setDueDate] = React.useState(new Date());
   const [showPicker, setShowPicker] = React.useState(false);
@@ -136,14 +135,11 @@ const EventTask = () => {
           >
             🎯 Thông tin tạo task
           </Text>
-          {renderLabeledInput(
-            "📛 Tên sự kiện theo id",
-            eventId,
-            setEventId,
-            "Nhập ID sự kiện",
-            false,
-            "numeric"
-          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>📛 Tên sự kiện: </Text>
+            <Text style={styles.value}>{title}</Text>
+          </View>
+
           {renderLabeledInput(
             "📝 Tên user theo id",
             userId,
@@ -160,12 +156,12 @@ const EventTask = () => {
             false,
             "numeric"
           )}
-          {renderLabeledInput(
+          {/* {renderLabeledInput(
             "📝 Tên chủ đề",
             title,
             setTitle,
             "Nhập tên chủ đề"
-          )}
+          )} */}
           {renderLabeledInput(
             "📝 Mô tả",
             description,
@@ -314,5 +310,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
     fontSize: 16
+  },
+  infoRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    marginBottom: 12
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1E3A8A"
+  },
+  value: {
+    fontSize: 16,
+    color: "#111827",
+    flexShrink: 1 // để text không bị tràn nếu quá dài
   }
 });

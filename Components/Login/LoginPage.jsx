@@ -38,16 +38,16 @@ const LoginPage = ({ navigation }) => {
         await AsyncStorage.setItem("email", email);
         setRoleName(roleName);
 
-        const clubResponse = await fetchBaseResponse("/api/clubs/my-club-roles", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const clubResponse = await fetchBaseResponse(
+          "/api/clubs/my-club-roles",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
 
         const ownedClubs = (clubResponse.data || []).filter(
-          (c) =>
-            c.role === "CLUBLEADER" ||
-            c.role === "MENTOR" ||
-            c.role === "MEMBER"
+          (c) => c.role === "CLUBLEADER"
         );
 
         if (ownedClubs.length > 0) {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 14,
-    color: "#004aad",
+    color: "#004aad"
   },
   socialWrapper: {
     marginTop: 36,
