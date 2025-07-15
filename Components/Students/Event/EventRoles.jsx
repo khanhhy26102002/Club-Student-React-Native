@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { useRoute } from "@react-navigation/native";

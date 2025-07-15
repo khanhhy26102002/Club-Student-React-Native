@@ -19,30 +19,60 @@ const EventId = ({ navigation }) => {
   const { eventId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-
   React.useEffect(() => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/api/events/public/${eventId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
+        const publicRes = await fetchBaseResponse(
+          `/api/events/public/${eventId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
           }
-        });
-        if (!response) {
+        );
+
+        if (publicRes.status !== 200) {
           Alert.alert("Thông báo", "Không tìm thấy sự kiện.");
           setData(null);
-        } else {
-          setData(response.data);
+          return;
         }
+
+        let roleName = null;
+        try {
+          const myRes = await fetchBaseResponse(
+            `/api/event-roles/my/${eventId}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          if (myRes.status === 200) {
+            roleName = myRes.data.roleName;
+          }
+        } catch (err) {
+          // Không làm gì nếu lỗi, roleName sẽ là null
+          console.log("Không lấy được role cho sự kiện", err);
+        }
+
+        const mergedData = {
+          ...publicRes.data,
+          roleName
+        };
+        setData(mergedData);
       } catch (error) {
         Alert.alert("Lỗi", "Không lấy được event theo id");
+        console.error("📦 fetch error: ", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [eventId]);
 
@@ -61,11 +91,19 @@ const EventId = ({ navigation }) => {
       </View>
     );
   }
-
+  const formattedDate = new Date(data.eventDate).toLocaleString("vi-VN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
   return (
     <View style={styles.wrapper}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Banner */}
         <Image
           source={{
             uri:
@@ -75,23 +113,15 @@ const EventId = ({ navigation }) => {
           style={styles.banner}
         />
 
+        {/* Event Info */}
         <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.description}>{data.description}</Text>
-          <Text style={styles.date}>
-            📅{" "}
-            {new Date(data.eventDate).toLocaleString("vi-VN", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit"
-            })}
-          </Text>
+          <Text style={styles.date}>📅 {formattedDate}</Text>
         </View>
 
-        <View style={styles.card}>
+        {/* Format & Location */}
+        <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>💻 Hình thức:</Text>
             <Text style={styles.value}>{data.format}</Text>
@@ -101,25 +131,60 @@ const EventId = ({ navigation }) => {
             <Text style={styles.value}>{data.location}</Text>
           </View>
         </View>
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>
-            Nếu bạn hứng thú với sự kiện này thì bấm đăng kí nhé
-          </Text>
 
-          <TouchableOpacity
-            style={styles.registerButton}
-            onPress={() =>
-              navigation.navigate("Event", {
-                screen: "EventRegistration",
-                params: {
-                  eventId: data.eventId,
-                  title: data.title,
+        {/* Registration Section */}
+        <View style={styles.registerContainer}>
+          {data.roleName === "ORGANIZER" ? (
+            <View style={styles.organizerCard}>
+              <View style={styles.organizerHeader}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                  }}
+                  style={styles.organizerIcon}
+                />
+                <Text style={styles.organizerText}>
+                  🎉 Bạn là người tổ chức sự kiện này
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.taskButton}
+                onPress={() => {
+                  navigation.navigate("Event", {
+                    screen: "EventAssign",
+                    params: {
+                      eventId: data.eventId,
+                      title: data.title,
+                      userId: data.userId
+                    }
+                  });
+                }}
+              >
+                <Text style={styles.taskButtonText}>🧩 Phân chia role cho thành viên</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.registerText}>
+                Nếu bạn hứng thú với sự kiện này, hãy bấm để đăng kí tham gia 👇
+              </Text>
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "EventRegistration",
+                    params: {
+                      eventId: data.eventId,
+                      title: data.title
+                    }
+                  })
                 }
-              })
-            }
-          >
-            <Text style={styles.registerButtonText}>Đăng kí sự kiện</Text>
-          </TouchableOpacity>
+              >
+                <Text style={styles.registerButtonText}>Đăng ký sự kiện</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -131,101 +196,114 @@ export default EventId;
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#F3F6FD"
-  },
-  registerContainer: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 12,
-    alignItems: "center"
-  },
-  registerText: {
-    fontSize: 18,
-    color: "#374151",
-    marginBottom: 10,
-    textAlign: "center",
-    marginTop: -30
-  },
-  registerButton: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 10,
-    marginLeft: -10
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600"
+    backgroundColor: "#F9FAFB"
   },
   container: {
-    padding: 20,
-    paddingBottom: 40
+    padding: 16,
+    paddingBottom: 50
   },
   banner: {
     width: "100%",
     height: 200,
-    borderRadius: 20,
-    marginBottom: 24,
-    backgroundColor: "#e0e0e0"
+    borderRadius: 16,
+    marginBottom: 20
   },
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4
   },
   title: {
-    fontSize: 23,
-    fontWeight: "800",
-    color: "#0D47A1",
-    marginBottom: 10
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 6
   },
   description: {
-    fontSize: 16,
-    color: "#4A4A4A",
-    marginBottom: 12
+    fontSize: 15,
+    color: "#4B5563",
+    marginBottom: 8
   },
   date: {
-    fontSize: 15,
-    color: "#757575"
+    fontSize: 14,
+    color: "#2563EB"
+  },
+  infoCard: {
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12
+    marginBottom: 10
   },
   label: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#1976D2"
+    color: "#374151",
+    fontWeight: "600"
   },
   value: {
     fontSize: 15,
-    color: "#1B1B1B"
+    color: "#1E40AF",
+    fontWeight: "500"
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F3F6FD"
+  registerContainer: {
+    marginTop: 10
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F3F6FD"
+  registerText: {
+    fontSize: 15,
+    color: "#374151",
+    textAlign: "center",
+    marginBottom: 14
   },
-  errorText: {
+  registerButton: {
+    backgroundColor: "#1E40AF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  registerButtonText: {
+    color: "#FFFFFF",
     fontSize: 16,
-    color: "#999",
-    fontStyle: "italic"
+    fontWeight: "600"
+  },
+  organizerCard: {
+    backgroundColor: "#DBEAFE",
+    padding: 16,
+    borderRadius: 14
+  },
+  organizerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14
+  },
+  organizerIcon: {
+    width: 40,
+    height: 40,
+    marginRight: 10
+  },
+  organizerText: {
+    fontSize: 15,
+    color: "#1E3A8A",
+    fontWeight: "600"
+  },
+  taskButton: {
+    backgroundColor: "#1E3A8A",
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: "center"
+  },
+  taskButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 15
   }
 });

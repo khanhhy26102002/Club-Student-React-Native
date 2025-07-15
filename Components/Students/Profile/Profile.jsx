@@ -129,7 +129,7 @@ const Profile = () => {
               label="Quản lí sự kiện"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventRoles"
+                  screen: "EventRoles",
                 })
               }
               color="#f44336"
@@ -179,7 +179,7 @@ const Profile = () => {
                 })
               }
             />
-             <ActionItem
+            {/* <ActionItem
               icon="clipboard-outline"
               label="Tạo task sự kiện của bạn"
               onPress={() =>
@@ -187,7 +187,7 @@ const Profile = () => {
                   screen: "image"
                 })
               }
-            />
+            /> */}
           </View>
         </ScrollView>
       ) : (

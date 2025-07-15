@@ -23,45 +23,48 @@ const EventParticipate = ({ navigation }) => {
   const [ticketId, setTicketId] = React.useState("");
   const [loading, setLoading] = React.useState(false); // 🆕 Loading state
   const fetchData = async () => {
-  const token = await AsyncStorage.getItem("jwt");
-  try {
-    const response = await fetchBaseResponse(`/api/tickets/event/${eventId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse(
+        `/api/tickets/event/${eventId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+      if (response.status === 200) {
+        setData(response.data);
       }
-    });
-    if (response.status === 200) {
-      setData(response.data);
+    } catch (error) {
+      const responseData =
+        error?.response?.data && typeof error.response.data === "object"
+          ? error.response.data
+          : error?.data && typeof error.data === "object"
+          ? error.data
+          : error;
+
+      const serverStatus =
+        typeof responseData.status === "number"
+          ? responseData.status
+          : typeof error?.status === "number"
+          ? error.status
+          : null;
+
+      const serverMessage =
+        responseData.message ?? error?.message ?? "Không xác định";
+
+      console.log("🚨 FetchData Error:", serverStatus, serverMessage);
+
+      if (serverStatus === 5003) {
+        Alert.alert("Thông báo", "Sự kiện này không có vé.");
+      } else {
+        Alert.alert("Lỗi", "Không fetching được data");
+      }
     }
-  } catch (error) {
-    const responseData =
-      error?.response?.data && typeof error.response.data === "object"
-        ? error.response.data
-        : error?.data && typeof error.data === "object"
-        ? error.data
-        : error;
-
-    const serverStatus =
-      typeof responseData.status === "number"
-        ? responseData.status
-        : typeof error?.status === "number"
-        ? error.status
-        : null;
-
-    const serverMessage =
-      responseData.message ?? error?.message ?? "Không xác định";
-
-    console.log("🚨 FetchData Error:", serverStatus, serverMessage);
-
-    if (serverStatus === 5003) {
-      Alert.alert("Thông báo", "Sự kiện này không có vé.");
-    } else {
-      Alert.alert("Lỗi", "Không fetching được data");
-    }
-  }
-};
+  };
 
   React.useEffect(() => {
     fetchData();
@@ -89,7 +92,7 @@ const EventParticipate = ({ navigation }) => {
           params: {
             registrationId: response.data.registrationId,
             paymentUrl: response.data.message,
-            qrCode: response.data.qrCode
+            qrCode: response.data.qrCode,
           }
         });
       } else {

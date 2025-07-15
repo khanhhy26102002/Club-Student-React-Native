@@ -52,19 +52,6 @@ const Payment = ({ navigation }) => {
                 <Text style={styles.cardLabel}>Mã đăng ký:</Text>
                 <Text style={styles.cardValue}>{registrationId}</Text>
               </View>
-
-              <TouchableOpacity
-                style={styles.paymentButton}
-                activeOpacity={0.8}
-                onPress={() =>
-                  navigation.navigate("Event", {
-                    screen: "PaymentWebView",
-                    params: { paymentUrl }
-                  })
-                }
-              >
-                <Text style={styles.paymentButtonText}>💳 Thanh toán</Text>
-              </TouchableOpacity>
             </LinearGradient>
             {qrCode ? (
               <View style={styles.qrBox}>
@@ -97,7 +84,18 @@ const Payment = ({ navigation }) => {
                 </Modal>
               </View>
             ) : (
-              <Text style={styles.noQrText}>Không có mã QR</Text>
+              <TouchableOpacity
+                style={styles.paymentButton}
+                activeOpacity={0.8}
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "PaymentWebView",
+                    params: { paymentUrl }
+                  })
+                }
+              >
+                <Text style={styles.paymentButtonText}>💳 Thanh toán</Text>
+              </TouchableOpacity>
             )}
           </>
         )}

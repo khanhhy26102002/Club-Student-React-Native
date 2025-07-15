@@ -15,8 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import Markdown from "react-native-markdown-display";
-import html2md from "html-to-md";
 import QuillEditor from "../../QuillEditor";
 const FormClub = () => {
   const quillRef = React.useRef(null);
@@ -132,7 +130,7 @@ const FormClub = () => {
         error?.message ||
         "Lỗi không xác định.";
       if (
-        serverMessage.includes("Club with the same name already exists") ||
+        serverMessage.includes("You have already submitted a club creation request") ||
         serverMessage.includes("already registered")
       ) {
         Alert.alert("❌ Trùng tên", "Tên CLB này đã tồn tại.");

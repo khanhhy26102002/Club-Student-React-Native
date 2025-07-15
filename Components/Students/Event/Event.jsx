@@ -51,7 +51,7 @@ const Event = ({ navigation }) => {
     }, [])
   );
 
-  const formatDate = dateString => {
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
@@ -59,7 +59,7 @@ const Event = ({ navigation }) => {
     };
   };
 
-  const filteredData = data.filter(event =>
+  const filteredData = data.filter((event) =>
     event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -67,27 +67,30 @@ const Event = ({ navigation }) => {
     <View style={styles.wrapper}>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Header Section */}
         <View style={styles.headingRow}>
-          <Text style={styles.heading}>🎉 SỰ Kiện Nổi Bật</Text>
+          <Text style={styles.heading}>🎉 Sự kiện nổi bật</Text>
           <TouchableOpacity
             style={styles.eventButton}
-            activeOpacity={0.8}
+            activeOpacity={0.9}
             onPress={() => navigation.navigate("Event", { screen: "History" })}
           >
             <View style={styles.eventButtonContent}>
-              <Icon name="calendar-check" size={18} color="#1E40AF" />
-              <Text style={styles.eventButtonText}>Sự kiện đã đăng ký</Text>
+              <Icon name="calendar-check" size={18} color="#fff" />
+              <Text style={styles.eventButtonText}>Đã đăng ký</Text>
             </View>
           </TouchableOpacity>
         </View>
 
+        {/* Search */}
         <TextInput
-          placeholder="Tìm sự kiện..."
+          placeholder="🔍 Tìm kiếm sự kiện..."
           value={searchTerm}
           onChangeText={setSearchTerm}
           style={styles.searchInput}
         />
 
+        {/* Loading or Empty */}
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#007AFF" />
@@ -95,21 +98,22 @@ const Event = ({ navigation }) => {
         ) : filteredData.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Image
-              source={{ uri: "https://cdn-icons-png.flaticon.com/512/7466/7466140.png" }}
+              source={{ uri: DEFAULT_EVENT_IMAGE }}
               style={styles.emptyIcon}
             />
-            <Text style={styles.noEventText}>Chưa có sự kiện nào</Text>
+            <Text style={styles.noEventText}>Không tìm thấy sự kiện</Text>
             <Text style={styles.noEventSubText}>
-              Hãy quay lại sau để cập nhật các sự kiện mới nhất nhé!
+              Hãy quay lại sau để cập nhật các sự kiện mới nhất!
             </Text>
           </View>
         ) : (
-          filteredData.map(event => {
+          filteredData.map((event) => {
             const { day, month } = formatDate(event.eventDate);
             return (
               <TouchableOpacity
                 key={event.eventId}
                 style={styles.card}
+                activeOpacity={0.9}
                 onPress={() =>
                   navigation.navigate("EventId", {
                     eventId: event.eventId
@@ -121,29 +125,22 @@ const Event = ({ navigation }) => {
                     source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
                     style={styles.cardImage}
                   />
-                  <View style={styles.dateOverlay}>
+                  <View style={styles.dateBadge}>
                     <Text style={styles.dateDay}>{day}</Text>
                     <Text style={styles.dateMonth}>{month}</Text>
                   </View>
                 </View>
 
                 <View style={styles.cardContent}>
-                  <Text style={styles.title} numberOfLines={2}>
+                  <Text style={styles.cardTitle} numberOfLines={2}>
                     {event.title}
                   </Text>
-                  <Text style={styles.description} numberOfLines={3}>
+                  <Text style={styles.cardDesc} numberOfLines={3}>
                     {event.description}
                   </Text>
-
-                  <View style={styles.detailsContainer}>
-                    <View style={styles.detailItem}>
-                      <Text style={styles.detailIcon}>📍</Text>
-                      <Text style={styles.detailText}>{event.location}</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Text style={styles.detailIcon}>💻</Text>
-                      <Text style={styles.detailText}>{event.format}</Text>
-                    </View>
+                  <View style={styles.cardInfo}>
+                    <Text style={styles.cardDetail}>📍 {event.location}</Text>
+                    <Text style={styles.cardDetail}>💻 {event.format}</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -160,12 +157,11 @@ export default Event;
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: "#F4F6F8"
+    backgroundColor: "#F0F4FA"
   },
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    paddingBottom: -10
+    padding: 16,
+    paddingBottom: 60
   },
   headingRow: {
     flexDirection: "row",
@@ -174,136 +170,118 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   heading: {
-    fontSize: 23,
-    fontWeight: "bold",
-    color: "#1D2C4D"
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#1D4ED8"
   },
   eventButton: {
-    borderWidth: 1,
-    borderColor: "#93C5FD",
-    backgroundColor: "#EFF6FF",
+    backgroundColor: "#1E40AF",
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 999
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center"
   },
   eventButtonContent: {
     flexDirection: "row",
     alignItems: "center"
   },
   eventButtonText: {
-    marginLeft: 6,
+    color: "#fff",
     fontSize: 14,
     fontWeight: "600",
-    color: "#1E40AF"
+    marginLeft: 6
   },
   searchInput: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 20,
-    backgroundColor: "#fff"
+    borderColor: "#CBD5E1"
   },
   loadingContainer: {
-    marginTop: 50,
+    marginTop: 40,
     alignItems: "center"
   },
   emptyContainer: {
     alignItems: "center",
-    marginTop: 60,
-    paddingHorizontal: 40
+    marginTop: 60
   },
   emptyIcon: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
-    opacity: 0.7
+    width: 120,
+    height: 120,
+    marginBottom: 16
   },
   noEventText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#555",
-    marginBottom: 8
+    color: "#6B7280"
   },
   noEventSubText: {
-    fontSize: 15,
-    color: "#888",
-    textAlign: "center"
+    fontSize: 14,
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginTop: 4
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
     borderRadius: 16,
-    marginBottom: 24,
-    shadowColor: "#99AAB5",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8
+    marginBottom: 20,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4
   },
   imageContainer: {
     position: "relative"
   },
   cardImage: {
     width: "100%",
-    height: 160,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16
+    height: 180
   },
-  dateOverlay: {
+  dateBadge: {
     position: "absolute",
     top: 12,
-    left: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    right: 12,
+    backgroundColor: "#1E3A8A",
+    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     alignItems: "center"
   },
   dateDay: {
-    fontSize: 20,
+    color: "#fff",
     fontWeight: "bold",
-    color: "#D32F2F"
+    fontSize: 16
   },
   dateMonth: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#424242"
+    color: "#fff",
+    fontSize: 12
   },
   cardContent: {
-    padding: 16
+    padding: 14
   },
-  title: {
-    fontSize: 20,
+  cardTitle: {
+    fontSize: 18,
     fontWeight: "700",
-    color: "#2C3E50",
-    marginBottom: 8
+    color: "#1F2937",
+    marginBottom: 6
   },
-  description: {
+  cardDesc: {
     fontSize: 14,
-    color: "#566573",
-    lineHeight: 21,
-    marginBottom: 16
+    color: "#4B5563",
+    marginBottom: 10
   },
-  detailsContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#EAECEE",
-    paddingTop: 12,
+  cardInfo: {
     flexDirection: "row",
-    justifyContent: "space-around"
+    justifyContent: "space-between"
   },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1
-  },
-  detailIcon: {
-    fontSize: 16,
-    marginRight: 8
-  },
-  detailText: {
+  cardDetail: {
     fontSize: 13,
-    color: "#616A6B",
-    fontWeight: "500",
-    flexShrink: 1
+    color: "#374151"
   }
 });

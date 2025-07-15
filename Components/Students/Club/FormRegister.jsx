@@ -75,7 +75,11 @@ const FormRegister = ({ navigation }) => {
                   "🚫 Không thể đăng ký",
                   "Bạn đã là thành viên của một CLB khác. Vui lòng rút khỏi CLB đó trước khi đăng ký."
                 );
-              } else if (serverMessage.includes("already applied")) {
+              }
+              if (
+                serverMessage.includes("already applied") ||
+                error.response?.data?.status === 1004
+              ) {
                 Alert.alert(
                   "⚠️ Đã đăng ký",
                   "Bạn đã từng gửi yêu cầu tham gia câu lạc bộ này rồi."
