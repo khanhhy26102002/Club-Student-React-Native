@@ -56,6 +56,7 @@ const ClubRegisters = ({ navigation }) => {
         }
       );
       if (response.status === 200) {
+        console.log("Status response for clubId", clubId, ":", response.data);
         setMembershipStatus((prev) => ({
           ...prev,
           [clubId]: response.data
@@ -74,6 +75,7 @@ const ClubRegisters = ({ navigation }) => {
 
   React.useEffect(() => {
     data.forEach((item) => {
+      console.log("clubId:", item.clubId);
       if (item.clubId) {
         statusData(item.clubId);
       }
@@ -85,7 +87,9 @@ const ClubRegisters = ({ navigation }) => {
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>🎓 Câu lạc bộ bạn đã đăng kí</Text>
+          <Text style={styles.sectionTitle}>
+            🎓 Câu lạc bộ thành viên đã đăng kí
+          </Text>
           <View style={styles.sectionUnderline} />
         </View>
 
@@ -95,7 +99,7 @@ const ClubRegisters = ({ navigation }) => {
           </View>
         ) : (
           data.map((membership) => {
-            const status = membershipStatus[membership.clubId];
+            const status = membership.status;
             return (
               <TouchableOpacity
                 key={membership.membershipId}
@@ -119,10 +123,22 @@ const ClubRegisters = ({ navigation }) => {
                     style={styles.clubImage}
                   />
                   <View style={styles.clubInfo}>
-                    <Text style={styles.clubName}>{membership.clubName}</Text>
-                    <Text style={styles.joinDate}>
-                      Mã thành viên: #{membership.membershipId}
-                    </Text>
+                    <View style={{ flexDirection: "row" }}>
+                      <Text style={styles.label}>🏫 Câu lạc bộ:</Text>
+                      <Text style={styles.clubName}>{membership.clubName}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>👤 Thành viên:</Text>
+                      <Text style={styles.value}>
+                        {membership.userFullName}
+                      </Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Text style={styles.label}>🆔 Mã thành viên:</Text>
+                      <Text style={styles.value}>
+                        #{membership.membershipId}
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
@@ -194,7 +210,7 @@ const styles = StyleSheet.create({
   },
   sectionUnderline: {
     height: 5,
-    width: "40%", 
+    width: "40%",
     backgroundColor: "#2563EB",
     marginTop: 6,
     alignSelf: "center",
@@ -230,7 +246,28 @@ const styles = StyleSheet.create({
   },
   clubInfo: {
     flex: 1,
-    textAlign: "center"
+    justifyContent: "center"
+  },
+  clubName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1D4ED8", // text-blue-700
+    marginBottom: 6
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2
+  },
+  label: {
+    fontSize: 15,
+    color: "#6B7280", // text-gray-500
+    marginRight: 6
+  },
+  value: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827" // text-gray-900
   },
   clubName: {
     fontSize: 18,

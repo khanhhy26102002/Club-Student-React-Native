@@ -97,14 +97,14 @@ const Profile = () => {
               }
               color="#2196F3"
             />
-            {/* <ActionItem
+            <ActionItem
               icon="person-add"
               label="Đăng kí câu lạc bộ"
               onPress={() =>
                 navigation.navigate("Club", { screen: "FormRegister" })
               }
               color="#4CAF50"
-            /> */}
+            />
             <ActionItem
               icon="calendar"
               label="Tạo sự kiện"
@@ -144,7 +144,7 @@ const Profile = () => {
                 })
               }
             />
-            {/* <ActionItem
+            <ActionItem
               icon="briefcase-outline"
               label="Quản lí câu lạc bộ của tôi"
               onPress={() =>
@@ -152,7 +152,7 @@ const Profile = () => {
                   screen: "ClubCreate"
                 })
               }
-            /> */}
+            />
             <ActionItem
               icon="ticket-outline"
               label="Đăng kí sự kiện"

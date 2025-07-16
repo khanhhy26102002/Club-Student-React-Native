@@ -4,7 +4,9 @@ import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
-
+// hỏi profile trc
+// hỏi cái role event
+// 
 const getStatusColor = (status) => {
   switch (status) {
     case "TODO":

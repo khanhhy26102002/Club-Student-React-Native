@@ -19,39 +19,60 @@ const EventRegisterUser = ({ route }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const fetchData = async () => {
-    setLoading(true);
-    const token = await AsyncStorage.getItem("jwt");
-    let endpoint = `/api/registrations/registered-event/${userId}`;
-    if (filter) {
-      endpoint += `?status=${filter}`;
-    }
+  if (!userId) {
+    Alert.alert("❌ Thiếu thông tin", "Không tìm thấy userId.");
+    return;
+  }
 
-    console.log("🔑 Token:", token);
-    console.log("📡 Endpoint:", endpoint); // ✅ Đặt sau khi đã gán giá trị
+  setLoading(true);
+  const token = await AsyncStorage.getItem("jwt");
+  let endpoint = `/api/registrations/registered-event/${userId}`;
+  if (filter) {
+    endpoint += `?status=${filter}`;
+  }
 
-    try {
-      const response = await fetchBaseResponse(endpoint, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+  console.log("🔑 Token:", token);
+  console.log("📡 Endpoint:", endpoint);
+  console.log("🧾 eventId:", eventId);
 
-      if (response.status === 200) {
-        const allData = response.data;
-        const filtered = eventId
-          ? allData.filter((item) => item.eventId === eventId)
-          : allData;
-        setData(filtered);
-      } else {
-        throw new Error(`Lỗi API: ${response.message}`);
+  try {
+    const response = await fetchBaseResponse(endpoint, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    } catch (error) {
-      Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi không xác định.");
-    } finally {
-      setLoading(false);
+    });
+
+    if (response.status === 200) {
+      const allData = response.data;
+      const filtered = eventId
+        ? allData.filter((item) => item.eventId === eventId)
+        : allData;
+      setData(filtered);
+    } else {
+      throw new Error(`Lỗi API: ${response.message}`);
     }
-  };
+  } catch (error) {
+    const serverMessage =
+      error?.response?.data?.message ||
+      error.message ||
+      "Đã xảy ra lỗi không xác định.";
+
+    console.error("❌ API Error:", error?.response?.data || error);
+
+    if (
+      error?.response?.data?.status === 5007 ||
+      serverMessage.includes("not registered")
+    ) {
+      Alert.alert("🚫 Không tìm thấy", "Bạn chưa đăng ký sự kiện này.");
+    } else {
+      Alert.alert("Lỗi", serverMessage);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   React.useEffect(() => {
     fetchData();
