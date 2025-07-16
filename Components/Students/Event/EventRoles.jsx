@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // list event của user
 const EventRoles = () => {
   const route = useRoute();
-  const { eventId, userId } = route.params;
+  const { eventId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   React.useEffect(() => {

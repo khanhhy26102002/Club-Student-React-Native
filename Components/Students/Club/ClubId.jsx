@@ -86,7 +86,12 @@ const ClubId = ({ navigation }) => {
       let role = null;
       if (rolesRes.status === 200 && Array.isArray(rolesRes.data)) {
         const matched = rolesRes.data.find((r) => r.clubId === clubId);
-        if (matched) role = matched.role;
+        if (matched?.role === "CLUBLEADER") {
+          role = "CLUBLEADER";
+          console.log("✅ Đây là chủ nhiệm CLB");
+        } else {
+          console.log("❌ Không phải chủ nhiệm CLB");
+        }
       }
 
       // 3. Gộp lại
@@ -139,7 +144,7 @@ const ClubId = ({ navigation }) => {
                 tagsStyles={htmlStyles}
               />
               <View>
-                {membershipStatus.status === "APPROVED" ? (
+                {membershipStatus.role === "CLUBLEADER" || membershipStatus.status === "APPROVED" ? (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate("Club", {
@@ -179,23 +184,6 @@ const ClubId = ({ navigation }) => {
                     }
                   >
                     <Text style={styles.registerButtonText}>📝 Tham gia</Text>
-                  </TouchableOpacity>
-                )}
-
-                {membershipStatus.role === "CLUBLEADER" && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("Club", {
-                        screen: "ClubAdmin",
-                        params: { clubId: data.clubId }
-                      })
-                    }
-                    style={[
-                      styles.accessButton,
-                      { backgroundColor: "#0f172a", marginTop: 16 }
-                    ]}
-                  >
-                    <Text style={styles.accessButtonText}>⚙️ Quản lý CLB</Text>
                   </TouchableOpacity>
                 )}
               </View>

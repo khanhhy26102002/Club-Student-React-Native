@@ -20,8 +20,7 @@ const ClubGroupId = () => {
   const { clubId, userId } = params;
 
   React.useEffect(() => {
-    if (!clubId || !userId) return;
-
+    setLoading(true);
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
@@ -90,7 +89,9 @@ const ClubGroupId = () => {
             </View>
           </View>
         ) : (
-          <Text style={styles.noData}>Không tìm thấy thông tin thành viên.</Text>
+          <Text style={styles.noData}>
+            Không tìm thấy thông tin thành viên.
+          </Text>
         )}
       </ScrollView>
     </>

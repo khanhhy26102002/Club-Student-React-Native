@@ -17,7 +17,7 @@ import { useRoute } from "@react-navigation/native";
 const ClubGroup = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
-  const [members, setMembers] = React.useState(null);
+  const [members, setMembers] = React.useState([]);
 
   React.useEffect(() => {
     if (!clubId) return;
@@ -60,18 +60,18 @@ const ClubGroup = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.title}>👥 Danh sách thành viên CLB</Text>
 
-          {members?.length === 0 ? (
+          {members.length === 0 ? (
             <Text style={styles.noData}>Không có thành viên nào.</Text>
           ) : (
-            members?.map((member, index) => (
+            members.map((member, index) => (
               <TouchableOpacity
                 key={index}
                 onPress={() =>
                   navigation.navigate("Club", {
                     screen: "ClubGroupId",
                     params: {
-                      clubId: members?.clubId,
-                      userId: member?.userId 
+                      clubId: clubId,
+                      userId: member.userId 
                     }
                   })
                 }
@@ -79,23 +79,23 @@ const ClubGroup = ({ navigation }) => {
               >
                 <View style={styles.row}>
                   <Text style={styles.label}>👤 Họ tên:</Text>
-                  <Text style={styles.value}>{member?.fullName}</Text>
+                  <Text style={styles.value}>{member.fullName}</Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>📧 Email:</Text>
-                  <Text style={styles.value}>{member?.email}</Text>
+                  <Text style={styles.value}>{member.email}</Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>🎓 Niên khóa:</Text>
-                  <Text style={styles.value}>{member?.academicYear}</Text>
+                  <Text style={styles.value}>{member.academicYear}</Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>💻 Ngành:</Text>
-                  <Text style={styles.value}>{member?.majorName}</Text>
+                  <Text style={styles.value}>{member.majorName}</Text>
                 </View>
                 <View style={styles.row}>
                   <Text style={styles.label}>🆔 MSSV:</Text>
-                  <Text style={styles.value}>{member?.studentCode}</Text>
+                  <Text style={styles.value}>{member.studentCode}</Text>
                 </View>
               </TouchableOpacity>
             ))

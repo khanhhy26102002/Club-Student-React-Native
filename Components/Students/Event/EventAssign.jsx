@@ -123,8 +123,10 @@ const EventAssign = ({ route, navigation }) => {
         <Text style={styles.title}>🎯 Phân vai trò thành viên</Text>
 
         <View style={styles.card}>
-          <Text style={styles.eventLabel}>🎟️ Tên sự kiện:</Text>
-          <Text style={styles.eventTitle}>{title}</Text>
+          <View style={styles.row}>
+            <Text style={styles.eventLabel}>🎟️ Tên sự kiện: </Text>
+            <Text style={styles.eventTitle}>{title}</Text>
+          </View>
         </View>
 
         <View style={styles.card}>
@@ -209,6 +211,12 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 20
   },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap" // nếu title quá dài thì tự xuống dòng
+  },
+
   eventLabel: {
     fontSize: 16,
     fontWeight: "600",
