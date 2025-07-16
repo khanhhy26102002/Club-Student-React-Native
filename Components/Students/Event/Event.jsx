@@ -22,10 +22,12 @@ const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
-
+  const [userId, setUserId] = React.useState(null);
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
+    const storedUserId = await AsyncStorage.getItem("userId");
+    setUserId(storedUserId);
     try {
       const endpoint = "/api/events/public";
       const response = await fetchBaseResponse(endpoint, {
@@ -73,7 +75,19 @@ const Event = ({ navigation }) => {
           <TouchableOpacity
             style={styles.eventButton}
             activeOpacity={0.9}
-            onPress={() => navigation.navigate("Event", { screen: "History" })}
+            onPress={async () => {
+              const storedUserId = await AsyncStorage.getItem("userId");
+              if (!storedUserId) {
+                Alert.alert("Lỗi", "Không tìm thấy userId.");
+                return;
+              }
+              navigation.navigate("Event", {
+                screen: "EventRegisterUser",
+                params: {
+                  userId: storedUserId
+                }
+              });
+            }}
           >
             <View style={styles.eventButtonContent}>
               <Icon name="calendar-check" size={18} color="#fff" />
