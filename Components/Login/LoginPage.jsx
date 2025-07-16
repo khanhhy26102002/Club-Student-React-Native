@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { jwtDecode } from "jwt-decode"; // dùng đúng export
 const LoginPage = ({ navigation }) => {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -33,9 +34,13 @@ const LoginPage = ({ navigation }) => {
         const token = response.data.token;
         const roles = response.data.roles || [];
         const roleName = roles?.[0]?.role || "GUEST";
+        const decoded = jwtDecode(token);
+        const userId = decoded.sub;
+        console.log("UserId:", userId);
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
+        await AsyncStorage.setItem("userId", userId);
         setRoleName(roleName);
 
         const clubResponse = await fetchBaseResponse(

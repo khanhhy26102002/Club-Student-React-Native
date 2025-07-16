@@ -1,4 +1,11 @@
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { useRoute } from "@react-navigation/native";
@@ -7,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // list event của user
 const EventRoles = () => {
   const route = useRoute();
-  const { eventId } = route.params;
+  const { eventId, userId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   React.useEffect(() => {
@@ -15,13 +22,16 @@ const EventRoles = () => {
       setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/api/event-roles/my/${eventId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
+        const response = await fetchBaseResponse(
+          `/api/event-roles/my/${eventId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
           }
-        });
+        );
         if (response.status === 200) {
           setData(response.data);
         } else if (response.status === 1002) {

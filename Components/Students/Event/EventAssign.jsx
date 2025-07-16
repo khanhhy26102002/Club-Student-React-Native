@@ -15,7 +15,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import { Picker } from "@react-native-picker/picker";
 // bị lỗi create-event-request
 // lỗi assign-role khi đã làm chủ event là eventId 2
-const EventAssign = ({ route }) => {
+const EventAssign = ({ route, navigation }) => {
   const [selectedUserId, setSelectedUserId] = React.useState(null);
   const [roleName, setRoleName] = React.useState("VOLUNTEER");
   const { eventId, title } = route.params;
@@ -98,7 +98,8 @@ const EventAssign = ({ route }) => {
         navigation.navigate("Event", {
           screen: "EventTask",
           params: {
-            eventId: data.eventId
+            eventId: eventId,
+            title: title
           }
         });
       }

@@ -112,27 +112,6 @@ const EventId = ({ navigation }) => {
           }}
           style={styles.banner}
         />
-
-        {/* Event Info */}
-        <View style={styles.card}>
-          <Text style={styles.title}>{data.title}</Text>
-          <Text style={styles.description}>{data.description}</Text>
-          <Text style={styles.date}>📅 {formattedDate}</Text>
-        </View>
-
-        {/* Format & Location */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>💻 Hình thức:</Text>
-            <Text style={styles.value}>{data.format}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>📍 Địa điểm:</Text>
-            <Text style={styles.value}>{data.location}</Text>
-          </View>
-        </View>
-
-        {/* Registration Section */}
         <View style={styles.registerContainer}>
           {data.roleName === "ORGANIZER" ? (
             <View style={styles.organizerCard}>
@@ -161,8 +140,66 @@ const EventId = ({ navigation }) => {
                   });
                 }}
               >
-                <Text style={styles.taskButtonText}>🧩 Phân chia role cho thành viên</Text>
+                <Text style={styles.taskButtonText}>
+                  🧩 Phân chia role cho thành viên
+                </Text>
               </TouchableOpacity>
+            </View>
+          ) : data.roleName === "CHECKIN" ? (
+            <View style={styles.organizerCard}>
+              <View style={styles.organizerHeader}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/4202/4202849.png"
+                  }}
+                  style={styles.organizerIcon}
+                />
+                <View style={{ flex: 1 }}>
+                  <TouchableOpacity
+                    style={styles.viewTaskButton}
+                    onPress={() =>
+                      navigation.navigate("Event", {
+                        screen: "EventTaskView",
+                        params: {
+                          eventId: data.eventId
+                        }
+                      })
+                    }
+                  >
+                    <Text style={styles.viewTaskText}>
+                      📋 Xem nhiệm vụ của bạn
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          ) : data.roleName === "CHECKOUT" ? (
+            <View style={styles.organizerCard}>
+              <View style={styles.organizerHeader}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/4202/4202849.png"
+                  }}
+                  style={styles.organizerIcon}
+                />
+                <Text style={styles.organizerText}>
+                  ✅ Bạn là người điểm danh ra khỏi sự kiện này
+                </Text>
+              </View>
+            </View>
+          ) : data.roleName === "VOLUNTEER" ? (
+            <View style={styles.organizerCard}>
+              <View style={styles.organizerHeader}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/1067/1067566.png"
+                  }}
+                  style={styles.organizerIcon}
+                />
+                <Text style={styles.organizerText}>
+                  🙌 Bạn là tình nguyện viên trong sự kiện này
+                </Text>
+              </View>
             </View>
           ) : (
             <>
@@ -186,6 +223,26 @@ const EventId = ({ navigation }) => {
             </>
           )}
         </View>
+        {/* Event Info */}
+        <View style={styles.card}>
+          <Text style={styles.title}>{data.title}</Text>
+          <Text style={styles.description}>{data.description}</Text>
+          <Text style={styles.date}>📅 {formattedDate}</Text>
+        </View>
+
+        {/* Format & Location */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>💻 Hình thức:</Text>
+            <Text style={styles.value}>{data.format}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>📍 Địa điểm:</Text>
+            <Text style={styles.value}>{data.location}</Text>
+          </View>
+        </View>
+
+        {/* Registration Section */}
       </ScrollView>
     </View>
   );
@@ -255,7 +312,8 @@ const styles = StyleSheet.create({
     fontWeight: "500"
   },
   registerContainer: {
-    marginTop: 10
+    marginTop: 10,
+    marginBottom: 20
   },
   registerText: {
     fontSize: 15,
@@ -276,9 +334,36 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   organizerCard: {
-    backgroundColor: "#DBEAFE",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 14
+    marginVertical: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2
+  },
+  organizerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  organizerIcon: {
+    width: 48,
+    height: 48,
+    marginRight: 12
+  },
+  viewTaskButton: {
+    backgroundColor: "#3B82F6",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginTop: 10
+  },
+  viewTaskText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14
   },
   organizerHeader: {
     flexDirection: "row",

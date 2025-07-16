@@ -12,6 +12,9 @@ import EventRoles from "./EventRoles";
 import EventRolesId from "./EventRolesId";
 import EventAssign from "./EventAssign";
 import EventTask from "./EventTask";
+import EventRegisterUser from "./EventRegisterUser";
+import EventTaskView from "./EventTaskView";
+import EventTaskViewId from "./EventTaskViewId";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
@@ -27,6 +30,9 @@ const EventStack = () => {
       <Stack.Screen name="EventRolesId" component={EventRolesId} />
       <Stack.Screen name="EventAssign" component={EventAssign} />
       <Stack.Screen name="EventTask" component={EventTask} />
+      <Stack.Screen name="EventRegisterUser" component={EventRegisterUser} />
+      <Stack.Screen name="EventTaskView" component={EventTaskView} />
+      <Stack.Screen name="EventTaskViewId" component={EventTaskViewId} />
     </Stack.Navigator>
   );
 };

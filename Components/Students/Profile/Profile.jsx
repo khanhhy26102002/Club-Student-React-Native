@@ -24,8 +24,9 @@ const Profile = () => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
       const storedToken = await AsyncStorage.getItem("jwt");
-      if (storedEmail && storedToken) {
-        setUser({ email: storedEmail, token: storedToken });
+      const userId = await AsyncStorage.getItem("userId");
+      if (storedEmail && storedToken && userId) {
+        setUser({ email: storedEmail, token: storedToken, user: userId });
       } else {
         setUser(null);
       }
@@ -96,14 +97,14 @@ const Profile = () => {
               }
               color="#2196F3"
             />
-            <ActionItem
+            {/* <ActionItem
               icon="person-add"
               label="Đăng kí câu lạc bộ"
               onPress={() =>
                 navigation.navigate("Club", { screen: "FormRegister" })
               }
               color="#4CAF50"
-            />
+            /> */}
             <ActionItem
               icon="calendar"
               label="Tạo sự kiện"
@@ -129,7 +130,7 @@ const Profile = () => {
               label="Quản lí sự kiện"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventRoles",
+                  screen: "EventRoles"
                 })
               }
               color="#f44336"
@@ -143,7 +144,7 @@ const Profile = () => {
                 })
               }
             />
-            <ActionItem
+            {/* <ActionItem
               icon="briefcase-outline"
               label="Quản lí câu lạc bộ của tôi"
               onPress={() =>
@@ -151,7 +152,7 @@ const Profile = () => {
                   screen: "ClubCreate"
                 })
               }
-            />
+            /> */}
             <ActionItem
               icon="ticket-outline"
               label="Đăng kí sự kiện"
@@ -166,7 +167,7 @@ const Profile = () => {
               label="Sự kiện của tôi"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventAssign"
+                  screen: "EventRoles",
                 })
               }
             />
