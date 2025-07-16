@@ -18,15 +18,16 @@ import Header from "../../../Header/Header";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import QuillEditor from "../../QuillEditor";
 
 const EventRegister = () => {
   const [title, setTitle] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [description, setDescription] = React.useState("");
+  const quillRef = React.useRef(null);
   const [eventDate, setEventDate] = React.useState(new Date());
   const [format, setFormat] = React.useState("");
   const [location, setLocation] = React.useState("");
-  const [minimumParticipants, setMinimumParticipants] = React.useState(0);
   const [maximumParticipants, setMaximumParticipants] = React.useState(0);
   const [visibility, setVisibility] = React.useState("");
   const [useLab, setUseLab] = React.useState(true);
@@ -63,10 +64,6 @@ const EventRegister = () => {
       Alert.alert("Lỗi", "Số lượng tối đa phải lớn hơn 0");
       return false;
     }
-    if (minimumParticipants > maximumParticipants) {
-      Alert.alert("Lỗi", "Số lượng tối thiểu không được lớn hơn tối đa");
-      return false;
-    }
     if (!visibility) {
       Alert.alert("Lỗi", "Vui lòng chọn mức độ công khai");
       return false;
@@ -98,7 +95,6 @@ const EventRegister = () => {
           eventDate: isoDate,
           format,
           location,
-          minimumParticipants,
           maximumParticipants,
           visibility,
           useLab,
@@ -204,13 +200,29 @@ const EventRegister = () => {
             setTitle,
             "VD: Developer Club"
           )}
-          {renderLabeledInput(
+          {/* {renderLabeledInput(
             "📝 Mô tả",
             description,
             setDescription,
             "Miêu tả ngắn gọn về sự kiện...",
             true
-          )}
+          )} */}
+            <View style={styles.fieldContainer}>
+            <Text style={styles.label}>📄 Miêu tả *</Text>
+            <View style={styles.editorWrapper}>
+              <QuillEditor
+                ref={quillRef}
+                initialHtml={description}
+                style={styles.editor}
+                containerStyle={styles.editorContainer}
+                theme="light"
+                placeholder="Nhập miêu tả ở đây..."
+                onFocus={() => {
+                  // Có thể thêm animation nhẹ nếu muốn
+                }}
+              />
+            </View>
+          </View>
           <View style={{ marginBottom: 18 }}>
             <Text style={styles.label}>📅 Ngày diễn ra</Text>
             <TouchableOpacity
@@ -258,17 +270,6 @@ const EventRegister = () => {
             setLocation,
             "Ví dụ: Hội trường A1",
             true
-          )}
-          {renderLabeledInput(
-            "👥 Số lượng tối thiểu",
-            minimumParticipants.toString(),
-            (text) =>
-              setMinimumParticipants(
-                isNaN(parseInt(text)) ? 0 : parseInt(text)
-              ),
-            "0",
-            false,
-            "numeric"
           )}
           {renderLabeledInput(
             "👥 Số lượng tối đa",
@@ -339,6 +340,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f9ff",
     paddingBottom: -20,
     flexGrow: 1
+  },
+  fieldContainer: {
+    marginBottom: 20
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+    color: "#333"
+  },
+  editorWrapper: {
+    height: 100, // ✅ chiều cao thu gọn
+    padding: 10,
+    minHeight: 70,
+    marginBottom: -20
+  },
+  editor: {
+    flex: 1,
+    fontSize: 14
+  },
+  editorContainer: {
+    backgroundColor: "transparent",
+    height: -110
   },
   headerBox: {
     backgroundColor: "#dbeafe",

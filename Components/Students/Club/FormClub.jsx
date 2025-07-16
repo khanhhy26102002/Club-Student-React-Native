@@ -86,20 +86,23 @@ const FormClub = () => {
     const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await fetchBaseResponse(`/api/clubs/create-club-request`, {
-        method: "POST",
-        data: {
-          name,
-          description: htmlDescription,
-          logoUrl,
-          fullName,
-          mentorId: mentorNumber
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+      const response = await fetchBaseResponse(
+        `/api/clubs/create-club-request`,
+        {
+          method: "POST",
+          data: {
+            name,
+            description: htmlDescription,
+            logoUrl,
+            fullName,
+            mentorId: mentorNumber
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
         }
-      });
+      );
 
       if (
         response.message ===
@@ -130,7 +133,9 @@ const FormClub = () => {
         error?.message ||
         "Lỗi không xác định.";
       if (
-        serverMessage.includes("You have already submitted a club creation request") ||
+        serverMessage.includes(
+          "You have already submitted a club creation request"
+        ) ||
         serverMessage.includes("already registered")
       ) {
         Alert.alert("❌ Trùng tên", "Tên CLB này đã tồn tại.");
@@ -232,15 +237,23 @@ const FormClub = () => {
               </Markdown>
             </View>
           )} */}
-          <Text style={[styles.label, { marginBottom: 6 }]}>📄 Miêu tả *</Text>
-          <QuillEditor ref={quillRef} initialHtml={description} />
-          {renderField(
-            "Logo (link ảnh)",
-            "image",
-            logoUrl,
-            setLogoUrl,
-            "https://..."
-          )}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>📄 Miêu tả *</Text>
+            <View style={styles.editorWrapper}>
+              <QuillEditor
+                ref={quillRef}
+                initialHtml={description}
+                style={styles.editor}
+                containerStyle={styles.editorContainer}
+                theme="light"
+                placeholder="Nhập miêu tả ở đây..."
+                onFocus={() => {
+                  // Có thể thêm animation nhẹ nếu muốn
+                }}
+              />
+            </View>
+          </View>
+
           {renderField(
             "Họ tên người đại diện *",
             "person",
@@ -315,11 +328,28 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: 18
   },
+  fieldContainer: {
+    marginBottom: 20
+  },
   label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#374151",
-    marginBottom: 6
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+    color: "#333"
+  },
+  editorWrapper: {
+    height: 100, // ✅ chiều cao thu gọn
+    padding: 10,
+    minHeight: 70,
+    marginBottom: -20
+  },
+  editor: {
+    flex: 1,
+    fontSize: 14
+  },
+  editorContainer: {
+    backgroundColor: "transparent",
+    height: -110
   },
   inputWrapper: {
     flexDirection: "row",
@@ -358,7 +388,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 4,
-    marginTop: -8
+    marginTop: 8
   },
   buttonDisabled: {
     backgroundColor: "#d4d4d8"
