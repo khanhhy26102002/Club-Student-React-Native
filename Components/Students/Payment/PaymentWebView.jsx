@@ -13,7 +13,7 @@ const PaymentWebView = ({ navigation }) => {
     const match = url.match(new RegExp("[?&]" + key + "=([^&]+)"));
     return match ? decodeURIComponent(match[1]) : null;
   };
-
+//deep link 
   const notifyBackend = async (orderCode) => {
     try {
       const token = await AsyncStorage.getItem("jwt");

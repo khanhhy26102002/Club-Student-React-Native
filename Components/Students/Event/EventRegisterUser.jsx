@@ -12,78 +12,59 @@ import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 
-const EventRegisterUser = ({ route }) => {
-  const { userId, eventId } = route.params;
-  console.log("📦 route.params:", route.params);
-  const [filter, setFilter] = React.useState(null);
+const EventRegisterUser = () => {
+  const [filter, setFilter] = React.useState(null); // null = ALL
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+
   const fetchData = async () => {
-  if (!userId) {
-    Alert.alert("❌ Thiếu thông tin", "Không tìm thấy userId.");
-    return;
-  }
+    setLoading(true);
+    const token = await AsyncStorage.getItem("jwt");
 
-  setLoading(true);
-  const token = await AsyncStorage.getItem("jwt");
-  let endpoint = `/api/registrations/registered-event/${userId}`;
-  if (filter) {
-    endpoint += `?status=${filter}`;
-  }
+    let endpoint = `/api/events/by-visibility-status?visibility=PUBLIC`;
+    if (filter && filter !== "ALL") {
+      endpoint += `&status=${filter}`;
+    }
 
-  console.log("🔑 Token:", token);
-  console.log("📡 Endpoint:", endpoint);
-  console.log("🧾 eventId:", eventId);
+    console.log("📡 Endpoint:", endpoint);
 
-  try {
-    const response = await fetchBaseResponse(endpoint, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
+    try {
+      const response = await fetchBaseResponse(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 200) {
+        setData(response.data);
+      } else {
+        throw new Error(`Lỗi API: ${response.message}`);
       }
-    });
-
-    if (response.status === 200) {
-      const allData = response.data;
-      const filtered = eventId
-        ? allData.filter((item) => item.eventId === eventId)
-        : allData;
-      setData(filtered);
-    } else {
-      throw new Error(`Lỗi API: ${response.message}`);
-    }
-  } catch (error) {
-    const serverMessage =
-      error?.response?.data?.message ||
-      error.message ||
-      "Đã xảy ra lỗi không xác định.";
-
-    console.error("❌ API Error:", error?.response?.data || error);
-
-    if (
-      error?.response?.data?.status === 5007 ||
-      serverMessage.includes("not registered")
-    ) {
-      Alert.alert("🚫 Không tìm thấy", "Bạn chưa đăng ký sự kiện này.");
-    } else {
+    } catch (error) {
+      const serverMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "Đã xảy ra lỗi không xác định.";
+      console.error("❌ API Error:", error?.response?.data || error);
       Alert.alert("Lỗi", serverMessage);
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   React.useEffect(() => {
     fetchData();
-  }, [filter, userId]);
+  }, [filter]);
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.title}>📌 {item.title}</Text>
-      <Text style={styles.description}>📝 {item.description}</Text>
+      <Text style={styles.description} numberOfLines={2}>
+        📝 {item.description}
+      </Text>
       <Text style={styles.detail}>
-        🗓️ Thời gian:{" "}
+        🗓️{" "}
         {new Date(item.eventDate).toLocaleString("vi-VN", {
           day: "2-digit",
           month: "2-digit",
@@ -92,15 +73,15 @@ const EventRegisterUser = ({ route }) => {
           minute: "2-digit"
         })}
       </Text>
-      <Text style={styles.detail}>📍 Địa điểm: {item.location}</Text>
-      <Text style={styles.detail}>🎯 Hình thức: {item.format}</Text>
+      <Text style={styles.detail}>📍 {item.location}</Text>
+      <Text style={styles.detail}>🎯 {item.format}</Text>
       <Text style={styles.status}>📣 Trạng thái: {item.status}</Text>
     </View>
   );
 
   const renderFilters = () => (
     <View style={styles.filterContainer}>
-      {["All", "PENDING", "COMPLETED", "FAILED"].map((status) => (
+      {["ALL", "DRAFT", "PUBLISHED", "FINISHED"].map((status) => (
         <TouchableOpacity
           key={status}
           style={[
@@ -130,7 +111,7 @@ const EventRegisterUser = ({ route }) => {
     <>
       <Header />
       <View style={styles.container}>
-        <Text style={styles.heading}>📚 Sự kiện bạn đã đăng ký</Text>
+        <Text style={styles.heading}>🌐 Sự kiện công khai</Text>
         {renderFilters()}
         {loading ? (
           <ActivityIndicator size="large" color="#2563EB" />

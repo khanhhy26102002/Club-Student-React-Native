@@ -33,7 +33,7 @@ const LoginPage = ({ navigation }) => {
         Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
         const token = response.data.token;
         const roles = response.data.roles || [];
-        const roleName = roles?.[0]?.role || "GUEST";
+        const roleName = roles?.[0] || "GUEST"; // ✅ sửa ở đây
         const decoded = jwtDecode(token);
         const userId = decoded.sub;
         console.log("UserId:", userId);
@@ -42,25 +42,6 @@ const LoginPage = ({ navigation }) => {
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("userId", userId);
         setRoleName(roleName);
-
-        const clubResponse = await fetchBaseResponse(
-          "/api/clubs/my-club-roles",
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        const ownedClubs = (clubResponse.data || []).filter(
-          (c) => c.role === "CLUBLEADER"
-        );
-
-        if (ownedClubs.length > 0) {
-          ownedClubs.forEach((club) => {
-            console.log("Bạn thuộc CLB:", club.clubName);
-          });
-        }
-
         if (roleName === "MEMBER") {
           navigation.navigate("Main");
         } else if (roleName === "ORGANIZERS") {

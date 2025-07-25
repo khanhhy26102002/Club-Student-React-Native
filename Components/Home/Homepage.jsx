@@ -6,14 +6,19 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Image
+  Image,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchBaseResponse } from "../../utils/api";
+import { stripMarkdown } from "../../stripmarkdown";
 
 const Homepage = ({ navigation }) => {
   const [user, setUser] = React.useState(null);
+  const [data, setData] = React.useState([]);
+  const [event, setEvent] = React.useState([]);
   React.useEffect(() => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
@@ -22,14 +27,56 @@ const Homepage = ({ navigation }) => {
         setUser({ email: storedEmail, token: storedToken });
       }
     };
-    // lên mạng task manager cho mobile
-    //
     fetchUser();
     const unsubscribe = navigation.addListener("focus", () => {
       fetchUser();
     });
     return unsubscribe;
   }, []);
+
+  React.useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        const response = await fetchBaseResponse(`/api/clubs/public`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setData(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Alert.alert("Không fetch được data club public");
+      }
+    };
+    fetchClub();
+  }, []);
+  React.useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        const response = await fetchBaseResponse(`/api/events/public`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setEvent(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Alert.alert("Không fetch được data event public");
+      }
+    };
+    fetchClub();
+  }, []);
+
   return (
     <>
       <Header />
@@ -68,43 +115,85 @@ const Homepage = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Popular Clubs */}
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>CLB nổi bật</Text>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Club", {
+                screen: "ClubNo"
+              })
+            }
+          >
             <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {[1, 2].map((item, idx) => (
-            <View key={idx} style={styles.card}>
-              <View style={styles.cardImage} />
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTag}>Kỹ năng</Text>
-                <Text style={styles.cardTitle}>CLB Thuyết trình</Text>
-                <Text style={styles.cardSub}>120 thành viên</Text>
+        <View style={{ gap: 16, marginTop: 8 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 16,
+              paddingLeft: 4,
+              paddingRight: 20,
+              marginTop: 8
+            }}
+          >
+            {data.map((item, idx) => (
+              <View key={idx} style={styles.horizontalCard}>
+                <Image
+                  source={{ uri: item.logoUrl }}
+                  style={styles.cardImage}
+                />
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{item.name}</Text>
+                  <Text style={styles.cardSub} numberOfLines={2}>
+                    {stripMarkdown(item.description)}
+                  </Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Top Mentors */}
-        {/* <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Ban chủ nhiệm</Text>
-          <TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+        <View style={[styles.sectionRow, { marginTop: 30 }]}>
+          <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "EventStack"
+              })
+            }
+          >
             <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.mentorRow}>
-          {["Trang", "Minh", "Ngọc", "Quân"].map((name, index) => (
-            <View key={index} style={styles.mentorCard}>
-              <View style={styles.mentorAvatar} />
-              <Text style={styles.mentorName}>{name}</Text>
-            </View>
-          ))}
-        </View> */}
-        
+        <View style={{ gap: 16, marginTop: 8 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 16,
+              paddingLeft: 4,
+              paddingRight: 20,
+              marginTop: 8
+            }}
+          >
+            {event.map((item, idx) => (
+              <View key={idx} style={styles.eventCard}>
+                <View style={styles.eventCardContent}>
+                  <Text style={styles.eventTitle}>{item.title}</Text>
+                  <Text style={styles.eventDescription} numberOfLines={2}>
+                    {stripMarkdown(item.description)}
+                  </Text>
+                  <Text style={styles.eventInfo}>
+                    🕒 {new Date(item.eventDate).toLocaleString()}
+                  </Text>
+                  <Text style={styles.eventInfo}>🧑‍💻 {item.format}</Text>
+                  <Text style={styles.eventInfo}>📍 {item.location}</Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
     </>
   );
@@ -116,24 +205,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 40 // thêm padding dưới cho dễ cuộn
-  },
-  header: {
-    marginBottom: 20
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0F172A"
-  },
-  subtitle: {
-    color: "#64748B",
-    marginTop: 4
-  },
-  notification: {
-    position: "absolute",
-    top: 0,
-    right: 0
+    paddingBottom: 40
   },
   searchContainer: {
     backgroundColor: "#fff",
@@ -167,12 +239,24 @@ const styles = StyleSheet.create({
     color: "#E0F2FE",
     marginTop: 4
   },
+  horizontalCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    width: 250, // hoặc tùy chỉnh 80% nếu thích
+    marginRight: 1, // 👉 tăng khoảng cách giữa các card ngang
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
   sectionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 10,
-    marginTop:10
+    marginTop: 10
   },
   sectionTitle: {
     fontSize: 16,
@@ -200,57 +284,66 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    width: 200,
     borderRadius: 12,
-    marginRight: 16,
+    overflow: "hidden",
+    width: "100%", // Full width
     shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 12, // cách nhau theo chiều dọc
+    marginHorizontal: 1 // cách nhau theo chiều ngang (trái/phải)
   },
   cardImage: {
-    height: 100,
-    backgroundColor: "#CBD5E1",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12
+    width: "100%",
+    height: 120,
+    resizeMode: "cover"
   },
   cardContent: {
-    padding: 12
-  },
-  cardTag: {
-    color: "#64748B",
-    fontSize: 12,
-    marginBottom: 4
+    padding: 16
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1E3A8A"
-  },
-  cardSub: {
-    fontSize: 12,
-    color: "#64748B",
-    marginTop: 4
-  },
-  mentorRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10
-  },
-  mentorCard: {
-    alignItems: "center",
-    flex: 1
-  },
-  mentorAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#CBD5E1",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#1F2937",
     marginBottom: 6
   },
-  mentorName: {
-    fontSize: 12,
-    color: "#0F172A",
-    fontWeight: "600"
+  cardSub: {
+    fontSize: 14,
+    color: "#6B7280",
+    lineHeight: 20
+  },
+  eventCard: {
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    padding: 16,
+    width: 260,
+    marginRight: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  eventCardContent: {
+    flex: 1
+  },
+  eventTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1E3A8A",
+    marginBottom: 6
+  },
+  eventDescription: {
+    fontSize: 14,
+    color: "#475569",
+    marginBottom: 8,
+    lineHeight: 20
+  },
+  eventInfo: {
+    fontSize: 13,
+    color: "#64748B",
+    marginTop: 2
   }
 });

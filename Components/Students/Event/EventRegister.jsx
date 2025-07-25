@@ -19,8 +19,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import QuillEditor from "../../QuillEditor";
+import { useRoute } from "@react-navigation/native";
 
 const EventRegister = () => {
+  const route = useRoute();
   const [title, setTitle] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [description, setDescription] = React.useState("");
@@ -31,7 +33,8 @@ const EventRegister = () => {
   const [maximumParticipants, setMaximumParticipants] = React.useState(0);
   const [visibility, setVisibility] = React.useState("");
   const [useLab, setUseLab] = React.useState(true);
-  const [clubId, setClubId] = React.useState(0);
+  const { clubId } = route.params;
+  const [name, setName] = React.useState("");
   const [showPicker, setShowPicker] = React.useState(false);
   const onChange = (event, selectedDate) => {
     setShowPicker(false);
@@ -56,10 +59,6 @@ const EventRegister = () => {
       Alert.alert("Lỗi", "Vui lòng nhập địa điểm tổ chức");
       return false;
     }
-    if (minimumParticipants <= 0) {
-      Alert.alert("Lỗi", "Số lượng tối thiểu phải lớn hơn 0");
-      return false;
-    }
     if (maximumParticipants <= 0) {
       Alert.alert("Lỗi", "Số lượng tối đa phải lớn hơn 0");
       return false;
@@ -74,34 +73,83 @@ const EventRegister = () => {
     }
     return true;
   };
-
-  const handleSubmit = async () => {
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
+      const selectedDate = new Date(eventDate);
+      const now = new Date();
+      if (selectedDate < now) {
+        Alert.alert("Thất bại", "Không được chọn thời gian quá khứ");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetchBaseResponse(`/api/clubs/${clubId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setName(response.data.name);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+      }
+    };
+    fetchData();
+  }, [clubId]);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!validateForm()) {
       return;
     }
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     const isoDate = new Date(eventDate).toISOString();
+    const htmlDescription = await quillRef.current.getHtml();
+    if (!htmlDescription || htmlDescription.trim() === "") {
+      Alert.alert("⚠️ Thiếu mô tả", "Vui lòng nhập mô tả cho CLB.");
+      return;
+    }
+    const trimmedName = name.trim().toLowerCase();
+    const isDuplicate = existingNames.includes(trimmedName);
+    if (isDuplicate) {
+      Alert.alert(
+        "❌ Trùng tên",
+        "Tên CLB đã tồn tại. Vui lòng chọn tên khác."
+      );
+      return;
+    }
     try {
-      const response = await fetchBaseResponse("/api/events/create-event-request", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        data: {
-          title,
-          description,
-          eventDate: isoDate,
-          format,
-          location,
-          maximumParticipants,
-          visibility,
-          useLab,
-          clubId
+      const response = await fetchBaseResponse(
+        "/api/events/create-event-request",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          data: {
+            title,
+            description,
+            eventDate: isoDate,
+            format,
+            location,
+            maximumParticipants,
+            visibility,
+            useLab,
+            clubId
+          }
         }
-      });
-      if (response.message === "event creation request successful") {
+      );
+      if (
+        response.message ===
+        "Club creation request submitted and pending mentor approval."
+      ) {
         Alert.alert("Bạn tạo sự kiện thành công", "Đang chờ admin duyệt");
       } else {
         throw new Error(`HTTP Status:${response.status}`);
@@ -207,7 +255,7 @@ const EventRegister = () => {
             "Miêu tả ngắn gọn về sự kiện...",
             true
           )} */}
-            <View style={styles.fieldContainer}>
+          <View style={styles.fieldContainer}>
             <Text style={styles.label}>📄 Miêu tả *</Text>
             <View style={styles.editorWrapper}>
               <QuillEditor

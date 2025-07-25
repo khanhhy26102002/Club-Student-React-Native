@@ -15,6 +15,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import RenderHTML from "react-native-render-html";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { stripMarkdown } from "../../../stripmarkdown";
 const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
@@ -89,6 +90,9 @@ const ClubId = ({ navigation }) => {
         if (matched?.role === "CLUBLEADER") {
           role = "CLUBLEADER";
           console.log("✅ Đây là chủ nhiệm CLB");
+        } else if (matched?.role === "MEMBER") {
+          role = "MEMBER";
+          console.log("Bạn là thành viên của clb này");
         } else {
           console.log("❌ Không phải chủ nhiệm CLB");
         }
@@ -138,13 +142,12 @@ const ClubId = ({ navigation }) => {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>📄 Giới thiệu</Text>
-              <RenderHTML
-                contentWidth={width - 48}
-                source={{ html: data.description || "<p>Không có mô tả</p>" }}
-                tagsStyles={htmlStyles}
-              />
+              <Text style={styles.sectionTitle}>
+                {stripMarkdown(data.description)}
+              </Text>
               <View>
-                {membershipStatus.role === "CLUBLEADER" || membershipStatus.status === "APPROVED" ? (
+                {membershipStatus.role === "CLUBLEADER" ||
+                membershipStatus.status === "APPROVED" ? (
                   <TouchableOpacity
                     onPress={() =>
                       navigation.navigate("Club", {
@@ -323,10 +326,11 @@ const styles = StyleSheet.create({
     borderRadius: 12
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 10
+    fontSize: 15,
+    color: "#444",
+    lineHeight: 22,
+    marginBottom: 12,
+    fontWeight: "400"
   }
 });
 const markdownStyles = {
