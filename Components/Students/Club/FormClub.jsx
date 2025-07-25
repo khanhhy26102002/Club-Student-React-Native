@@ -359,13 +359,14 @@ const FormClub = () => {
                   style={{
                     backgroundColor: "#F3F4F6",
                     borderRadius: 10,
-                    overflow: "hidden"
+                    overflow: "hidden",
+                    marginBottom: -5
                   }}
                 >
                   <Picker
                     selectedValue={mentorId}
                     onValueChange={(itemValue) => setMentorId(itemValue)}
-                    style={{ height: 50 }}
+                    style={{ height: 60 }}
                   >
                     {data.map((mentor) => (
                       <Picker.Item

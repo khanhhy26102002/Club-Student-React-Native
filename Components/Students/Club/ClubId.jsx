@@ -5,61 +5,54 @@ import {
   Text,
   View,
   Image,
-  useWindowDimensions,
   Alert,
   TouchableOpacity,
   ActivityIndicator
 } from "react-native";
-import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { useRoute, useFocusEffect } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
-import RenderHTML from "react-native-render-html";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { stripMarkdown } from "../../../stripmarkdown";
+
 const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
-  const [membershipStatus, setMembershipStatus] = React.useState({
-    status: null,
-    role: null
-  });
-
+  const clubIdParam = Number(clubId);
+  console.log("clubId param:", clubIdParam);
   const [data, setData] = React.useState(null);
-  const { width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
-  const fetchData = async () => {
+  const [fetchingRoles, setFetchingRoles] = React.useState(true);
+  const [clubRole, setClubRole] = React.useState({});
+  const [hasApplied, setHasApplied] = React.useState(false);
+  const [isApproved, setIsApproved] = React.useState(false);
+  const [upcomingEvents, setUpcomingEvents] = React.useState([]);
+
+  const fetchClubData = async () => {
     setLoading(true);
     try {
-      const response = await fetchBaseResponse(`/api/clubs/public/${clubId}`, {
+      const res = await fetchBaseResponse(`/api/clubs/public/${clubId}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" }
       });
-      console.log("API response:", response);
 
-      // 👉 Thêm check cho response.status
-      if (!response || response.status !== 200 || !response.data) {
-        Alert.alert(
-          "Không thể hiển thị câu lạc bộ",
-          response?.message || "Dữ liệu không hợp lệ"
-        );
-        setData(null);
+      if (res?.status === 200 && res.data) {
+        setData(res.data);
       } else {
-        setData(response.data);
+        Alert.alert("Lỗi", res?.message || "Không thể lấy dữ liệu CLB");
+        setData(null);
       }
-    } catch (error) {
-      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
+    } catch (err) {
+      Alert.alert("Lỗi hệ thống", err?.message || "Unknown error");
     } finally {
       setLoading(false);
     }
   };
 
-  const statusData = async () => {
-    const token = await AsyncStorage.getItem("jwt");
+  const fetchMembershipStatus = async () => {
     try {
-      // 1. Gọi membership status
-      const statusRes = await fetchBaseResponse(
+      const token = await AsyncStorage.getItem("jwt");
+      const res = await fetchBaseResponse(
         `/api/memberships/status?clubId=${clubId}`,
         {
           method: "GET",
@@ -69,48 +62,99 @@ const ClubId = ({ navigation }) => {
           }
         }
       );
-
-      let status = null;
-      if (statusRes.status === 200) {
-        status = statusRes.data;
+      const membership = res.data;
+      if (membership) {
+        setHasApplied(true);
+        setIsApproved(membership.status === "APPROVED");
+        if (membership.status === "PENDING") {
+          Alert.alert("Thông báo", "Bạn đã đăng ký, vui lòng chờ duyệt.");
+        }
+      } else {
+        setHasApplied(false);
+        setIsApproved(false);
       }
+    } catch (error) {
+      Alert.alert("Lỗi trạng thái thành viên", error.message || "Unknown");
+    }
+  };
 
-      // 2. Gọi club roles
-      const rolesRes = await fetchBaseResponse("/api/clubs/my-club-roles", {
+  const fetchClubRole = async () => {
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const res = await fetchBaseResponse("/api/clubs/my-club-roles", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         }
       });
-
-      let role = null;
-      if (rolesRes.status === 200 && Array.isArray(rolesRes.data)) {
-        const matched = rolesRes.data.find((r) => r.clubId === clubId);
-        if (matched?.role === "CLUBLEADER") {
-          role = "CLUBLEADER";
-          console.log("✅ Đây là chủ nhiệm CLB");
-        } else if (matched?.role === "MEMBER") {
-          role = "MEMBER";
-          console.log("Bạn là thành viên của clb này");
-        } else {
-          console.log("❌ Không phải chủ nhiệm CLB");
-        }
+      if (res.status === 200) {
+        const currentRole = res.data.find(
+          (item) => item.clubId === clubIdParam
+        );
+        setClubRole(currentRole || {});
       }
+    } catch (err) {
+      console.error("Lỗi role:", err);
+    } finally {
+      setFetchingRoles(false);
+    }
+  };
 
-      // 3. Gộp lại
-      setMembershipStatus({ status, role });
-    } catch (error) {
-      Alert.alert("Lỗi khi tải trạng thái", error?.message || "Unknown error");
+  const fetchEvents = async () => {
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const [pubRes, intRes] = await Promise.all([
+        fetchBaseResponse(
+          `/api/clubs/${clubIdParam}/events?visibility=PUBLIC`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        ),
+        fetchBaseResponse(
+          `/api/clubs/${clubIdParam}/events?visibility=INTERNAL`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        )
+      ]);
+
+      const now = new Date();
+      const merged = [...(pubRes.data || []), ...(intRes.data || [])];
+      const filtered = merged.filter(
+        (e) => e.status === "APPROVED" && new Date(e.eventDate) > now
+      );
+      setUpcomingEvents(filtered);
+    } catch (err) {
+      console.error("Lỗi load sự kiện:", err);
     }
   };
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchData();
-      statusData();
-    }, [clubId])
+      fetchClubData();
+      fetchMembershipStatus();
+      fetchClubRole();
+      fetchEvents();
+    }, [clubIdParam])
   );
+
+  const handleJoin = () => {
+    navigation.navigate("Club", {
+      screen: "FormRegister",
+      params: {
+        clubId: clubId
+      }
+    });
+  };
 
   return (
     <>
@@ -142,51 +186,51 @@ const ClubId = ({ navigation }) => {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>📄 Giới thiệu</Text>
-              <Text style={styles.sectionTitle}>
-                {stripMarkdown(data.description)}
-              </Text>
-              <View>
-                {membershipStatus.role === "CLUBLEADER" ||
-                membershipStatus.status === "APPROVED" ? (
+              <Text>{stripMarkdown(data.description)}</Text>
+
+              <View style={{ marginTop: 12 }}>
+                {fetchingRoles ? (
+                  <TouchableOpacity style={styles.button}>
+                    <Text>Đang tải quyền...</Text>
+                  </TouchableOpacity>
+                ) : clubRole?.role === "CLUBLEADER" ? (
                   <TouchableOpacity
+                    style={styles.button}
+                    onPress={() =>
+                      Alert.alert(
+                        "Thành công",
+                        "Mọi thông tin sẽ quản lí trên web"
+                      )
+                    }
+                  >
+                    <Text style={styles.buttonText}>🔍 Xem nhóm trong CLB</Text>
+                  </TouchableOpacity>
+                ) : clubRole?.role === "MEMBER" ? (
+                  <TouchableOpacity
+                    style={styles.button}
                     onPress={() =>
                       navigation.navigate("Club", {
                         screen: "ClubGroup",
                         params: {
-                          clubId: data.clubId,
-                          userId: data.userId
+                          clubId: clubId
                         }
                       })
                     }
-                    style={styles.accessButton}
                   >
-                    <Text style={styles.accessButtonText}>
-                      🚪 Truy cập nhóm
-                    </Text>
+                    <Text style={styles.buttonText}>🔍 Xem nhóm trong CLB</Text>
                   </TouchableOpacity>
-                ) : membershipStatus.status === "PENDING" ? (
-                  <View style={styles.pendingButton}>
-                    <Text style={styles.pendingButtonText}>
-                      ⏳ Đang chờ duyệt
-                    </Text>
-                  </View>
-                ) : membershipStatus.status === "REJECTED" ? (
-                  <View style={styles.rejectedButton}>
-                    <Text style={styles.rejectedButtonText}>❌ Bị từ chối</Text>
-                  </View>
+                ) : hasApplied && !isApproved ? (
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#facc15" }]}
+                  >
+                    <Text style={{ color: "#000" }}>⏳ Đang chờ duyệt</Text>
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
-                    style={styles.registerButton}
-                    onPress={() =>
-                      navigation.navigate("Club", {
-                        screen: "FormRegister",
-                        params: {
-                          clubId: data.clubId
-                        }
-                      })
-                    }
+                    style={[styles.button, { backgroundColor: "#10b981" }]}
+                    onPress={handleJoin}
                   >
-                    <Text style={styles.registerButtonText}>📝 Tham gia</Text>
+                    <Text style={styles.buttonText}>➕ Tham gia CLB</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -198,244 +242,63 @@ const ClubId = ({ navigation }) => {
   );
 };
 
-export default ClubId;
-
 const styles = StyleSheet.create({
+  container: { padding: 16 },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
-    marginTop: 100
-  },
-  accessButton: {
-    backgroundColor: "#22c55e", // Xanh lá
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
     alignItems: "center"
-  },
-  accessButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
-  },
-  registerButton: {
-    backgroundColor: "#2563eb", // Xanh dương
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
-  },
-  pendingButton: {
-    backgroundColor: "#facc15", // Vàng
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  pendingButtonText: {
-    color: "#1f2937",
-    fontWeight: "600",
-    fontSize: 16
-  },
-  rejectedButton: {
-    backgroundColor: "#ef4444", // Đỏ
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  rejectedButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 140,
-    backgroundColor: "#F3F4F6",
-    alignItems: "center"
-  },
-  registerButton: {
-    marginTop: 24,
-    backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center"
-  },
-  registerButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600"
   },
   card: {
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4
   },
   logoWrapper: {
-    alignSelf: "center",
-    backgroundColor: "#FFF7ED",
-    padding: 12,
-    borderRadius: 100,
-    marginBottom: 20,
-    elevation: 2
+    alignItems: "center",
+    marginBottom: 16
   },
   logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    resizeMode: "cover"
+    width: 80,
+    height: 80,
+    borderRadius: 40
   },
   logoFallback: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#E5E7EB",
-    textAlign: "center",
-    lineHeight: 120,
-    color: "#6B7280"
+    color: "#aaa"
   },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: "#1E40AF",
+    fontSize: 20,
+    fontWeight: "bold",
     textAlign: "center",
     marginBottom: 4
   },
   status: {
-    fontSize: 16,
-    fontWeight: "600",
     textAlign: "center",
-    marginBottom: 20
+    fontSize: 14,
+    marginBottom: 12
   },
   section: {
-    backgroundColor: "#F9FAFB",
-    padding: 16,
-    borderRadius: 12
+    marginTop: 12
   },
   sectionTitle: {
-    fontSize: 15,
-    color: "#444",
-    lineHeight: 22,
-    marginBottom: 12,
-    fontWeight: "400"
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8
+  },
+  button: {
+    backgroundColor: "#3b82f6",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600"
   }
 });
-const markdownStyles = {
-  body: {
-    fontSize: 16,
-    color: "#374151",
-    lineHeight: 24,
-    textAlign: "left",
-    alignSelf: "stretch",
-    paddingHorizontal: 4
-  },
-  heading1: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-    marginTop: 20,
-    color: "#1F2937"
-  },
-  heading2: {
-    fontSize: 20,
-    color: "#111827",
-    marginBottom: 8,
-    marginTop: 16,
-    fontWeight: "700"
-  },
-  heading3: {
-    fontSize: 18,
-    color: "#1F2937",
-    marginTop: 14,
-    marginBottom: 6,
-    fontWeight: "600"
-  },
-  paragraph: {
-    marginBottom: 10
-  },
-  list_item: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 6
-  },
-  list_item_content: {
-    fontSize: 16,
-    color: "#4B5563"
-  },
-  link: {
-    color: "#2563EB",
-    textDecorationLine: "underline"
-  },
-  code_inline: {
-    backgroundColor: "#F3F4F6",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontFamily: "monospace",
-    color: "#111827"
-  }
-};
-const htmlStyles = {
-  p: {
-    fontSize: 16,
-    color: "#374151",
-    lineHeight: 24,
-    marginBottom: 10
-  },
-  h2: {
-    fontSize: 20,
-    color: "#111827",
-    marginTop: 20,
-    marginBottom: 8,
-    fontWeight: "700"
-  },
-  h3: {
-    fontSize: 18,
-    color: "#1F2937",
-    marginTop: 16,
-    marginBottom: 6,
-    fontWeight: "600"
-  },
-  img: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-    marginVertical: 10,
-    borderRadius: 8
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    marginBottom: 10
-  },
-  th: {
-    backgroundColor: "#F3F4F6",
-    padding: 6,
-    fontWeight: "700",
-    borderWidth: 1,
-    borderColor: "#D1D5DB"
-  },
-  td: {
-    padding: 6,
-    borderWidth: 1,
-    borderColor: "#D1D5DB"
-  },
-  iframe: {
-    width: "100%",
-    height: 200,
-    borderRadius: 8
-  }
-};
+
+export default ClubId;

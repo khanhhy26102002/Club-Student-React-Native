@@ -51,10 +51,24 @@ const EventRoles = () => {
         }
       } catch (error) {
         console.error("❌ Lỗi lấy vai trò sự kiện:", error);
-        Alert.alert(
-          "Lỗi",
-          error.message || "Đã xảy ra lỗi khi kết nối đến máy chủ."
-        );
+
+        // Nếu server trả response cụ thể
+        if (error.response) {
+          console.log(
+            "📦 Response Error Detail:",
+            JSON.stringify(error.response.data, null, 2)
+          );
+          Alert.alert(
+            "Lỗi từ máy chủ",
+            error.response.data?.message || "Lỗi không xác định từ server"
+          );
+        } else if (error.request) {
+          console.log("📡 Không nhận được phản hồi:", error.request);
+          Alert.alert("Lỗi kết nối", "Không nhận được phản hồi từ máy chủ");
+        } else {
+          console.log("❗ Lỗi khác:", error.message);
+          Alert.alert("Lỗi", error.message || "Lỗi không xác định");
+        }
       } finally {
         setLoading(false);
       }

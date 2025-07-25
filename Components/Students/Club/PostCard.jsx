@@ -4,7 +4,7 @@ import Icon from "react-native-vector-icons/Feather";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function PostCard({ data }) {
+export default function PostCard({ data, navigation }) {
   const isEvent = data.type === "event";
 
   return (
@@ -99,7 +99,15 @@ export default function PostCard({ data }) {
             borderRadius: 20
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
+          <Text
+            style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "EventRoles",
+                params: { eventId: data.eventId }
+              })
+            }
+          >
             Xem chi tiết
           </Text>
         </TouchableOpacity>

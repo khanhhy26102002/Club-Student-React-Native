@@ -138,19 +138,31 @@ const Homepage = ({ navigation }) => {
               marginTop: 8
             }}
           >
-            {data.map((item, idx) => (
-              <View key={idx} style={styles.horizontalCard}>
-                <Image
-                  source={{ uri: item.logoUrl }}
-                  style={styles.cardImage}
-                />
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle}>{item.name}</Text>
-                  <Text style={styles.cardSub} numberOfLines={2}>
-                    {stripMarkdown(item.description)}
-                  </Text>
+            {data.map((item) => (
+              <TouchableOpacity
+                key={item.clubId}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubId",
+                    params: {
+                      clubId: item.clubId
+                    }
+                  })
+                }
+              >
+                <View key={item.clubId} style={styles.horizontalCard}>
+                  <Image
+                    source={{ uri: item.logoUrl }}
+                    style={styles.cardImage}
+                  />
+                  <View style={styles.cardContent}>
+                    <Text style={styles.cardTitle}>{item.name}</Text>
+                    <Text style={styles.cardSub} numberOfLines={2}>
+                      {stripMarkdown(item.description)}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -177,20 +189,32 @@ const Homepage = ({ navigation }) => {
               marginTop: 8
             }}
           >
-            {event.map((item, idx) => (
-              <View key={idx} style={styles.eventCard}>
-                <View style={styles.eventCardContent}>
-                  <Text style={styles.eventTitle}>{item.title}</Text>
-                  <Text style={styles.eventDescription} numberOfLines={2}>
-                    {stripMarkdown(item.description)}
-                  </Text>
-                  <Text style={styles.eventInfo}>
-                    🕒 {new Date(item.eventDate).toLocaleString()}
-                  </Text>
-                  <Text style={styles.eventInfo}>🧑‍💻 {item.format}</Text>
-                  <Text style={styles.eventInfo}>📍 {item.location}</Text>
+            {event.map((item) => (
+              <TouchableOpacity
+                key={item.eventId}
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "EventId",
+                    params: {
+                      eventId: item.eventId
+                    }
+                  })
+                }
+              >
+                <View style={styles.eventCard}>
+                  <View style={styles.eventCardContent}>
+                    <Text style={styles.eventTitle}>{item.title}</Text>
+                    <Text style={styles.eventDescription} numberOfLines={2}>
+                      {stripMarkdown(item.description)}
+                    </Text>
+                    <Text style={styles.eventInfo}>
+                      🕒 {new Date(item.eventDate).toLocaleString()}
+                    </Text>
+                    <Text style={styles.eventInfo}>🧑‍💻 {item.format}</Text>
+                    <Text style={styles.eventInfo}>📍 {item.location}</Text>
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>

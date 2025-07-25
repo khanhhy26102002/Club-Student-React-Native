@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PaymentWebView = ({ navigation }) => {
   const route = useRoute();
-  const { paymentUrl } = route.params;
+  const { registrationId, paymentUrl, qrCode } = route.params;
 
   const getQueryParam = (url, key) => {
     const match = url.match(new RegExp("[?&]" + key + "=([^&]+)"));
