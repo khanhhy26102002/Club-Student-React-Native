@@ -9,19 +9,28 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  Button,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
+import { Image } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import QuillEditor from "../../QuillEditor";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { Picker } from "@react-native-picker/picker";
+import { API_URL } from "@env";
 const FormClub = () => {
+  const scrollViewRef = React.useRef(null);
   const quillRef = React.useRef(null);
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [logoUrl, setLogoUrl] = React.useState("");
-  const [fullName, setFullName] = React.useState("");
+  const [data, setData] = React.useState([]);
+  const [logoFile, setLogoFile] = React.useState(null);
   const [mentorId, setMentorId] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const fetchData = async () => {
@@ -43,14 +52,14 @@ const FormClub = () => {
 
     const existingNames = await fetchData();
 
-    // Validate client-side
-    if (!name || !fullName) {
+    if (!name) {
       Alert.alert(
         "⚠️ Thiếu thông tin",
         "Vui lòng nhập đủ các trường bắt buộc."
       );
       return;
     }
+
     const htmlDescription = await quillRef.current.getHtml();
     if (!htmlDescription || htmlDescription.trim() === "") {
       Alert.alert("⚠️ Thiếu mô tả", "Vui lòng nhập mô tả cho CLB.");
@@ -82,76 +91,133 @@ const FormClub = () => {
       return;
     }
 
+    if (!logoFile) {
+      Alert.alert("⚠️ Thiếu ảnh", "Vui lòng chọn ảnh logo cho CLB.");
+      return;
+    }
+
     setLoading(true);
-    const token = await AsyncStorage.getItem("jwt");
 
     try {
-      const response = await fetchBaseResponse(
-        `/api/clubs/create-club-request`,
-        {
-          method: "POST",
-          data: {
-            name,
-            description: htmlDescription,
-            logoUrl,
-            fullName,
-            mentorId: mentorNumber
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+      const token = await AsyncStorage.getItem("jwt");
+
+      const uploadUrl = `${API_URL}/api/clubs/create-club`;
+
+      console.log("📤 Submitting with:", logoFile);
+
+      const result = await FileSystem.uploadAsync(uploadUrl, logoFile.uri, {
+        httpMethod: "POST",
+        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        fieldName: "logoFile", // Tên field backend expect
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data"
+        },
+        parameters: {
+          name,
+          description: htmlDescription,
+          mentorId: mentorId.toString()
         }
-      );
+      });
+
+      const responseJson = JSON.parse(result.body);
+      console.log("📥 Server response:", responseJson);
 
       if (
-        response.message ===
-        "Club creation request submitted and pending mentor approval."
+        responseJson.message ===
+        "Your request to create the club has been successfully submitted and is currently awaiting approval."
       ) {
         Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
+      } else if (
+        responseJson.message ===
+        "You have already submitted a club creation request"
+      ) {
+        Alert.alert(
+          "Thất bại",
+          "Bạn chỉ được tạo 1 câu lạc bộ. Yêu cầu đã tồn tại."
+        );
       } else {
-        // Nếu server không trả đúng message nhưng status vẫn 200
         Alert.alert(
           "✅ Phản hồi",
-          response.message || "Gửi yêu cầu thành công."
+          responseJson.message || "Gửi yêu cầu thành công."
         );
       }
     } catch (error) {
       console.log("❌ Error:", error);
 
-      // 1. Nếu backend trả lỗi chi tiết trong `errors`:
-      const backendErrors = error?.response?.data?.errors;
-      if (backendErrors) {
-        const messages = Object.values(backendErrors).join("\n");
-        Alert.alert("❌ Lỗi xác thực", messages);
-        return;
-      }
-
-      // 2. Nếu backend trả message cụ thể khác:
-      const serverMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Lỗi không xác định.";
-      if (
-        serverMessage.includes(
-          "You have already submitted a club creation request"
-        ) ||
-        serverMessage.includes("already registered")
-      ) {
-        Alert.alert("❌ Trùng tên", "Tên CLB này đã tồn tại.");
-      } else if (
-        serverMessage.includes("Mentor is not available") ||
-        serverMessage.includes("Mentor not found")
-      ) {
-        Alert.alert(
-          "❌ Mentor không hợp lệ",
-          "Mentor đã được sử dụng hoặc không tồn tại."
-        );
-      } else {
-        Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + serverMessage);
-      }
+      Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
+      try {
+        const response = await fetchBaseResponse(`/api/users/mentors`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setData(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error: ", error);
+      }
+    };
+    fetchData();
+  }, []);
+  React.useEffect(() => {
+    if (logoFile) console.log("🖼️ LogoFile đã được set:", logoFile);
+  }, [logoFile]);
+
+  const handlePickImage = async () => {
+    // 1. Yêu cầu quyền truy cập
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Quyền bị từ chối",
+        "Bạn cần cấp quyền truy cập ảnh để chọn logo."
+      );
+      return;
+    }
+    console.log("handlePickImage called");
+    // 2. Mở thư viện ảnh
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1
+    });
+
+    console.log("handlePickImage result:", result);
+
+    // 3. Xử lý ảnh đã chọn
+    if (!result.canceled && result.assets?.length > 0) {
+      const picked = result.assets[0];
+      const uri = picked.uri;
+      const fileName = picked.fileName || `image_${Date.now()}.jpg`;
+
+      const extension = fileName.split(".").pop()?.toLowerCase();
+      const mimeType =
+        extension === "png"
+          ? "image/png"
+          : extension === "jpg" || extension === "jpeg"
+          ? "image/jpeg"
+          : "image/*";
+
+      const imageFile = {
+        uri,
+        name: fileName,
+        type: mimeType
+      };
+
+      setLogoFile(imageFile);
+      console.log("🖼️ LogoFile đã được set:", imageFile);
     }
   };
 
@@ -194,95 +260,138 @@ const FormClub = () => {
       style={{ flex: 1, backgroundColor: "#f8fafc" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <Header />
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>Tạo Câu Lạc Bộ</Text>
-          <Text style={styles.bannerSubtitle}>
-            Điền đầy đủ thông tin để gửi yêu cầu tạo CLB của bạn.
-          </Text>
-        </View>
-
-        <View style={styles.formContainer}>
-          {renderField(
-            "Tên CLB *",
-            "group",
-            name,
-            setName,
-            "Nhập tên câu lạc bộ"
-          )}
-          {/* {renderField(
-            "Miêu tả *",
-            "description",
-            description,
-            setDescription,
-            "Mô tả ngắn gọn",
-            true
-          )}
-          {description.trim() !== "" && (
-            <View style={{ marginTop: 24 }}>
-              <Text
-                style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}
-              >
-                📋 Xem trước Mô tả:
-              </Text>
-              <Markdown
-                style={{
-                  heading1: { fontSize: 20, color: "#ff6600", marginBottom: 8 },
-                  paragraph: { fontSize: 14, color: "#333", marginBottom: 6 },
-                  strong: { fontWeight: "bold" }
-                }}
-              >
-                {html2md(description)}
-              </Markdown>
-            </View>
-          )} */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>📄 Miêu tả *</Text>
-            <View style={styles.editorWrapper}>
-              <QuillEditor
-                ref={quillRef}
-                initialHtml={description}
-                style={styles.editor}
-                containerStyle={styles.editorContainer}
-                theme="light"
-                placeholder="Nhập miêu tả ở đây..."
-                onFocus={() => {
-                  // Có thể thêm animation nhẹ nếu muốn
-                }}
-              />
-            </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          ref={scrollViewRef}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[styles.container, { flexGrow: 1 }]}
+        >
+          <Header />
+          <View style={styles.banner}>
+            <Text style={styles.bannerTitle}>Tạo Câu Lạc Bộ</Text>
+            <Text style={styles.bannerSubtitle}>
+              Điền đầy đủ thông tin để gửi yêu cầu tạo CLB của bạn.
+            </Text>
           </View>
 
-          {renderField(
-            "Họ tên người đại diện *",
-            "person",
-            fullName,
-            setFullName,
-            "Nguyễn Văn A"
-          )}
-          {renderField(
-            "ID giảng viên phụ trách",
-            "badge",
-            mentorId,
-            setMentorId,
-            "123456",
-            false,
-            "numeric"
-          )}
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Gửi Yêu Cầu</Text>
+          <View style={styles.formContainer}>
+            {renderField(
+              "Tên CLB *",
+              "group",
+              name,
+              setName,
+              "Nhập tên câu lạc bộ"
             )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>📄 Miêu tả *</Text>
+              <View style={styles.editorWrapper}>
+                <QuillEditor
+                  ref={quillRef}
+                  initialHtml={description}
+                  style={styles.editor}
+                  containerStyle={styles.editorContainer}
+                  theme="light"
+                  placeholder="Nhập miêu tả ở đây..."
+                />
+              </View>
+            </View>
+
+            <View style={{ marginBottom: 18 }}>
+              <Text style={styles.label}>🖼️ Logo CLB</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  console.log("Clicked");
+                  handlePickImage();
+                }}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: "center",
+                  backgroundColor: "#fff"
+                }}
+              >
+                <Text style={{ color: "#ff6600", fontWeight: "600" }}>
+                  {logoFile ? "📝 Đổi ảnh" : "📷 Chọn ảnh từ thiết bị"}
+                </Text>
+              </TouchableOpacity>
+
+              {logoFile && (
+                <Image
+                  source={{ uri: logoFile.uri }}
+                  style={{
+                    width: "100%",
+                    maxWidth: 400,
+                    height: 180,
+                    marginTop: 12,
+                    borderRadius: 10,
+                    alignSelf: "center"
+                  }}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+
+            <View style={styles.field}>
+              <View style={styles.labelRow}>
+                <Icon
+                  name="badge"
+                  size={18}
+                  color="#ff6600"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.label}>Giảng viên phụ trách *</Text>
+              </View>
+
+              <View style={{ marginBottom: 18 }}>
+                <Text
+                  style={{
+                    color: "#1f2937",
+                    fontWeight: "500",
+                    marginBottom: 6
+                  }}
+                >
+                  Chọn mentor
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: "#F3F4F6",
+                    borderRadius: 10,
+                    overflow: "hidden"
+                  }}
+                >
+                  <Picker
+                    selectedValue={mentorId}
+                    onValueChange={(itemValue) => setMentorId(itemValue)}
+                    style={{ height: 50 }}
+                  >
+                    {data.map((mentor) => (
+                      <Picker.Item
+                        key={mentor.userId || mentor.email}
+                        label={`${mentor.fullName} (${mentor.email})`}
+                        value={mentor.userId}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSubmit}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Gửi Yêu Cầu</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
@@ -321,9 +430,10 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   formContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24
+    padding: 16,
+    width: "100%",
+    maxWidth: 500,
+    alignSelf: "center"
   },
   field: {
     marginBottom: 18
@@ -349,7 +459,7 @@ const styles = StyleSheet.create({
   },
   editorContainer: {
     backgroundColor: "transparent",
-    height: -110
+    flex: 1
   },
   inputWrapper: {
     flexDirection: "row",

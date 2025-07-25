@@ -12,17 +12,16 @@ import React from "react";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
-
+import { stripMarkdown } from "../../../stripmarkdown";
 const ClubRegisters = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [membershipStatus, setMembershipStatus] = React.useState({});
 
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse("/api/memberships", {
+      const response = await fetchBaseResponse("/api/clubs/my-clubs", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,54 +41,16 @@ const ClubRegisters = ({ navigation }) => {
     }
   };
 
-  const statusData = async (clubId) => {
-    const token = await AsyncStorage.getItem("jwt");
-    try {
-      const response = await fetchBaseResponse(
-        `/api/memberships/status?clubId=${clubId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      if (response.status === 200) {
-        console.log("Status response for clubId", clubId, ":", response.data);
-        setMembershipStatus((prev) => ({
-          ...prev,
-          [clubId]: response.data
-        }));
-      } else {
-        throw new Error(`HTTP Status:${response.status}`);
-      }
-    } catch (error) {
-      Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
-    }
-  };
-
   React.useEffect(() => {
     fetchData();
   }, []);
-
-  React.useEffect(() => {
-    data.forEach((item) => {
-      console.log("clubId:", item.clubId);
-      if (item.clubId) {
-        statusData(item.clubId);
-      }
-    });
-  }, [data]);
 
   return (
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>
-            🎓 Câu lạc bộ thành viên đã đăng kí
-          </Text>
+          <Text style={styles.sectionTitle}>🎓 Câu lạc bộ bạn đã tham gia</Text>
           <View style={styles.sectionUnderline} />
         </View>
 
@@ -97,94 +58,40 @@ const ClubRegisters = ({ navigation }) => {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#2563EB" />
           </View>
+        ) : data.length === 0 ? (
+          <Text style={{ textAlign: "center", color: "#6B7280" }}>
+            Bạn chưa tham gia câu lạc bộ nào.
+          </Text>
         ) : (
-          data.map((membership) => {
-            const status = membership.status;
-            return (
-              <TouchableOpacity
-                key={membership.membershipId}
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "ClubRegisterId",
-                    params: {
-                      membershipId: membership.membershipId
-                    }
-                  })
-                }
-                style={styles.card}
-              >
-                <View style={styles.cardTop}>
-                  <Image
-                    source={{
-                      uri:
-                        membership.clubImage || "https://via.placeholder.com/80"
-                    }}
-                    alt="No image"
-                    style={styles.clubImage}
-                  />
-                  <View style={styles.clubInfo}>
-                    <View style={{ flexDirection: "row" }}>
-                      <Text style={styles.label}>🏫 Câu lạc bộ:</Text>
-                      <Text style={styles.clubName}>{membership.clubName}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>👤 Thành viên:</Text>
-                      <Text style={styles.value}>
-                        {membership.userFullName}
-                      </Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                      <Text style={styles.label}>🆔 Mã thành viên:</Text>
-                      <Text style={styles.value}>
-                        #{membership.membershipId}
-                      </Text>
-                    </View>
-                  </View>
+          data.map((club) => (
+            <TouchableOpacity
+              key={club.clubId}
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubGroup",
+                  params: {
+                    clubId: club.clubId
+                  }
+                })
+              }
+              style={styles.card}
+            >
+              <View style={styles.cardTop}>
+                <Image
+                  source={{
+                    uri: club.logoUrl || "https://via.placeholder.com/80"
+                  }}
+                  style={styles.clubImage}
+                />
+                <View style={styles.clubInfo}>
+                  <Text style={styles.clubName}>{club.name}</Text>
+                  <Text style={styles.description}>
+                    {stripMarkdown(club.description)}
+                  </Text>
                 </View>
-
-                <View style={styles.statusContainer}>
-                  {status === "APPROVED" ? (
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate("Club", {
-                          screen: "ClubGroup",
-                          params: {
-                            clubId: membership.clubId,
-                            userId: membership.userId
-                          }
-                        })
-                      }
-                      style={[styles.statusBadge, styles.approved]}
-                    >
-                      <Text style={styles.statusText}>✅ Đã duyệt</Text>
-                    </TouchableOpacity>
-                  ) : status === "PENDING" ? (
-                    <View style={[styles.statusBadge, styles.pending]}>
-                      <Text style={styles.statusText}>⏳ Đang chờ</Text>
-                    </View>
-                  ) : status === "REJECTED" ? (
-                    <View style={[styles.statusBadge, styles.rejected]}>
-                      <Text style={styles.statusText}>❌ Từ chối</Text>
-                    </View>
-                  ) : (
-                    <TouchableOpacity
-                      style={[styles.statusBadge, styles.register]}
-                      onPress={() =>
-                        navigation.navigate("Club", {
-                          screen: "FormRegister",
-                          params: {
-                            clubId: membership.clubId
-                          }
-                        })
-                      }
-                    >
-                      <Text style={styles.statusText}>📝 Tham gia</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </TouchableOpacity>
-            );
-          })
+              </View>
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
     </>
@@ -250,40 +157,19 @@ const styles = StyleSheet.create({
   },
   clubName: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#1D4ED8", // text-blue-700
-    marginBottom: 6
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2
-  },
-  label: {
-    fontSize: 15,
-    color: "#6B7280", // text-gray-500
-    marginRight: 6
-  },
-  value: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#111827" // text-gray-900
-  },
-  clubName: {
-    fontSize: 18,
     fontWeight: "bold",
-    color: "#111827"
+    color: "#111827",
+    marginBottom: 4
   },
-  joinDate: {
+  description: {
     fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4
+    color: "#6B7280"
   },
   statusContainer: {
-    alignItems: "flex-end", // đã đúng
-    marginTop: -32,
+    alignItems: "flex-end",
+    marginTop: -24,
     flexDirection: "row",
-    justifyContent: "flex-end" // đẩy badge về bên phải
+    justifyContent: "flex-end"
   },
   statusBadge: {
     paddingVertical: 6,
@@ -298,14 +184,5 @@ const styles = StyleSheet.create({
   },
   approved: {
     backgroundColor: "#10B981"
-  },
-  pending: {
-    backgroundColor: "#F59E0B"
-  },
-  rejected: {
-    backgroundColor: "#EF4444"
-  },
-  register: {
-    backgroundColor: "#3B82F6"
   }
 });

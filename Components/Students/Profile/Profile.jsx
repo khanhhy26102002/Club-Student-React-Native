@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../../Header/Header";
 import { Ionicons } from "@expo/vector-icons";
+// đăng kí clb 
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
@@ -97,34 +98,23 @@ const Profile = () => {
               }
               color="#2196F3"
             />
-            <ActionItem
+            {/* <ActionItem
               icon="person-add"
               label="Đăng kí câu lạc bộ"
               onPress={() =>
                 navigation.navigate("Club", { screen: "FormRegister" })
               }
               color="#4CAF50"
-            />
-            <ActionItem
+            /> */}
+            {/* <ActionItem
               icon="calendar"
               label="Tạo sự kiện"
               onPress={() =>
                 navigation.navigate("Event", { screen: "EventRegister" })
               }
               color="#FF9800"
-            />
-            <ActionItem
-              icon="log-out-outline"
-              label="Đăng xuất"
-              onPress={handleLogout}
-              color="#f44336"
-            />
-            <ActionItem
-              icon="call-outline"
-              label="Thông tin liên lạc"
-              onPress={() => navigation.navigate("Contact")}
-              color="#f44336"
-            />
+            /> */}
+
             <ActionItem
               icon="bar-chart-outline"
               label="Quản lí sự kiện"
@@ -135,7 +125,7 @@ const Profile = () => {
               }
               color="#f44336"
             />
-            <ActionItem
+            {/* <ActionItem
               icon="albums-outline"
               label="Đăng kí câu lạc bộ của tôi"
               onPress={() =>
@@ -143,7 +133,7 @@ const Profile = () => {
                   screen: "ClubList"
                 })
               }
-            />
+            /> */}
             <ActionItem
               icon="briefcase-outline"
               label="Quản lí câu lạc bộ của tôi"
@@ -162,16 +152,16 @@ const Profile = () => {
                 })
               }
             />
-            <ActionItem
+            {/* <ActionItem
               icon="list-circle-outline"
               label="Sự kiện của tôi"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventRoles",
+                  screen: "EventRoles"
                 })
               }
-            />
-            <ActionItem
+            /> */}
+            {/* <ActionItem
               icon="clipboard-outline"
               label="Tạo task sự kiện của bạn"
               onPress={() =>
@@ -179,6 +169,18 @@ const Profile = () => {
                   screen: "EventTask"
                 })
               }
+            /> */}
+            <ActionItem
+              icon="call-outline"
+              label="Thông tin liên lạc"
+              onPress={() => navigation.navigate("Contact")}
+              color="#f44336"
+            />
+            <ActionItem
+              icon="log-out-outline"
+              label="Đăng xuất"
+              onPress={handleLogout}
+              color="#f44336"
             />
             {/* <ActionItem
               icon="clipboard-outline"
