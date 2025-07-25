@@ -12,6 +12,7 @@ import {
   View
 } from "react-native";
 import React from "react";
+import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
@@ -20,26 +21,51 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import QuillEditor from "../../QuillEditor";
 import { useRoute } from "@react-navigation/native";
-
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { API_URL } from "@env";
+import dayjs from "dayjs";
 const EventRegister = () => {
   const route = useRoute();
   const [title, setTitle] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [description, setDescription] = React.useState("");
   const quillRef = React.useRef(null);
-  const [eventDate, setEventDate] = React.useState(new Date());
+  const [eventDate, setEventDate] = React.useState(null);
   const [format, setFormat] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [maximumParticipants, setMaximumParticipants] = React.useState(0);
   const [visibility, setVisibility] = React.useState("");
   const [useLab, setUseLab] = React.useState(true);
   const { clubId } = route.params;
+  console.log("📌 clubId từ params:", clubId);
   const [name, setName] = React.useState("");
+  const [projectFile, setProjectFile] = React.useState(null);
   const [showPicker, setShowPicker] = React.useState(false);
+  const formattedDate = dayjs(eventDate).format("YYYY-MM-DDTHH:mm:ss");
   const onChange = (event, selectedDate) => {
     setShowPicker(false);
     if (selectedDate) {
       setEventDate(selectedDate);
+    }
+  };
+  const fetchData = async () => {
+    const token = await AsyncStorage.getItem("jwt");
+    try {
+      const response = await fetchBaseResponse(`/api/clubs/${clubId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setName(response.data.name);
+      } else {
+        throw new Error(`HTTP Status:${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
     }
   };
   const validateForm = () => {
@@ -67,98 +93,86 @@ const EventRegister = () => {
       Alert.alert("Lỗi", "Vui lòng chọn mức độ công khai");
       return false;
     }
-    if (clubId <= 0) {
-      Alert.alert("Lỗi", "Vui lòng nhập mã câu lạc bộ hợp lệ");
-      return false;
-    }
     return true;
   };
   React.useEffect(() => {
-    const fetchData = async () => {
-      const token = await AsyncStorage.getItem("jwt");
-      const selectedDate = new Date(eventDate);
-      const now = new Date();
-      if (selectedDate < now) {
-        Alert.alert("Thất bại", "Không được chọn thời gian quá khứ");
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await fetchBaseResponse(`/api/clubs/${clubId}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        });
-        if (response.status === 200) {
-          setName(response.data.name);
-        } else {
-          throw new Error(`HTTP Status:${response.status}`);
-        }
-      } catch (error) {
-        console.error("Error: ", error);
-      }
-    };
     fetchData();
   }, [clubId]);
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+  const handleSubmit = async () => {
     setLoading(true);
-    const token = await AsyncStorage.getItem("jwt");
-    const isoDate = new Date(eventDate).toISOString();
-    const htmlDescription = await quillRef.current.getHtml();
-    if (!htmlDescription || htmlDescription.trim() === "") {
-      Alert.alert("⚠️ Thiếu mô tả", "Vui lòng nhập mô tả cho CLB.");
-      return;
-    }
-    const trimmedName = name.trim().toLowerCase();
-    const isDuplicate = existingNames.includes(trimmedName);
-    if (isDuplicate) {
-      Alert.alert(
-        "❌ Trùng tên",
-        "Tên CLB đã tồn tại. Vui lòng chọn tên khác."
-      );
-      return;
-    }
     try {
-      const response = await fetchBaseResponse(
-        "/api/events/create-event-request",
+      const token = await AsyncStorage.getItem("jwt");
+      const htmlDescription = await quillRef.current.getHtml();
+      const formData = new FormData();
+      formData.append("projectFile", {
+        uri: projectFile.uri,
+        name: projectFile.name,
+        type: projectFile.type || "application/octet-stream"
+      });
+      formData.append("title", title);
+      formData.append("description", htmlDescription);
+      formData.append("eventDate", formattedDate);
+      formData.append("format", format);
+      formData.append("location", location);
+      formData.append("maximumParticipants", maximumParticipants.toString());
+      formData.append("visibility", visibility);
+      formData.append("useLab", useLab.toString());
+      formData.append("clubId", clubId.toString());
+
+      const response = await fetch(
+        `${API_URL}/api/events/create-event-request`,
         {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
+            "Content-Type": "multipart/form-data"
           },
-          data: {
-            title,
-            description,
-            eventDate: isoDate,
-            format,
-            location,
-            maximumParticipants,
-            visibility,
-            useLab,
-            clubId
-          }
+          body: formData
         }
       );
-      if (
-        response.message ===
-        "Club creation request submitted and pending mentor approval."
-      ) {
-        Alert.alert("Bạn tạo sự kiện thành công", "Đang chờ admin duyệt");
+
+      const responseJson = await response.json();
+      console.log("📥 Server response:", responseJson);
+
+      if (responseJson.message === "Event creation request successful") {
+        Alert.alert("🎉 Thành công", "Tạo sự kiện thành công chờ admin duyệt");
       } else {
-        throw new Error(`HTTP Status:${response.status}`);
+        Alert.alert("❌", responseJson.message || "Có lỗi xảy ra.");
       }
-    } catch (error) {
-      console.error("Error: ", error);
-      Alert.alert("Không tạo được sự kiện", error.message);
+    } catch (err) {
+      console.log("❌ Upload error:", err);
+      Alert.alert("❌ Lỗi", err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (projectFile) console.log("🖼️ projectFile đã được set:", projectFile);
+  }, [projectFile]);
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*", // Hoặc chỉ định như: "application/pdf" nếu muốn chỉ chọn PDF
+        copyToCacheDirectory: true,
+        multiple: false
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+
+      const fileObj = {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType || "application/octet-stream"
+      };
+
+      setProjectFile(fileObj);
+      console.log("✅ File đã chọn:", fileObj);
+    } catch (err) {
+      console.error("❌ Lỗi khi chọn file:", err);
+      Alert.alert("Lỗi", "Không thể chọn tệp");
     }
   };
 
@@ -285,17 +299,19 @@ const EventRegister = () => {
                 style={{ marginRight: 8 }}
               />
               <Text style={{ fontSize: 15, color: "#333" }}>
-                {eventDate.toLocaleDateString("vi-VN", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric"
-                })}
+                {eventDate
+                  ? eventDate.toLocaleDateString("vi-VN", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric"
+                    })
+                  : "Chọn ngày diễn ra"}
               </Text>
             </TouchableOpacity>
             {showPicker && (
               <DateTimePicker
-                value={eventDate}
+                value={eventDate || new Date()} // fallback nếu eventDate đang null
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onChange}
@@ -309,7 +325,8 @@ const EventRegister = () => {
             "Chọn hình thức",
             [
               { label: "Offline", value: "OFFLINE" },
-              { label: "Online", value: "ONLINE" }
+              { label: "Online", value: "ONLINE" },
+              { label: "Chung", value: "MIX" }
             ]
           )}
           {renderLabeledInput(
@@ -354,6 +371,12 @@ const EventRegister = () => {
               trackColor={{ false: "#aaa", true: "#007AFF" }}
               thumbColor={useLab ? "#fff" : "#f4f3f4"}
             />
+            <TouchableOpacity
+              onPress={pickDocument}
+              style={styles.uploadButton}
+            >
+              <Text style={styles.uploadText}>📎 Chọn file đính kèm</Text>
+            </TouchableOpacity>
           </View>
           {renderLabeledInput(
             "🆔 Mã câu lạc bộ",
