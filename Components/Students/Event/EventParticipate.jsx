@@ -88,7 +88,7 @@ const EventParticipate = ({ navigation }) => {
       if (response.status === 200) {
         Alert.alert("✅ Thành công", "Bạn đã đăng kí sự kiện thành công");
         navigation.navigate("Event", {
-          screen: "Payment",
+          screen: "PaymentWebView",
           params: {
             registrationId: response.data.registrationId,
             paymentUrl: response.data.message,

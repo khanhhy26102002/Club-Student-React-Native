@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
@@ -10,12 +9,10 @@ import {
   SafeAreaView,
   Platform,
   KeyboardAvoidingView,
-  ScrollView
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
-import { Picker } from "@react-native-picker/picker";
 import { useRoute } from "@react-navigation/native";
 
 const FormRegister = ({ navigation }) => {

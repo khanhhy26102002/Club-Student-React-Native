@@ -23,6 +23,7 @@ const Event = ({ navigation }) => {
   const [loading, setLoading] = React.useState(true);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [userId, setUserId] = React.useState(null);
+
   const fetchData = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -81,11 +82,8 @@ const Event = ({ navigation }) => {
                 Alert.alert("Lỗi", "Không tìm thấy userId.");
                 return;
               }
-              navigation.navigate("Event", {
-                screen: "EventRegisterUser",
-                params: {
-                  userId: storedUserId
-                }
+              navigation.navigate("History", {
+                userId: storedUserId
               });
             }}
           >

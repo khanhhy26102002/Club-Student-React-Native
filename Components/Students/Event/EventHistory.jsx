@@ -1,42 +1,40 @@
 import {
   ActivityIndicator,
-  Alert,
-  Image,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Alert
 } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 
 const EventHistory = () => {
-  const [loading, setLoading] = useState(false);
-  const [qrBase64, setQrBase64] = useState("");
-  const [eventId, setEventId] = useState("");
-  const [modalVisible, setModalVisible] = React.useState(false);
-  console.log("qrBase64:", qrBase64);
-  const handleFetchQR = async () => {
-    if (!eventId) {
-      Alert.alert("Lỗi", "Vui lòng nhập mã sự kiện (eventId)");
+  const route = useRoute();
+  const { userId } = route.params;
+
+  const [statusFilter, setStatusFilter] = React.useState("COMPLETED");
+  const [registeredEvents, setRegisteredEvents] = React.useState([]);
+  const [loadingEvents, setLoadingEvents] = React.useState(false);
+  const [eventId, setEventId] = React.useState("");
+  const [selectedEvent, setSelectedEvent] = React.useState(null);
+  const fetchEventsByStatus = async (status) => {
+    setLoadingEvents(true);
+    const token = await AsyncStorage.getItem("jwt");
+
+    if (!token) {
+      Alert.alert("Lỗi", "Không tìm thấy token");
       return;
     }
 
-    setLoading(true);
-    const token = await AsyncStorage.getItem("jwt");
-    if (!token) {
-      Alert.alert("Lỗi", "Không tìm thấy token đăng nhập");
-      setLoading(false);
-      return;
-    }
     try {
       const response = await fetchBaseResponse(
-        `/api/registrations/registrations/myqr?eventId=${eventId}`,
+        `/api/registrations/registered-event/${userId}?status=${status}`,
         {
           method: "GET",
           headers: {
@@ -44,27 +42,48 @@ const EventHistory = () => {
           }
         }
       );
-      console.log("Response:", response);
+
       if (response.status === 200) {
-        setQrBase64(response.data);
-        setModalVisible(true);
+        console.log("✅ Registered events:", response.data);
+        setRegisteredEvents(response.data || []);
+      } else if (response.status === 5008) {
+        Alert.alert("Thất bại", "Bạn chưa đăng ký sự kiện này");
+        setRegisteredEvents([]); // đảm bảo danh sách rỗng
       } else {
-        Alert.alert("Lỗi", response.message || "Không lấy được dữ liệu");
+        Alert.alert("Lỗi", response.message || "Không lấy được sự kiện");
       }
     } catch (error) {
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        Alert.alert(
-          "Lỗi",
-          error.response.data?.message || "Lỗi không xác định"
-        );
+      console.error("Fetch error:", error);
+
+      // Nếu có response từ server
+      if (error.response && error.response.data) {
+        const { status, message } = error.response.data;
+
+        if (status === 5008) {
+          setRegisteredEvents([]);
+          Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào."); // Thêm dòng này
+        } else {
+          Alert.alert("Lỗi", message || "Lỗi không xác định từ máy chủ");
+        }
       } else {
-        console.error("Fetch error:", error);
-        Alert.alert("Lỗi", "Không thể kết nối đến máy chủ");
+        Alert.alert("Lỗi", "Không thể kết nối máy chủ");
       }
     } finally {
-      setLoading(false);
+      setLoadingEvents(false);
     }
+  };
+
+  React.useEffect(() => {
+    fetchEventsByStatus(statusFilter);
+  }, [statusFilter]);
+
+  const handleFetchQR = () => {
+    if (!eventId) {
+      Alert.alert("Lỗi", "Vui lòng nhập mã sự kiện.");
+      return;
+    }
+
+    Alert.alert("QR", `Lấy QR cho sự kiện ID: ${eventId}`);
   };
 
   return (
@@ -73,53 +92,90 @@ const EventHistory = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>📜 Lịch sử sự kiện</Text>
 
-        <Text style={styles.label}>🔍 Nhập mã sự kiện để xem QR</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ví dụ: 12345"
-          placeholderTextColor="#aaa"
-          value={eventId}
-          onChangeText={setEventId}
-          keyboardType="numeric"
-        />
+        <View style={styles.filterGroup}>
+          {["COMPLETED", "PENDING", "FAILED"].map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.filterButton,
+                statusFilter === status && styles.activeFilterButton
+              ]}
+              onPress={() => setStatusFilter(status)}
+            >
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  statusFilter === status && styles.activeFilterButtonText
+                ]}
+              >
+                {status === "COMPLETED"
+                  ? "✅ Đã tham gia"
+                  : status === "PENDING"
+                  ? "⏳ Đang chờ"
+                  : "❌ Thất bại"}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleFetchQR}>
-          <Text style={styles.buttonText}>📥 Lấy mã QR</Text>
-        </TouchableOpacity>
+        {loadingEvents ? (
+          <ActivityIndicator
+            size="large"
+            color="#1f3c88"
+            style={{ marginVertical: 20 }}
+          />
+        ) : registeredEvents.length === 0 ? (
+          <Text style={styles.emptyText}>
+            Không có sự kiện nào phù hợp với trạng thái này.
+          </Text>
+        ) : (
+          <View style={{ width: "100%", marginBottom: 20 }}>
+            {registeredEvents.map((event) => (
+              <TouchableOpacity
+                key={event.eventId}
+                style={styles.eventCard}
+                onPress={() => {
+                  setEventId(String(event.eventId));
+                  setSelectedEvent(event); // lưu cả sự kiện để kiểm tra status
+                }}
+              >
+                <Text style={styles.eventTitle}>📌 {event.title}</Text>
+                <Text style={styles.eventDate}>
+                  🕓 {new Date(event.eventDate).toLocaleString("vi-VN")}
+                </Text>
+                <Text style={styles.eventLocation}>📍 {event.location}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-        {loading && (
+        {selectedEvent ? (
+          selectedEvent.status === "COMPLETED" ? (
+            <>
+              <Text style={styles.label}>🔍 Mã QR của sự kiện đã tham gia</Text>
+              <TouchableOpacity style={styles.button} onPress={handleFetchQR}>
+                <Text style={styles.buttonText}>
+                  📥 Lấy mã QR cho sự kiện #{selectedEvent.eventId}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <Text style={styles.label} color="red">
+              ❗ Bạn chưa thanh toán hoặc sự kiện chưa hoàn tất nên không thể
+              lấy mã QR.
+            </Text>
+          )
+        ) : (
+          <Text style={styles.label}>📌 Bấm vào một sự kiện để hiện mã QR</Text>
+        )}
+
+        {loadingEvents && (
           <ActivityIndicator
             size="large"
             color="#007bff"
             style={{ marginTop: 20 }}
           />
         )}
-
-        {/* Modal hiển thị mã QR */}
-        <Modal
-          visible={modalVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.closeText}>✖</Text>
-              </TouchableOpacity>
-              <Text style={styles.qrTitle}>🎫 Mã QR của bạn</Text>
-              <Image
-                source={{ uri: `data:image/png;base64,${qrBase64}` }}
-                style={styles.qrImage}
-                resizeMode="contain"
-              />
-              <Text style={styles.qrNote}>Đưa mã này khi tham gia sự kiện</Text>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
     </>
   );
@@ -128,110 +184,99 @@ const EventHistory = () => {
 export default EventHistory;
 
 const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  modalContent: {
-    width: 320,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    position: "relative",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 5
-  },
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    zIndex: 1
-  },
-  closeText: {
-    fontSize: 20,
-    color: "#666"
-  },
   container: {
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    backgroundColor: "#f0f4f8",
-    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#f8f9fa",
     flexGrow: 1
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1f3c88",
-    marginBottom: 10
+    marginBottom: 20,
+    textAlign: "center"
+  },
+  filterGroup: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+    gap: 8,
+    flexWrap: "wrap"
+  },
+  filterButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#1f3c88",
+    backgroundColor: "#fff"
+  },
+  filterButtonText: {
+    color: "#1f3c88",
+    fontWeight: "600"
+  },
+  activeFilterButton: {
+    backgroundColor: "#1f3c88"
+  },
+  activeFilterButtonText: {
+    color: "#fff"
+  },
+  eventCard: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1f3c88",
+    marginBottom: 4
+  },
+  eventDate: {
+    fontSize: 14,
+    color: "#555"
+  },
+  eventLocation: {
+    fontSize: 14,
+    color: "#888"
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
-    color: "#444"
+    fontWeight: "500",
+    marginTop: 20,
+    marginBottom: 10,
+    color: "#333"
   },
   input: {
-    width: "100%",
-    height: 50,
     backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    borderColor: "#ddd",
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    fontSize: 16,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2
+    borderColor: "#ccc",
+    marginBottom: 12
   },
   button: {
     backgroundColor: "#1f3c88",
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    borderRadius: 30,
-    marginBottom: 25,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 4
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center"
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
-    fontSize: 16
+    fontSize: 16,
+    fontWeight: "600"
   },
-  qrCard: {
-    width: "100%",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 5
-  },
-  qrTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+  emptyText: {
+    textAlign: "center",
+    color: "#999",
+    fontStyle: "italic",
     marginBottom: 10
-  },
-  qrNote: {
-    fontSize: 14,
-    color: "#555",
-    textAlign: "center"
-  },
-  qrImage: {
-    width: 250, // 👉 tăng kích thước từ 200 → 250 (hoặc hơn)
-    height: 250,
-    marginVertical: 20
   }
 });

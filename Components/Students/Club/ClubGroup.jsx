@@ -191,7 +191,9 @@ export default function ClubGroup() {
           <FlatList
             data={filteredData}
             keyExtractor={(item) => `${item.type}-${item.id || item.eventId}`}
-            renderItem={({ item }) => <PostCard data={item} />}
+            renderItem={({ item }) => (
+              <PostCard data={item} navigation={navigation} />
+            )}
             contentContainerStyle={{
               paddingBottom: 20,
               paddingHorizontal: 0
