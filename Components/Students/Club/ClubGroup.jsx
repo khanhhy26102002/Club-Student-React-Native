@@ -161,7 +161,7 @@ export default function ClubGroup() {
               navigation.navigate("Event", {
                 screen: "EventRegister",
                 params: {
-                  clubId: clubInfo?.clubId
+                  clubId: clubInfo.clubId
                 }
               })
             }
