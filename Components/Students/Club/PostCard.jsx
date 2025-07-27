@@ -1,18 +1,45 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-
 const screenWidth = Dimensions.get("window").width;
-
 export default function PostCard({ data, navigation }) {
   const isEvent = data.type === "event";
 
+  const handlePress = () => {
+    if (isEvent) {
+      navigation.navigate("Event", {
+        screen: "EventRoles",
+        params: { eventId: data.eventId }
+      });
+    } else {
+      navigation.navigate("Blog", {
+        screen: "BlogDetail",
+        params: { blogId: data.blogId }
+      });
+    }
+  };
+  const handleAssignRole = async () => {
+    navigation.navigate("Event", {
+      screen: "EventAssign",
+      params: {
+        eventId: data.eventId,
+        title: data.title
+      }
+    });
+  };
   return (
-    <View
+    <TouchableOpacity
+      onPress={handlePress}
+      activeOpacity={0.85}
       style={{
         backgroundColor: "#fff",
         marginVertical: 10,
-        width: screenWidth, // full screen width
+        width: screenWidth,
         borderRadius: 16,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -88,30 +115,42 @@ export default function PostCard({ data, navigation }) {
             </Text>
           </Text>
         )}
+        {isEvent && (
+          <>
+            <TouchableOpacity
+              style={{
+                marginTop: 10,
+                alignSelf: "flex-start",
+                backgroundColor: "#1877f2",
+                paddingVertical: 8,
+                paddingHorizontal: 18,
+                borderRadius: 20
+              }}
+              onPress={handlePress}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
+                Đăng ký sự kiện
+              </Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={{
-            marginTop: 6,
-            alignSelf: "flex-start",
-            backgroundColor: "#1877f2",
-            paddingVertical: 8,
-            paddingHorizontal: 18,
-            borderRadius: 20
-          }}
-        >
-          <Text
-            style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}
-            onPress={() =>
-              navigation.navigate("Event", {
-                screen: "EventRegistration",
-                params: { eventId: data.eventId, title: data.title }
-              })
-            }
-          >
-            Đăng ký sự kiện
-          </Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleAssignRole}
+              style={{
+                marginTop: 10,
+                alignSelf: "flex-start",
+                backgroundColor: "#43a047",
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderRadius: 20
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}>
+                🛡️ Phân quyền
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
