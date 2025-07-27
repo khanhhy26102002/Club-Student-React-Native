@@ -103,12 +103,12 @@ export default function PostCard({ data, navigation }) {
             style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}
             onPress={() =>
               navigation.navigate("Event", {
-                screen: "EventRoles",
-                params: { eventId: data.eventId }
+                screen: "EventRegistration",
+                params: { eventId: data.eventId, title: data.title }
               })
             }
           >
-            Xem chi tiết
+            Đăng ký sự kiện
           </Text>
         </TouchableOpacity>
       </View>

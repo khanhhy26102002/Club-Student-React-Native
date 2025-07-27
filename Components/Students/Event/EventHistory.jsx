@@ -14,10 +14,9 @@ import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 
-const EventHistory = () => {
+const EventHistory = ({ navigation }) => {
   const route = useRoute();
   const { userId } = route.params;
-
   const [statusFilter, setStatusFilter] = React.useState("COMPLETED");
   const [registeredEvents, setRegisteredEvents] = React.useState([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
@@ -137,6 +136,13 @@ const EventHistory = () => {
                 onPress={() => {
                   setEventId(String(event.eventId));
                   setSelectedEvent(event); // lưu cả sự kiện để kiểm tra status
+                  navigation.navigate("Event", {
+                    screen: "EventRegistration",
+                    params: {
+                      eventId: event.eventId,
+                      title: event.title
+                    }
+                  });
                 }}
               >
                 <Text style={styles.eventTitle}>📌 {event.title}</Text>
