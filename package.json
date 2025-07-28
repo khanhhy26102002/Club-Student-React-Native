@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons-react-native": "^2.3.2",
-    "@ant-design/react-native": "^5.4.2",
+    "@ant-design/react-native": "^4.2.0",
     "@babel/plugin-transform-private-methods": "^7.27.1",
     "@expo/metro-runtime": "^5.0.4",
     "@expo/vector-icons": "^14.1.0",
