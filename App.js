@@ -5,7 +5,6 @@ import Payment from "./Components/Students/Payment/Payment";
 import LoginPage from "./Components/Login/LoginPage";
 import RegisterPage from "./Components/Register/RegisterPage";
 import React from "react";
-import Feedback from "./Components/Students/Feedback/Feedback";
 import * as Notifications from "expo-notifications";
 import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";

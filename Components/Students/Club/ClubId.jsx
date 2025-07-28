@@ -23,7 +23,7 @@ const ClubId = ({ navigation }) => {
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [fetchingRoles, setFetchingRoles] = React.useState(true);
-  const [clubRole, setClubRole] = React.useState({});
+  const [clubRole, setClubRole] = React.useState(null);
   const [hasApplied, setHasApplied] = React.useState(false);
   const [isApproved, setIsApproved] = React.useState(false);
   const [upcomingEvents, setUpcomingEvents] = React.useState([]);
@@ -48,7 +48,24 @@ const ClubId = ({ navigation }) => {
       setLoading(false);
     }
   };
-
+  React.useEffect(() => {
+    const fetchDataAsync = async () => {
+      const token = await AsyncStorage.getItem("jwt");
+      try {
+        const response = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const currentRole = response.data.find(
+          (item) => item.clubId === clubIdParam
+        );
+        setClubRole(currentRole || null);
+      } catch (error) {}
+    };
+  });
   const fetchMembershipStatus = async () => {
     try {
       const token = await AsyncStorage.getItem("jwt");
@@ -62,13 +79,12 @@ const ClubId = ({ navigation }) => {
           }
         }
       );
-      const membership = res.data;
-      if (membership) {
+      const membershipStatus = res.data;
+      console.log("Membership", membershipStatus);
+      if (membershipStatus) {
         setHasApplied(true);
-        setIsApproved(membership.status === "APPROVED");
-        if (membership.status === "PENDING") {
-          Alert.alert("Thông báo", "Bạn đã đăng ký, vui lòng chờ duyệt.");
-        }
+        setIsApproved(membershipStatus === "APPROVED");
+        console.log("✅ membership status:", membershipStatus);
       } else {
         setHasApplied(false);
         setIsApproved(false);
@@ -193,26 +209,15 @@ const ClubId = ({ navigation }) => {
                   <TouchableOpacity style={styles.button}>
                     <Text>Đang tải quyền...</Text>
                   </TouchableOpacity>
-                ) : clubRole?.role === "CLUBLEADER" ? (
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      Alert.alert(
-                        "Thành công",
-                        "Mọi thông tin sẽ quản lí trên web"
-                      )
-                    }
-                  >
-                    <Text style={styles.buttonText}>🔍 Xem nhóm trong CLB</Text>
-                  </TouchableOpacity>
-                ) : clubRole?.role === "MEMBER" ? (
+                ) : clubRole?.role === "CLUBLEADER" ||
+                  clubRole?.role === "MEMBER" || (hasApplied&&isApproved) ? (
                   <TouchableOpacity
                     style={styles.button}
                     onPress={() =>
                       navigation.navigate("Club", {
                         screen: "ClubGroup",
                         params: {
-                          clubId: clubId
+                          clubId: data.clubId
                         }
                       })
                     }
@@ -224,6 +229,12 @@ const ClubId = ({ navigation }) => {
                     style={[styles.button, { backgroundColor: "#facc15" }]}
                   >
                     <Text style={{ color: "#000" }}>⏳ Đang chờ duyệt</Text>
+                  </TouchableOpacity>
+                ) : hasApplied && isApproved ? (
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#22c55e" }]}
+                  >
+                    <Text style={styles.buttonText}>✅ Đã tham gia</Text>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity

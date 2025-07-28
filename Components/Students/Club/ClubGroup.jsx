@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   View,
   FlatList,
@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
-  ScrollView,
   Image,
   TouchableOpacity
 } from "react-native";
@@ -19,57 +18,57 @@ import Header from "../../../Header/Header";
 import { stripMarkdown } from "../../../stripmarkdown";
 
 export default function ClubGroup() {
-  const [selectedTab, setSelectedTab] = useState("all");
-  const [allData, setAllData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [joined, setJoined] = useState(false);
-  const [clubInfo, setClubInfo] = useState(null);
+  const [selectedTab, setSelectedTab] = React.useState("all");
+  const [allData, setAllData] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [joined, setJoined] = React.useState(false);
+  const [clubInfo, setClubInfo] = React.useState(null);
+  const [isLeader, setIsLeader] = React.useState(false);
+
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
 
-  useEffect(() => {
-    const fetchData = async () => {
+  React.useEffect(() => {
+    const fetchAll = async () => {
       setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      };
 
       try {
-        const clubRes = await fetchBaseResponse(`/api/clubs/${clubId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const [clubRes, roleRes, blogRes, publicRes, internalRes] =
+          await Promise.all([
+            fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
+            fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
+            fetchBaseResponse(`/api/blogs?clubId=${clubId}`, { headers }),
+            fetchBaseResponse(`/api/clubs/${clubId}/events?visibility=PUBLIC`, {
+              headers
+            }),
+            fetchBaseResponse(
+              `/api/clubs/${clubId}/events?visibility=INTERNAL`,
+              { headers }
+            )
+          ]);
 
         if (clubRes.status === 200) {
           setClubInfo(clubRes.data);
           setJoined(clubRes.data.status === "APPROVED");
         }
 
-        const blogRes = await fetchBaseResponse(`/api/blogs`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        if (roleRes.status === 200) {
+          const isClubLeader = roleRes.data.some(
+            (role) => role.clubId == clubId && role.role === "CLUBLEADER"
+          );
+          setIsLeader(isClubLeader);
+        }
 
-        const blogs = (blogRes.data || [])
-          .filter((blog) => blog.clubId == clubId)
-          .map((blog) => ({
-            ...blog,
-            type: "blog"
-          }));
-
-        const [publicRes, internalRes] = await Promise.all([
-          fetchBaseResponse(`/api/clubs/${clubId}/events?visibility=PUBLIC`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }),
-          fetchBaseResponse(`/api/clubs/${clubId}/events?visibility=INTERNAL`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          })
-        ]);
+        const blogs = (blogRes.data || []).map((blog) => ({
+          ...blog,
+          type: "blog"
+        }));
 
         const now = new Date();
         const events = [...(publicRes.data || []), ...(internalRes.data || [])]
@@ -89,21 +88,20 @@ export default function ClubGroup() {
         });
 
         setAllData(combined);
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
+      } catch (err) {
+        console.error("Lỗi khi tải dữ liệu:", err);
         Alert.alert("Lỗi", "Không thể tải dữ liệu câu lạc bộ.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (clubId) fetchData();
+    if (clubId) fetchAll();
   }, [clubId]);
 
-  const filteredData = allData.filter((item) => {
-    if (selectedTab === "all") return true;
-    return item.type === selectedTab;
-  });
+  const filteredData = allData.filter((item) =>
+    selectedTab === "all" ? true : item.type === selectedTab
+  );
 
   return (
     <>
@@ -155,30 +153,86 @@ export default function ClubGroup() {
 
         <TabsFilter selected={selectedTab} onSelect={setSelectedTab} />
 
-        {joined && (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Event", {
-                screen: "EventRegister",
-                params: {
-                  clubId: clubInfo.clubId
-                }
-              })
-            }
+        {isLeader && (
+          <View
             style={{
-              backgroundColor: "#1976d2",
               marginHorizontal: 16,
+              marginTop: 16,
               marginBottom: 12,
-              paddingVertical: 10,
-              borderRadius: 12,
-              alignItems: "center",
-              marginTop: 16
+              gap: 10
             }}
           >
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              ＋ Tạo sự kiện
-            </Text>
-          </TouchableOpacity>
+            {/* Chỉ hiện nếu đang ở tab blog */}
+            {selectedTab === "blog" && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Blog", {
+                    screen: "CreateBlog",
+                    params: { clubId: clubInfo.clubId }
+                  })
+                }
+                style={{
+                  backgroundColor: "#4caf50",
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  alignItems: "center"
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+                >
+                  ＋ Tạo blog
+                </Text>
+              </TouchableOpacity>
+            )}
+            {selectedTab === "event" && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "EventRegister",
+                    params: { clubId: clubInfo.clubId }
+                  })
+                }
+                style={{
+                  backgroundColor: "#4caf50",
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  alignItems: "center"
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+                >
+                  ＋ Tạo sự kiên
+                </Text>
+              </TouchableOpacity>
+            )}
+            {/* Chỉ hiện nếu ở tab all */}
+            {selectedTab === "all" && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubMembership",
+                    params: {
+                      clubId: clubInfo.clubId
+                    }
+                  })
+                }
+                style={{
+                  backgroundColor: "#ff9800",
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  alignItems: "center"
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+                >
+                  ✅ Duyệt thành viên
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
 
         {loading ? (
@@ -190,7 +244,9 @@ export default function ClubGroup() {
         ) : (
           <FlatList
             data={filteredData}
-            keyExtractor={(item) => `${item.type}-${item.id || item.eventId}`}
+            keyExtractor={(item, index) =>
+              `${item.type}-${item.id || item.eventId || index}`
+            }
             renderItem={({ item }) => (
               <PostCard data={item} navigation={navigation} />
             )}
