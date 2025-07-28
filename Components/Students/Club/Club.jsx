@@ -12,6 +12,7 @@ import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Club = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true); // ⬅️ Loading state
@@ -81,11 +82,31 @@ const Club = ({ navigation }) => {
               </Text>
               <TouchableOpacity
                 style={styles.clubButton}
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "ClubList"
-                  })
-                }
+                onPress={async () => {
+                  try {
+                    const token = await AsyncStorage.getItem("jwt");
+                    if (!token) {
+                      Alert.alert(
+                        "Thông báo",
+                        "Vui lòng đăng nhập để xem câu lạc bộ đã đăng ký"
+                      );
+                      return;
+                    }
+
+                    navigation.navigate("Event", {
+                      screen: "EventRegistration",
+                      params: {
+                        eventId: data.eventId,
+                        title: data.title
+                      }
+                    });
+                  } catch (err) {
+                    Alert.alert(
+                      "Lỗi",
+                      "Không thể kiểm tra trạng thái đăng nhập."
+                    );
+                  }
+                }}
               >
                 <View style={styles.clubButtonContent}>
                   <Icon name="account-group" size={18} color="#1E40AF" />

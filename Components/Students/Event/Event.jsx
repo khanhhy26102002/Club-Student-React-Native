@@ -15,6 +15,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { stripMarkdown } from "../../../stripmarkdown";
 const DEFAULT_EVENT_IMAGE =
   "https://images.unsplash.com/photo-1505238680356-667803448bb6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80";
 
@@ -79,7 +80,7 @@ const Event = ({ navigation }) => {
             onPress={async () => {
               const storedUserId = await AsyncStorage.getItem("userId");
               if (!storedUserId) {
-                Alert.alert("Lỗi", "Không tìm thấy userId.");
+                Alert.alert("Lỗi", "Không tìm thấy người dùng");
                 return;
               }
               navigation.navigate("History", {
@@ -148,7 +149,7 @@ const Event = ({ navigation }) => {
                     {event.title}
                   </Text>
                   <Text style={styles.cardDesc} numberOfLines={3}>
-                    {event.description}
+                    {stripMarkdown(event.description)}
                   </Text>
                   <View style={styles.cardInfo}>
                     <Text style={styles.cardDetail}>📍 {event.location}</Text>
