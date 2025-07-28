@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../../Header/Header";
 import { Ionicons } from "@expo/vector-icons";
-// đăng kí clb 
+// đăng kí clb
 const Profile = () => {
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
@@ -50,7 +50,10 @@ const Profile = () => {
   const handleLogout = async () => {
     await AsyncStorage.clear();
     setUser(null);
-    navigation.replace("Main");
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Main" }]
+    });
   };
 
   return (

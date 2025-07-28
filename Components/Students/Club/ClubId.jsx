@@ -48,127 +48,139 @@ const ClubId = ({ navigation }) => {
       setLoading(false);
     }
   };
-  React.useEffect(() => {
-    const fetchDataAsync = async () => {
-      const token = await AsyncStorage.getItem("jwt");
-      try {
-        const response = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const currentRole = response.data.find(
-          (item) => item.clubId === clubIdParam
-        );
-        setClubRole(currentRole || null);
-      } catch (error) {}
-    };
-  });
-  const fetchMembershipStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("jwt");
-      const res = await fetchBaseResponse(
-        `/api/memberships/status?clubId=${clubId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      const membershipStatus = res.data;
-      console.log("Membership", membershipStatus);
-      if (membershipStatus) {
-        setHasApplied(true);
-        setIsApproved(membershipStatus === "APPROVED");
-        console.log("✅ membership status:", membershipStatus);
-      } else {
-        setHasApplied(false);
-        setIsApproved(false);
-      }
-    } catch (error) {
-      Alert.alert("Lỗi trạng thái thành viên", error.message || "Unknown");
-    }
-  };
+  // React.useEffect(() => {
+  //   const fetchDataAsync = async () => {
+  //     const token = await AsyncStorage.getItem("jwt");
+  //     try {
+  //       const response = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       });
+  //       const currentRole = response.data.find(
+  //         (item) => item.clubId === clubIdParam
+  //       );
+  //       setClubRole(currentRole || null);
+  //     } catch (error) {}
+  //   };
+  //   fetchDataAsync();
+  // },[clubId]);
+  // const fetchMembershipStatus = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem("jwt");
+  //     const res = await fetchBaseResponse(
+  //       `/api/memberships/status?clubId=${clubId}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json"
+  //         }
+  //       }
+  //     );
+  //     const membershipStatus = res.data;
+  //     console.log("Membership", membershipStatus);
+  //     if (membershipStatus) {
+  //       setHasApplied(true);
+  //       setIsApproved(membershipStatus === "APPROVED");
+  //       console.log("✅ membership status:", membershipStatus);
+  //     } else {
+  //       setHasApplied(false);
+  //       setIsApproved(false);
+  //     }
+  //   } catch (error) {
+  //     Alert.alert("Lỗi trạng thái thành viên", error.message || "Unknown");
+  //   }
+  // };
 
-  const fetchClubRole = async () => {
-    try {
-      const token = await AsyncStorage.getItem("jwt");
-      const res = await fetchBaseResponse("/api/clubs/my-club-roles", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (res.status === 200) {
-        const currentRole = res.data.find(
-          (item) => item.clubId === clubIdParam
-        );
-        setClubRole(currentRole || {});
-      }
-    } catch (err) {
-      console.error("Lỗi role:", err);
-    } finally {
-      setFetchingRoles(false);
-    }
-  };
+  // const fetchClubRole = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem("jwt");
+  //     const res = await fetchBaseResponse("/api/clubs/my-club-roles", {
+  //       method: "GET",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json"
+  //       }
+  //     });
+  //     if (res.status === 200) {
+  //       const currentRole = res.data.find(
+  //         (item) => item.clubId === clubIdParam
+  //       );
+  //       setClubRole(currentRole || {});
+  //     }
+  //   } catch (err) {
+  //     console.error("Lỗi role:", err);
+  //   } finally {
+  //     setFetchingRoles(false);
+  //   }
+  // };
 
-  const fetchEvents = async () => {
-    try {
-      const token = await AsyncStorage.getItem("jwt");
-      const [pubRes, intRes] = await Promise.all([
-        fetchBaseResponse(
-          `/api/clubs/${clubIdParam}/events?visibility=PUBLIC`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          }
-        ),
-        fetchBaseResponse(
-          `/api/clubs/${clubIdParam}/events?visibility=INTERNAL`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          }
-        )
-      ]);
+  // const fetchEvents = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem("jwt");
+  //     const [pubRes, intRes] = await Promise.all([
+  //       fetchBaseResponse(
+  //         `/api/clubs/${clubIdParam}/events?visibility=PUBLIC`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //             "Content-Type": "application/json"
+  //           }
+  //         }
+  //       ),
+  //       fetchBaseResponse(
+  //         `/api/clubs/${clubIdParam}/events?visibility=INTERNAL`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //             "Content-Type": "application/json"
+  //           }
+  //         }
+  //       )
+  //     ]);
 
-      const now = new Date();
-      const merged = [...(pubRes.data || []), ...(intRes.data || [])];
-      const filtered = merged.filter(
-        (e) => e.status === "APPROVED" && new Date(e.eventDate) > now
-      );
-      setUpcomingEvents(filtered);
-    } catch (err) {
-      console.error("Lỗi load sự kiện:", err);
-    }
-  };
+  //     const now = new Date();
+  //     const merged = [...(pubRes.data || []), ...(intRes.data || [])];
+  //     const filtered = merged.filter(
+  //       (e) => e.status === "APPROVED" && new Date(e.eventDate) > now
+  //     );
+  //     setUpcomingEvents(filtered);
+  //   } catch (err) {
+  //     console.error("Lỗi load sự kiện:", err);
+  //   }
+  // };
 
   useFocusEffect(
     React.useCallback(() => {
       fetchClubData();
-      fetchMembershipStatus();
-      fetchClubRole();
-      fetchEvents();
+      // fetchMembershipStatus();
+      // fetchClubRole();
+      // fetchEvents();
     }, [clubIdParam])
   );
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
+    const token = await AsyncStorage.getItem("jwt");
+    console.log("🔐 Token hiện tại:", token);
+
+    if (!token) {
+      Alert.alert("Yêu cầu đăng nhập", "Bạn cần đăng nhập để tham gia CLB.", [
+        { text: "Hủy", style: "cancel" },
+        { text: "Đăng nhập", onPress: () => navigation.navigate("Login") }
+      ]);
+      return;
+    }
+
+    // Chỉ điều hướng nếu có token thật
+    console.log("✅ Điều hướng đến FormRegister");
     navigation.navigate("Club", {
       screen: "FormRegister",
-      params: {
-        clubId: clubId
-      }
+      params: { clubId }
     });
   };
 
@@ -204,7 +216,7 @@ const ClubId = ({ navigation }) => {
               <Text style={styles.sectionTitle}>📄 Giới thiệu</Text>
               <Text>{stripMarkdown(data.description)}</Text>
 
-              <View style={{ marginTop: 12 }}>
+              {/* <View style={{ marginTop: 12 }}>
                 {fetchingRoles ? (
                   <TouchableOpacity style={styles.button}>
                     <Text>Đang tải quyền...</Text>
@@ -244,7 +256,13 @@ const ClubId = ({ navigation }) => {
                     <Text style={styles.buttonText}>➕ Tham gia CLB</Text>
                   </TouchableOpacity>
                 )}
-              </View>
+              </View> */}
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#10b981" }]}
+                onPress={handleJoin}
+              >
+                <Text style={styles.buttonText}>➕ Tham gia CLB</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ) : null}

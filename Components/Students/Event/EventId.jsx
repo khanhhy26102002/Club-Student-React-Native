@@ -13,6 +13,7 @@ import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { stripMarkdown } from "../../../stripmarkdown";
 
 const EventId = ({ navigation }) => {
   const route = useRoute();
@@ -21,14 +22,12 @@ const EventId = ({ navigation }) => {
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const fetchData = async () => {
-      const token = await AsyncStorage.getItem("jwt");
       try {
         const publicRes = await fetchBaseResponse(
           `/api/events/public/${eventId}`,
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json"
             }
           }
@@ -41,6 +40,7 @@ const EventId = ({ navigation }) => {
         }
 
         let roleName = null;
+        const token = await AsyncStorage.getItem("jwt");
         try {
           const myRes = await fetchBaseResponse(
             `/api/event-roles/my/${eventId}`,
@@ -208,15 +208,31 @@ const EventId = ({ navigation }) => {
               </Text>
               <TouchableOpacity
                 style={styles.registerButton}
-                onPress={() =>
-                  navigation.navigate("Event", {
-                    screen: "EventRegistration",
-                    params: {
-                      eventId: data.eventId,
-                      title: data.title
+                onPress={async () => {
+                  try {
+                    const token = await AsyncStorage.getItem("jwt");
+                    if (!token) {
+                      Alert.alert(
+                        "Thông báo",
+                        "Vui lòng đăng nhập để đăng ký sự kiện."
+                      );
+                      return;
                     }
-                  })
-                }
+
+                    navigation.navigate("Event", {
+                      screen: "EventRegistration",
+                      params: {
+                        eventId: data.eventId,
+                        title: data.title
+                      }
+                    });
+                  } catch (err) {
+                    Alert.alert(
+                      "Lỗi",
+                      "Không thể kiểm tra trạng thái đăng nhập."
+                    );
+                  }
+                }}
               >
                 <Text style={styles.registerButtonText}>Đăng ký sự kiện</Text>
               </TouchableOpacity>
@@ -226,7 +242,9 @@ const EventId = ({ navigation }) => {
         {/* Event Info */}
         <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
-          <Text style={styles.description}>{data.description}</Text>
+          <Text style={styles.description}>
+            {stripMarkdown(data.description)}
+          </Text>
           <Text style={styles.date}>📅 {formattedDate}</Text>
         </View>
 

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
-import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import React from "react";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -10,18 +11,76 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchBaseResponse } from "../utils/api";
 
 export const CustomDrawer = (props) => {
   const navigation = props.navigation;
   const { t } = useTranslation();
-  const user = {
-    name: "Nguyễn Văn A",
-    avatar:
-      "http://res.cloudinary.com/dqlhjgisk/image/upload/865710ff-25a6-4aeb-9292-6be2a61c7f1d_Screenshot%20%281%29.png",
-    academicYear: 2025,
-    major: "Trí Tuệ Nhân Tạo",
-    Skill: "Programming"
-  };
+  const [user, setUser] = React.useState(null);
+  const [majorName, setMajorName] = React.useState("Đang tải...");
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchUserAndMajor = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("userId");
+        if (!storedUser) {
+          setLoading(false);
+          return;
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+
+        const res = await fetchBaseResponse(`/api/majors`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (res.status === 200) {
+          const found = res.data.find(
+            (item) => item.majorId === parsedUser.majorId
+          );
+          setMajorName(found?.majorName || "Không rõ");
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch chuyên ngành:", error);
+        setMajorName("Không rõ");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndMajor();
+  }, []);
+
+  if (loading) {
+    return (
+      <DrawerContentScrollView>
+        <View style={{ padding: 20, alignItems: "center" }}>
+          <ActivityIndicator size="large" color="#2563eb" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: "#6b7280" }}>
+            Đang tải thông tin người dùng...
+          </Text>
+        </View>
+      </DrawerContentScrollView>
+    );
+  }
+
+  if (!user) {
+    return (
+      <DrawerContentScrollView>
+        <View style={{ padding: 20, alignItems: "center" }}>
+          <Text style={{ fontSize: 16, color: "#6b7280" }}>
+            Không tìm thấy thông tin người dùng.
+          </Text>
+        </View>
+      </DrawerContentScrollView>
+    );
+  }
 
   return (
     <DrawerContentScrollView>
@@ -36,10 +95,10 @@ export const CustomDrawer = (props) => {
           <Text style={styles.labelValue}>{user.academicYear}</Text>
 
           <Text style={styles.labelTitle}>🎓 Chuyên ngành:</Text>
-          <Text style={styles.labelValue}>{user.major}</Text>
+          <Text style={styles.labelValue}>{majorName}</Text>
 
           <Text style={styles.labelTitle}>🛠 Kỹ năng:</Text>
-          <Text style={styles.labelValue}>{user.Skill}</Text>
+          <Text style={styles.labelValue}>{user.skill}</Text>
         </View>
 
         <View style={styles.actions}>
@@ -71,9 +130,7 @@ export const CustomDrawer = (props) => {
           onPress={() =>
             navigation.navigate("Navigation", {
               screen: "Profile",
-              params: {
-                screen: "Project"
-              }
+              params: { screen: "Project" }
             })
           }
           style={styles.projectButton}
@@ -84,6 +141,7 @@ export const CustomDrawer = (props) => {
     </DrawerContentScrollView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     padding: 20,
@@ -92,7 +150,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     paddingVertical: 24,
-    backgroundColor: "#2563eb", // Blue-600
+    backgroundColor: "#2563eb",
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     marginBottom: 16
@@ -125,12 +183,12 @@ const styles = StyleSheet.create({
   labelTitle: {
     fontWeight: "600",
     fontSize: 14,
-    color: "#374151", // Gray-700
+    color: "#374151",
     marginTop: 10
   },
   labelValue: {
     fontSize: 15,
-    color: "#6b7280", // Gray-500
+    color: "#6b7280",
     marginBottom: 6
   },
   actions: {
@@ -139,14 +197,14 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#3b82f6", // Blue-500
+    backgroundColor: "#3b82f6",
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 10,
     marginBottom: 12
   },
   logoutButton: {
-    backgroundColor: "#ef4444" // Red-500
+    backgroundColor: "#ef4444"
   },
   icon: {
     marginRight: 10
@@ -162,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: "500"
   },
   projectButton: {
-    backgroundColor: "#10b981", // Emerald-500
+    backgroundColor: "#10b981",
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 10,
