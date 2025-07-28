@@ -13,10 +13,13 @@ import {
   Modal,
   Image
 } from "react-native";
-import { fetchBaseResponse } from "../../utils/api";
+import { checkEventRole, fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode"; // dùng đúng export
+import { useRoute } from "@react-navigation/native";
 const LoginPage = ({ navigation }) => {
+  const route = useRoute();
+  const { eventId } = route.params || {};
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
@@ -42,6 +45,14 @@ const LoginPage = ({ navigation }) => {
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("userId", userId);
         setRoleName(roleName);
+        if (eventId) {
+          const role = await checkEventRole(eventId);
+          if (role === "CHECKIN") {
+            navigation.replace("CheckinScreen", { eventId });
+            return;
+          }
+        }
+        navigation.replace("Main");
         if (roleName === "MEMBER") {
           navigation.navigate("Main");
         } else if (roleName === "ORGANIZERS") {

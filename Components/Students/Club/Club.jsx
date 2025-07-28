@@ -93,12 +93,8 @@ const Club = ({ navigation }) => {
                       return;
                     }
 
-                    navigation.navigate("Event", {
-                      screen: "EventRegistration",
-                      params: {
-                        eventId: data.eventId,
-                        title: data.title
-                      }
+                    navigation.navigate("Club", {
+                      screen: "ClubList"
                     });
                   } catch (err) {
                     Alert.alert(

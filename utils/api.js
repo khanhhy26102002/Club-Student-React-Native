@@ -32,5 +32,24 @@ export async function fetchBaseResponse(url, config) {
     throw error; // 🔥 Quan trọng: ném lại lỗi cho component xử lý
   }
 }
+export const checkEventRole = async (eventId) => {
+  try {
+    const token = await AsyncStorage.getItem("jwt");
+    const response = await fetchBaseResponse(`/api/event-roles/my/${eventId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 200) {
+      return response.data.roleName; // "CHECKIN", "LEADER", etc.
+    }
+    return null;
+  } catch (error) {
+    console.error("❌ Lỗi checkEventRole:", error);
+    return null;
+  }
+};
 
 export default API;
