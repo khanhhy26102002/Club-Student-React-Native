@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "final-project-mobile-javascript",
+    "name": "Student Club Management System",
     "slug": "final-project-mobile-javascript",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/FPT_logo_2010.svg.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "yourapp",

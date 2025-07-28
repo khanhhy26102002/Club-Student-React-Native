@@ -12,7 +12,8 @@ import {
   ScrollView,
   Button,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Dimensions
 } from "react-native";
 import { Image } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,6 +25,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Picker } from "@react-native-picker/picker";
 import { API_URL } from "@env";
+const screenWidth = Dimensions.get("window").width;
 const FormClub = () => {
   const scrollViewRef = React.useRef(null);
   const quillRef = React.useRef(null);
@@ -452,15 +454,22 @@ const styles = StyleSheet.create({
     height: 100, // ✅ chiều cao thu gọn
     padding: 10,
     minHeight: 70,
-    marginBottom: -20
+    marginBottom: -20,
+    width: 850
   },
   editor: {
     flex: 1,
     fontSize: 14
   },
   editorContainer: {
-    backgroundColor: "transparent",
-    flex: 1
+    width: screenWidth - 16, // ✅ full width trừ padding (ví dụ: 16px mỗi bên)
+    height: 300,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    alignSelf: "center" // ✅ canh giữa nếu cần
   },
   inputWrapper: {
     flexDirection: "row",
