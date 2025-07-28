@@ -37,9 +37,9 @@ const EventRegister = () => {
   const [maximumParticipants, setMaximumParticipants] = React.useState(0);
   const [visibility, setVisibility] = React.useState("");
   const [useLab, setUseLab] = React.useState(true);
-  const { clubId } = route.params;
+  const { clubId, name } = route.params;
   console.log("📌 clubId từ params:", clubId);
-  const [name, setName] = React.useState("");
+  const [clubName, setClubName] = React.useState("");
   const [projectFile, setProjectFile] = React.useState(null);
   const [showPicker, setShowPicker] = React.useState(false);
   const formattedDate = dayjs(eventDate).format("YYYY-MM-DDTHH:mm:ss");
@@ -60,7 +60,7 @@ const EventRegister = () => {
         }
       });
       if (response.status === 200) {
-        setName(response.data.name);
+        setClubName(response.data.name);
       } else {
         throw new Error(`HTTP Status:${response.status}`);
       }
@@ -241,7 +241,14 @@ const EventRegister = () => {
         <View style={styles.headerBox}>
           <View style={styles.headerRow}>
             <Text style={styles.headerEmoji}>🚩</Text>
-            <Text style={styles.headerText}>Tạo sự kiện cho câu lạc bộ</Text>
+            <Text
+              style={{ fontSize: 16, textAlign: "center", marginBottom: 10 }}
+            >
+              🎓 Tạo sự kiện cho CLB:{" "}
+              <Text style={{ fontWeight: "bold", color: "#2563eb" }}>
+                {clubName || name}
+              </Text>
+            </Text>
           </View>
         </View>
         <View style={styles.form}>
@@ -378,14 +385,18 @@ const EventRegister = () => {
               <Text style={styles.uploadText}>📎 Chọn file đính kèm</Text>
             </TouchableOpacity>
           </View>
-          {renderLabeledInput(
-            "🆔 Mã câu lạc bộ",
-            clubId.toString(),
-            (text) => setClubId(isNaN(parseInt(text)) ? 0 : parseInt(text)),
-            "Ví dụ: 123",
-            false,
-            "numeric"
-          )}
+          <View style={{ marginBottom: 18 }}>
+            <Text style={styles.label}>🏷️ Tên câu lạc bộ</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: "#f0f0f0" }]}
+              value={clubName || name}
+              editable={false}
+              selectTextOnFocus={false}
+              placeholder="Tên câu lạc bộ"
+              placeholderTextColor="#aaa"
+            />
+          </View>
+
           <TouchableOpacity
             onPress={handleSubmit}
             style={[styles.button, loading && styles.buttonDisabled]}

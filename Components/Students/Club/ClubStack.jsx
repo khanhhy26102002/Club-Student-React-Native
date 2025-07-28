@@ -8,6 +8,7 @@ import ClubCreated from "./ClubCreated";
 import ClubRegistersId from "./ClubRegistersId";
 import ClubGroup from "./ClubGroup";
 import ClubGroupId from "./ClubGroupId";
+import ClubMembership from "./ClubMembership";
 const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
@@ -47,6 +48,11 @@ const ClubStack = () => {
       <Stack.Screen
         name="ClubGroupId"
         component={ClubGroupId}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ClubMembership"
+        component={ClubMembership}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

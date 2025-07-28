@@ -25,7 +25,14 @@ const EventAssign = ({ route, navigation }) => {
   React.useEffect(() => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        Alert.alert("Thiếu token", "Vui lòng đăng nhập lại.");
+        return;
+      }
+
       try {
+        console.log("eventId:", eventId);
+
         const response = await fetchBaseResponse(
           `/api/event-roles/my/${eventId}`,
           {
@@ -36,6 +43,9 @@ const EventAssign = ({ route, navigation }) => {
             }
           }
         );
+
+        console.log("My Role Response:", response);
+
         if (response.status === 200 && response.data.roleName === "ORGANIZER") {
           setHasPermission(true);
         } else {
@@ -44,6 +54,7 @@ const EventAssign = ({ route, navigation }) => {
             "Bạn không có quyền phân vai trong sự kiện này."
           );
         }
+
         const listRes = await fetchBaseResponse(
           `/api/event-roles/event/${eventId}`,
           {
@@ -55,16 +66,19 @@ const EventAssign = ({ route, navigation }) => {
           }
         );
 
+        console.log("List Role Response:", listRes);
+
         if (listRes.status === 200) {
           setData(listRes.data);
         } else {
-          throw new Error(`HTTP Status:${listRes.status}`);
+          throw new Error(`HTTP Status: ${listRes.status}`);
         }
       } catch (error) {
-        console.error("Error: ", error);
-        Alert.alert("Không fetching được data");
+        console.error("Fetch error:", error);
+        Alert.alert("Lỗi", "Không thể lấy dữ liệu. Vui lòng thử lại.");
       }
     };
+
     fetchData();
   }, [eventId]);
 
