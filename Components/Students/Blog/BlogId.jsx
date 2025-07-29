@@ -12,7 +12,7 @@ import API, { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 const BlogId = () => {
   const route = useRoute();
-  const { id } = route.params;
+  const { blogId } = route.params;
 
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
@@ -20,7 +20,7 @@ const BlogId = () => {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchBaseResponse(`/api/blogs/${id}`, {
+        const response = await fetchBaseResponse(`/api/blogs/${blogId}`, {
           method: "GET"
         });
         if (!response || response.length === 0) {

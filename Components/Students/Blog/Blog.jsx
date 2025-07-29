@@ -46,7 +46,7 @@ const Blog = ({ navigation }) => {
       fetchData();
     }, [])
   );
-
+  
   const renderItem = ({ item }) => {
     return (
       <View style={styles.card}>

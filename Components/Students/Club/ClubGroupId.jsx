@@ -4,7 +4,8 @@ import {
   Text,
   View,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
+  TouchableOpacity
 } from "react-native";
 import React from "react";
 import { useRoute } from "@react-navigation/native";
@@ -12,7 +13,7 @@ import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 
-const ClubGroupId = () => {
+const ClubGroupId = ({ navigation }) => {
   const [loading, setLoading] = React.useState(true);
   const [data, setData] = React.useState(null);
   const route = useRoute();
@@ -62,7 +63,12 @@ const ClubGroupId = () => {
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>👤 Thông tin thành viên</Text>
-
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Text style={styles.backText}>← Quay lại</Text>
+        </TouchableOpacity>
         {loading ? (
           <ActivityIndicator size="large" color="#0f172a" />
         ) : data ? (
@@ -101,6 +107,16 @@ const ClubGroupId = () => {
 export default ClubGroupId;
 
 const styles = StyleSheet.create({
+  backButton: {
+    marginLeft: 16,
+    marginTop: 8,
+    marginBottom: 30
+  },
+  backText: {
+    fontSize: 16,
+    color: "#1a73e8",
+    fontWeight: "600"
+  },
   container: {
     padding: 20,
     backgroundColor: "#f1f5f9",
