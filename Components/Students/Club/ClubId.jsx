@@ -26,8 +26,6 @@ const ClubId = ({ navigation }) => {
   const [clubRole, setClubRole] = React.useState(null);
   const [hasApplied, setHasApplied] = React.useState(false);
   const [isApproved, setIsApproved] = React.useState(false);
-  const [upcomingEvents, setUpcomingEvents] = React.useState([]);
-
   const fetchClubData = async () => {
     setLoading(true);
     try {
@@ -115,54 +113,6 @@ const ClubId = ({ navigation }) => {
       console.error("Lỗi role:", err);
     } finally {
       setFetchingRoles(false);
-    }
-  };
-
-  const fetchEvents = async () => {
-    try {
-      const token = await AsyncStorage.getItem("jwt");
-      console.log("🔥 Token:", token);
-
-      // ✅ Gọi API mới để lấy PUBLIC events
-      const pubRes = await fetchBaseResponse(
-        `/api/clubs/${clubIdParam}/Visibility?visibility=PUBLIC`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      let intRes = { data: [] };
-
-      // ✅ INTERNAL chỉ gọi nếu đã được duyệt hoặc có vai trò
-      if (
-        isApproved ||
-        clubRole?.role === "CLUBLEADER" ||
-        clubRole?.role === "MEMBER"
-      ) {
-        intRes = await fetchBaseResponse(
-          `/api/clubs/${clubIdParam}/Visibility?visibility=INTERNAL`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-      }
-
-      const now = new Date();
-      const merged = [...(pubRes.data || []), ...(intRes.data || [])];
-      const filtered = merged.filter(
-        (e) => e.status === "APPROVED" && new Date(e.eventDate) > now
-      );
-      setUpcomingEvents(filtered);
-    } catch (err) {
-      console.error("❌ Lỗi load sự kiện:", err);
     }
   };
 

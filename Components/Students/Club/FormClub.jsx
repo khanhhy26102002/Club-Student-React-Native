@@ -368,7 +368,13 @@ const FormClub = () => {
                   <Picker
                     selectedValue={mentorId}
                     onValueChange={(itemValue) => setMentorId(itemValue)}
-                    style={{ height: 60 }}
+                    style={{
+                      height: 60,
+                      backgroundColor: "#fff", // fix nền trắng
+                      color: "#000", // fix chữ đen
+                      borderRadius: 10,
+                      paddingHorizontal: 8
+                    }}
                   >
                     {data.map((mentor) => (
                       <Picker.Item

@@ -23,7 +23,9 @@ export default function ClubGroup() {
   const [loading, setLoading] = React.useState(true);
   const [joined, setJoined] = React.useState(false);
   const [clubInfo, setClubInfo] = React.useState(null);
+  const [roleList, setRoleList] = React.useState([]);
   const [isLeader, setIsLeader] = React.useState(false);
+  const [isEventCreator, setIsEventCreator] = React.useState(false);
 
   const route = useRoute();
   const navigation = useNavigation();
@@ -39,30 +41,36 @@ export default function ClubGroup() {
       };
 
       try {
-        const [clubRes, roleRes, blogRes, publicRes, internalRes] =
-          await Promise.all([
-            fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
-            fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
-            fetchBaseResponse(`/api/blogs?clubId=${clubId}`, { headers }),
-            fetchBaseResponse(`/api/clubs/${clubId}/events?visibility=PUBLIC`, {
-              headers
-            }),
-            fetchBaseResponse(
-              `/api/clubs/${clubId}/events?visibility=INTERNAL`,
-              { headers }
-            )
-          ]);
+        const [clubRes, roleRes, blogRes] = await Promise.all([
+          fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
+          fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
+          fetchBaseResponse(`/api/blogs?clubId=${clubId}`, { headers })
+        ]);
 
         if (clubRes.status === 200) {
           setClubInfo(clubRes.data);
           setJoined(clubRes.data.status === "APPROVED");
         }
 
+        let isClubLeader = false;
+        let canCreateEvent = false;
+        let roles = [];
+
         if (roleRes.status === 200) {
-          const isClubLeader = roleRes.data.some(
+          roles = roleRes.data || [];
+          setRoleList(roles);
+
+          isClubLeader = roles.some(
             (role) => role.clubId == clubId && role.role === "CLUBLEADER"
           );
+          canCreateEvent = roles.some(
+            (role) =>
+              role.clubId == clubId &&
+              (role.role === "CLUBLEADER" || role.role === "MEMBER")
+          );
+
           setIsLeader(isClubLeader);
+          setIsEventCreator(canCreateEvent);
         }
 
         const blogs = (blogRes.data || []).map((blog) => ({
@@ -70,20 +78,28 @@ export default function ClubGroup() {
           type: "blog"
         }));
 
-        const now = new Date();
-        const events = [...(publicRes.data || []), ...(internalRes.data || [])]
-          .filter(
-            (event) =>
-              event.status === "APPROVED" && new Date(event.eventDate) > now
-          )
-          .map((event) => ({
-            ...event,
-            type: "event"
-          }));
+        let events = [];
+
+        if (isClubLeader) {
+          try {
+            const eventRes = await fetchBaseResponse(
+              `/api/events?clubId=${clubId}`,
+              { headers }
+            );
+            if (eventRes.status === 200) {
+              events = (eventRes.data || []).map((event) => ({
+                ...event,
+                type: "event"
+              }));
+            }
+          } catch (eventErr) {
+            console.warn("Không thể lấy sự kiện:", eventErr);
+          }
+        }
 
         const combined = [...blogs, ...events].sort((a, b) => {
-          const dateA = new Date(a.date || a.eventDate);
-          const dateB = new Date(b.date || b.eventDate);
+          const dateA = new Date(a.date || a.createdAt);
+          const dateB = new Date(b.date || b.createdAt);
           return dateB - dateA;
         });
 
@@ -102,6 +118,8 @@ export default function ClubGroup() {
   const filteredData = allData.filter((item) =>
     selectedTab === "all" ? true : item.type === selectedTab
   );
+
+  const canCreateEvent = selectedTab === "event" && joined && isEventCreator;
 
   return (
     <>
@@ -153,7 +171,7 @@ export default function ClubGroup() {
 
         <TabsFilter selected={selectedTab} onSelect={setSelectedTab} />
 
-        {isLeader && (
+        {(isLeader || canCreateEvent) && (
           <View
             style={{
               marginHorizontal: 16,
@@ -162,12 +180,11 @@ export default function ClubGroup() {
               gap: 10
             }}
           >
-            {/* Chỉ hiện nếu đang ở tab blog */}
-            {selectedTab === "blog" && (
+            {selectedTab === "blog" && isLeader && (
               <TouchableOpacity
                 onPress={() =>
-                  navigation.navigate("Blog", {
-                    screen: "CreateBlog",
+                  navigation.navigate("Club", {
+                    screen: "Blog",
                     params: { clubId: clubInfo.clubId }
                   })
                 }
@@ -185,7 +202,8 @@ export default function ClubGroup() {
                 </Text>
               </TouchableOpacity>
             )}
-            {selectedTab === "event" && (
+
+            {canCreateEvent && (
               <TouchableOpacity
                 onPress={() =>
                   navigation.navigate("Event", {
@@ -203,34 +221,58 @@ export default function ClubGroup() {
                 <Text
                   style={{ color: "white", fontSize: 16, fontWeight: "600" }}
                 >
-                  ＋ Tạo sự kiên
+                  ＋ Tạo sự kiện
                 </Text>
               </TouchableOpacity>
             )}
-            {/* Chỉ hiện nếu ở tab all */}
-            {selectedTab === "all" && (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "ClubMembership",
-                    params: {
-                      clubId: clubInfo.clubId
-                    }
-                  })
-                }
-                style={{
-                  backgroundColor: "#ff9800",
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  alignItems: "center"
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+
+            {selectedTab === "all" && isLeader && (
+              <>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Club", {
+                      screen: "ClubMembership",
+                      params: {
+                        clubId: clubInfo.clubId
+                      }
+                    })
+                  }
+                  style={{
+                    backgroundColor: "#ff9800",
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    alignItems: "center"
+                  }}
                 >
-                  ✅ Duyệt thành viên
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+                  >
+                    ✅ Duyệt thành viên
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Club", {
+                      screen: "Membership",
+                      params: {
+                        clubId: clubInfo.clubId
+                      }
+                    })
+                  }
+                  style={{
+                    backgroundColor: "#6366F1",
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    alignItems: "center"
+                  }}
+                >
+                  <Text
+                    style={{ color: "white", fontSize: 16, fontWeight: "600" }}
+                  >
+                    ✅ Thành viên trong câu lạc bộ
+                  </Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         )}
