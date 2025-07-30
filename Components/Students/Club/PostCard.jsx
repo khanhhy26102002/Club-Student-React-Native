@@ -4,10 +4,15 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Alert
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchBaseResponse } from "../../../utils/api";
+
 const screenWidth = Dimensions.get("window").width;
-export default function PostCard({ data, navigation }) {
+
+export default function PostCard({ data, navigation, isLeader }) {
   const isEvent = data.type === "event";
 
   const handlePress = () => {
@@ -17,21 +22,68 @@ export default function PostCard({ data, navigation }) {
         params: { eventId: data.eventId }
       });
     } else {
-      navigation.navigate("Blog", {
+      navigation.navigate("Club", {
         screen: "BlogDetail",
         params: { blogId: data.blogId }
       });
     }
   };
-  const handleAssignRole = async () => {
+
+  const handleAssignRole = () => {
     navigation.navigate("Event", {
       screen: "EventAssign",
-      params: {
-        eventId: data.eventId,
-        title: data.title
-      }
+      params: { eventId: data.eventId, title: data.title }
     });
   };
+
+  const handleUpdate = () => {
+    if (isEvent) {
+      navigation.navigate("Event", {
+        screen: "UpdateEvent",
+        params: { eventId: data.eventId }
+      });
+    } else {
+      navigation.navigate("Club", {
+        screen: "UpdateBlog",
+        params: { blogId: data.blogId }
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Xác nhận xoá",
+      `Bạn có chắc chắn muốn xoá ${isEvent ? "sự kiện" : "blog"} này không?`,
+      [
+        { text: "Huỷ", style: "cancel" },
+        {
+          text: "Xoá",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("jwt");
+              const headers = { Authorization: `Bearer ${token}` };
+              const endpoint = isEvent
+                ? `/api/events/${data.eventId}`
+                : `/api/blogs/${data.blogId}`;
+              const res = await fetchBaseResponse(endpoint, {
+                method: "DELETE",
+                headers
+              });
+              if (res.status === 200) {
+                Alert.alert("Thành công", "Đã xoá thành công.");
+              } else {
+                throw new Error("Xoá thất bại");
+              }
+            } catch (err) {
+              Alert.alert("Lỗi", err.message || "Không thể xoá.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -115,6 +167,7 @@ export default function PostCard({ data, navigation }) {
             </Text>
           </Text>
         )}
+
         {isEvent && (
           <>
             <TouchableOpacity
@@ -149,6 +202,44 @@ export default function PostCard({ data, navigation }) {
               </Text>
             </TouchableOpacity>
           </>
+        )}
+
+        {isLeader && (
+          <View
+            style={{
+              flexDirection: "row",
+              marginTop: 10,
+              gap: 10
+            }}
+          >
+            <TouchableOpacity
+              onPress={handleUpdate}
+              style={{
+                backgroundColor: "#0284c7",
+                paddingVertical: 6,
+                paddingHorizontal: 16,
+                borderRadius: 10
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                ✏️ Cập nhật
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={{
+                backgroundColor: "#dc2626",
+                paddingVertical: 6,
+                paddingHorizontal: 16,
+                borderRadius: 10
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                🗑️ Xoá
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </TouchableOpacity>

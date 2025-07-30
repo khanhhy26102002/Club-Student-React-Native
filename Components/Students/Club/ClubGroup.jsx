@@ -78,26 +78,7 @@ export default function ClubGroup() {
           type: "blog"
         }));
 
-        let events = [];
-
-        if (isClubLeader) {
-          try {
-            const eventRes = await fetchBaseResponse(
-              `/api/events?clubId=${clubId}`,
-              { headers }
-            );
-            if (eventRes.status === 200) {
-              events = (eventRes.data || []).map((event) => ({
-                ...event,
-                type: "event"
-              }));
-            }
-          } catch (eventErr) {
-            console.warn("Không thể lấy sự kiện:", eventErr);
-          }
-        }
-
-        const combined = [...blogs, ...events].sort((a, b) => {
+        const combined = [...blogs].sort((a, b) => {
           const dateA = new Date(a.date || a.createdAt);
           const dateB = new Date(b.date || b.createdAt);
           return dateB - dateA;
@@ -290,7 +271,11 @@ export default function ClubGroup() {
               `${item.type}-${item.id || item.eventId || index}`
             }
             renderItem={({ item }) => (
-              <PostCard data={item} navigation={navigation} />
+              <PostCard
+                data={item}
+                navigation={navigation}
+                isLeader={isLeader}
+              />
             )}
             contentContainerStyle={{
               paddingBottom: 20,

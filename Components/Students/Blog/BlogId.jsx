@@ -1,15 +1,17 @@
+import React from "react";
 import {
   Alert,
   StyleSheet,
   Text,
   View,
   ActivityIndicator,
-  ScrollView
+  ScrollView,
+  Image
 } from "react-native";
-import React from "react";
 import { useRoute } from "@react-navigation/native";
-import API, { fetchBaseResponse } from "../../../utils/api";
+import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+
 const BlogId = () => {
   const route = useRoute();
   const { blogId } = route.params;
@@ -23,9 +25,9 @@ const BlogId = () => {
         const response = await fetchBaseResponse(`/api/blogs/${blogId}`, {
           method: "GET"
         });
+
         if (!response || response.length === 0) {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
-          setData([]);
         } else {
           setData(response.data);
         }
@@ -36,7 +38,7 @@ const BlogId = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [blogId]);
 
   if (loading) {
     return (
@@ -57,25 +59,28 @@ const BlogId = () => {
   return (
     <>
       <Header />
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>{data.title}</Text>
-          <View style={styles.dateWrapper}>
-            <Text style={styles.calendarIcon}>📅</Text>
-            <Text style={styles.date}>
-              {new Date(data.createdAt).toLocaleDateString("vi-VN", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-              })}
-            </Text>
-          </View>
+      <ScrollView contentContainerStyle={styles.container}>
+        {data.coverImage && (
+          <Image source={{ uri: data.coverImage }} style={styles.coverImage} />
+        )}
+
+        <Text style={styles.title}>{data.title}</Text>
+
+        <View style={styles.metaWrapper}>
+          <Text style={styles.author}>✍️ {data.authorName || "Không rõ"}</Text>
+          <Text style={styles.dot}>•</Text>
+          <Text style={styles.date}>
+            📅{" "}
+            {new Date(data.createdAt).toLocaleDateString("vi-VN", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric"
+            })}
+          </Text>
         </View>
-        <View style={styles.contentContainer}>
+
+        <View style={styles.card}>
           <Text style={styles.content}>{data.content}</Text>
         </View>
       </ScrollView>
@@ -87,64 +92,68 @@ export default BlogId;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    backgroundColor: "#f3f4f6"
+    backgroundColor: "#f3f4f6",
+    padding: 20
   },
-  imageWrapper: {
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 24
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#d32f2f"
   },
   coverImage: {
     width: "100%",
-    height: 220
-  },
-  headerContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-    paddingHorizontal: 10
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 20
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827", // Slate-900
-    textAlign: "center",
-    marginBottom: 10
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#111827",
+    marginBottom: 10,
+    textAlign: "center"
   },
-  dateWrapper: {
+  metaWrapper: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#e5e7eb", // light gray background
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 20
+    marginBottom: 16
   },
-  calendarIcon: {
-    marginRight: 6,
-    fontSize: 16
+  author: {
+    fontSize: 14,
+    color: "#6b7280"
+  },
+  dot: {
+    marginHorizontal: 6,
+    fontSize: 14,
+    color: "#6b7280"
   },
   date: {
     fontSize: 14,
-    color: "#4b5563" // Gray-600
+    color: "#6b7280"
   },
-  contentContainer: {
+  card: {
     backgroundColor: "#ffffff",
-    borderRadius: 20,
     padding: 20,
+    borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 3
+    elevation: 4
   },
   content: {
-    fontSize: 17,
-    lineHeight: 28,
-    color: "#374151" // Gray-700
+    fontSize: 18,
+    lineHeight: 30,
+    color: "#374151"
   }
 });
