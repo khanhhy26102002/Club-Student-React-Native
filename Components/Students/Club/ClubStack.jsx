@@ -11,6 +11,9 @@ import ClubGroupId from "./ClubGroupId";
 import ClubMembership from "./ClubMembership";
 import Membership from "./Membership";
 import Blog from "../Blog/Blog";
+import FormBlog from "../Blog/FormBlog";
+import BlogId from "../Blog/BlogId";
+import UpdateBlog from "../Blog/UpdateBlog";
 const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
@@ -65,6 +68,21 @@ const ClubStack = () => {
       <Stack.Screen
         name="Blog"
         component={Blog}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FormBlog"
+        component={FormBlog}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BlogDetail"
+        component={BlogId}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UpdateBlog"
+        component={UpdateBlog}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
