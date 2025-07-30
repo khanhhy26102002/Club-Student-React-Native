@@ -4,7 +4,9 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  Alert
+  Alert,
+  FlatList,
+  ScrollView
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -72,6 +74,7 @@ export default function PostCard({ data, navigation, isLeader }) {
               });
               if (res.status === 200) {
                 Alert.alert("Thành công", "Đã xoá thành công.");
+                
               } else {
                 throw new Error("Xoá thất bại");
               }
@@ -102,11 +105,34 @@ export default function PostCard({ data, navigation, isLeader }) {
         marginLeft: -5
       }}
     >
-      {data.image && (
+      {/* Thumbnail */}
+      {data.thumbnailUrl && (
         <Image
-          source={{ uri: data.image }}
+          source={{ uri: data.thumbnailUrl }}
           style={{ width: "100%", height: 190 }}
           resizeMode="cover"
+        />
+      )}
+
+      {/* Scrollable list of images */}
+      {Array.isArray(data.imageUrls) && data.imageUrls.length > 0 && (
+        <FlatList
+          data={data.imageUrls}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(uri, index) => uri + index}
+          renderItem={({ item }) => (
+            <Image
+              source={{ uri: item }}
+              style={{
+                width: 120,
+                height: 80,
+                margin: 6,
+                borderRadius: 10
+              }}
+              resizeMode="cover"
+            />
+          )}
         />
       )}
 
@@ -235,9 +261,7 @@ export default function PostCard({ data, navigation, isLeader }) {
                 borderRadius: 10
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                🗑️ Xoá
-              </Text>
+              <Text style={{ color: "#fff", fontWeight: "600" }}>🗑️ Xoá</Text>
             </TouchableOpacity>
           </View>
         )}

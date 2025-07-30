@@ -8,30 +8,41 @@ console.log("API_URL", API_URL);
 export async function fetchBaseResponse(url, config) {
   try {
     const response = await API(url, config);
-    const { message, data, status: serverStatus } = response.data;
+    const raw = response.data;
 
-    if (response.status >= 200 && response.status < 300) {
+    // Nếu là mảng → bọc lại như bạn đã làm
+    if (Array.isArray(raw)) {
       return {
         status: response.status,
-        data,
-        message,
-        serverStatus
+        data: raw,
+        message: "Success",
+        serverStatus: response.status
       };
-    } else {
-      const error = new Error(message || "Đã có lỗi xảy ra");
-      error.response = {
-        data: {
-          status: serverStatus,
-          message
-        }
-      };
-      throw error; // 🔥 Quan trọng nhất
     }
+
+    // Nếu là object nhưng không có key "data"
+    if (typeof raw === "object" && raw !== null) {
+      return {
+        status: response.status,
+        data: raw.data !== undefined ? raw.data : raw, // fallback
+        message: raw.message || "Success",
+        serverStatus: raw.status || response.status
+      };
+    }
+
+    // Nếu là kiểu khác (string, number,...)
+    return {
+      status: response.status,
+      data: raw,
+      message: "Success",
+      serverStatus: response.status
+    };
   } catch (error) {
     console.log("❌ API Error:", error?.response?.data || error.message);
-    throw error; // 🔥 Quan trọng: ném lại lỗi cho component xử lý
+    throw error;
   }
 }
+
 export const checkEventRole = async (eventId) => {
   try {
     const token = await AsyncStorage.getItem("jwt");

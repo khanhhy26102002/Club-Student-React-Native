@@ -11,6 +11,7 @@ import {
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BlogId = () => {
   const route = useRoute();
@@ -21,11 +22,19 @@ const BlogId = () => {
 
   React.useEffect(() => {
     const fetchData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
       try {
-        const response = await fetchBaseResponse(`/api/blogs/${blogId}`, {
-          method: "GET"
-        });
-
+        const response = await fetchBaseResponse(
+          `/api/blogs/leader-club/${blogId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        console.log("Response:", response);
         if (!response || response.length === 0) {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
         } else {
