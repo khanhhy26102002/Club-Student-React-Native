@@ -44,7 +44,7 @@ export default function ClubGroup() {
         const [clubRes, roleRes, blogRes] = await Promise.all([
           fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
           fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
-          fetchBaseResponse(`/api/blogs?clubId=${clubId}`, { headers })
+          fetchBaseResponse(`/api/blogs/leader-club`, { headers })
         ]);
 
         if (clubRes.status === 200) {
@@ -72,12 +72,12 @@ export default function ClubGroup() {
           setIsLeader(isClubLeader);
           setIsEventCreator(canCreateEvent);
         }
-
-        const blogs = (blogRes.data || []).map((blog) => ({
+        const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
+        const blogs = blogsRaw.map((blog) => ({
           ...blog,
           type: "blog"
         }));
-
+        console.log("BlogRes", blogRes);
         const combined = [...blogs].sort((a, b) => {
           const dateA = new Date(a.date || a.createdAt);
           const dateB = new Date(b.date || b.createdAt);
@@ -165,7 +165,7 @@ export default function ClubGroup() {
               <TouchableOpacity
                 onPress={() =>
                   navigation.navigate("Club", {
-                    screen: "Blog",
+                    screen: "FormBlog",
                     params: { clubId: clubInfo.clubId }
                   })
                 }
