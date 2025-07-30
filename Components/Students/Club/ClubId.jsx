@@ -160,7 +160,7 @@ const ClubId = ({ navigation }) => {
   return (
     <>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView style={{ flex: 1, backgroundColor: "#f0f9ff" }}>
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#2563eb" />
@@ -171,15 +171,16 @@ const ClubId = ({ navigation }) => {
               {data.logoUrl ? (
                 <Image source={{ uri: data.logoUrl }} style={styles.logo} />
               ) : (
-                <Text style={styles.logoFallback}>No Logo</Text>
+                <Text style={styles.logoFallback}>🎗️ No Logo</Text>
               )}
             </View>
 
             <Text style={styles.title}>{data.name}</Text>
+
             <Text
               style={[
                 styles.status,
-                { color: data.isActive ? "#10B981" : "#EF4444" }
+                { color: data.isActive ? "#10b981" : "#ef4444" }
               ]}
             >
               {data.isActive ? "🟢 Đang hoạt động" : "🔴 Ngừng hoạt động"}
@@ -187,18 +188,24 @@ const ClubId = ({ navigation }) => {
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>📄 Giới thiệu</Text>
-              <Text>{stripMarkdown(data.description)}</Text>
+              <Text style={styles.description}>
+                {stripMarkdown(data.description)}
+              </Text>
 
-              <View style={{ marginTop: 12 }}>
+              <View style={{ marginTop: 16 }}>
                 {fetchingRoles ? (
-                  <TouchableOpacity style={styles.button}>
-                    <Text>Đang tải quyền...</Text>
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#e5e7eb" }]}
+                  >
+                    <Text style={{ color: "#374151" }}>
+                      ⏳ Đang tải quyền...
+                    </Text>
                   </TouchableOpacity>
                 ) : clubRole?.role === "CLUBLEADER" ||
                   clubRole?.role === "MEMBER" ||
                   (hasApplied && isApproved) ? (
                   <TouchableOpacity
-                    style={styles.button}
+                    style={[styles.button, { backgroundColor: "#3b82f6" }]}
                     onPress={() =>
                       navigation.navigate("Club", {
                         screen: "ClubGroup",
@@ -208,7 +215,7 @@ const ClubId = ({ navigation }) => {
                       })
                     }
                   >
-                    <Text style={styles.buttonText}>🔍 Xem nhóm trong CLB</Text>
+                    <Text style={styles.buttonText}>👥 Xem nhóm trong CLB</Text>
                   </TouchableOpacity>
                 ) : hasApplied && !isApproved ? (
                   <TouchableOpacity
@@ -231,12 +238,6 @@ const ClubId = ({ navigation }) => {
                   </TouchableOpacity>
                 )}
               </View>
-              {/* <TouchableOpacity
-                style={[styles.button, { backgroundColor: "#10b981" }]}
-                onPress={handleJoin}
-              >
-                <Text style={styles.buttonText}>➕ Tham gia CLB</Text>
-              </TouchableOpacity> */}
             </View>
           </View>
         ) : null}
@@ -246,62 +247,75 @@ const ClubId = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    paddingTop: 100,
+    backgroundColor: "#f0f9ff"
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4
+    backgroundColor: "#ffffff",
+    flex: 1,
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20
   },
   logoWrapper: {
     alignItems: "center",
     marginBottom: 16
   },
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2,
+    borderColor: "#60a5fa"
   },
   logoFallback: {
-    color: "#aaa"
+    fontSize: 14,
+    color: "#6b7280",
+    fontStyle: "italic"
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: 4
+    color: "#1e3a8a",
+    marginBottom: 6
   },
   status: {
+    fontSize: 16,
+    fontWeight: "600",
     textAlign: "center",
-    fontSize: 14,
-    marginBottom: 12
+    marginBottom: 20
   },
   section: {
-    marginTop: 12
+    marginTop: 8
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 8
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#111827"
+  },
+  description: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#374151"
   },
   button: {
-    backgroundColor: "#3b82f6",
-    padding: 10,
-    borderRadius: 8,
+    marginTop: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: "center"
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "600"
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16
   }
 });
+
 
 export default ClubId;

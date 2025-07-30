@@ -251,28 +251,26 @@ const Homepage = ({ navigation }) => {
             <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ gap: 12, marginTop: 12 }}>
+        <View style={{ marginTop: 16 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
-              gap: 16,
-              paddingLeft: 16,
-              paddingRight: 16
+              paddingHorizontal: 16,
+              gap: 16
             }}
           >
             {blog.map((item) => (
               <TouchableOpacity
                 key={item.blogId}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
                 onPress={() =>
                   navigation.navigate("Club", {
-                    screen: "BlogId",
-                    params: {
-                      blogId: item.blogId
-                    }
+                    screen: "BlogDetail",
+                    params: { blogId: item.blogId }
                   })
                 }
+                style={styles.cardWrapper}
               >
                 <View style={styles.blogCard}>
                   <Image
@@ -289,7 +287,7 @@ const Homepage = ({ navigation }) => {
                     </Text>
                     <Text style={styles.blogInfo}>📝 {item.authorName}</Text>
                     <Text style={styles.blogInfo}>
-                      🕒 {new Date(item.createdAt).toLocaleString()}
+                      🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
                     </Text>
                   </View>
                 </View>
@@ -305,27 +303,32 @@ const Homepage = ({ navigation }) => {
 export default Homepage;
 
 const styles = StyleSheet.create({
+ cardWrapper: {
+    width: 260 // Đảm bảo các card có cùng kích thước
+  },
   blogCard: {
-    width: 260,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 4
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3
   },
   thumbnail: {
     width: "100%",
-    height: 140
+    height: 140,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16
   },
   blogCardContent: {
     padding: 12,
-    gap: 6
+    gap: 4
   },
   blogTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#1f2937"
   },
   blogContentPreview: {

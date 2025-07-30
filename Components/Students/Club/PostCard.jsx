@@ -14,7 +14,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function PostCard({ data, navigation, isLeader }) {
+export default function PostCard({ data, navigation, isLeader, onDelete }) {
   const isEvent = data.type === "event";
 
   const handlePress = () => {
@@ -74,7 +74,7 @@ export default function PostCard({ data, navigation, isLeader }) {
               });
               if (res.status === 200) {
                 Alert.alert("Thành công", "Đã xoá thành công.");
-                
+                if (onDelete) await onDelete();
               } else {
                 throw new Error("Xoá thất bại");
               }

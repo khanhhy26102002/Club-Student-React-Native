@@ -42,30 +42,26 @@ const EventHistory = ({ navigation }) => {
         }
       );
 
+      // ✅ Thành công
       if (response.status === 200) {
         console.log("✅ Registered events:", response.data);
         setRegisteredEvents(response.data || []);
       } else if (response.status === 5008) {
-        Alert.alert("Thất bại", "Bạn chưa đăng ký sự kiện này");
-        setRegisteredEvents([]); // đảm bảo danh sách rỗng
+        // 🔁 Có thể không vào đây, vì bạn đã throw trong fetchBaseResponse
+        Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
+        setRegisteredEvents([]);
       } else {
         Alert.alert("Lỗi", response.message || "Không lấy được sự kiện");
       }
     } catch (error) {
-      console.error("Fetch error:", error);
+      // ✅ Bắt lỗi đã được throw từ fetchBaseResponse
+      console.error("❌ Fetch error:", error);
 
-      // Nếu có response từ server
-      if (error.response && error.response.data) {
-        const { status, message } = error.response.data;
-
-        if (status === 5008) {
-          setRegisteredEvents([]);
-          Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào."); // Thêm dòng này
-        } else {
-          Alert.alert("Lỗi", message || "Lỗi không xác định từ máy chủ");
-        }
+      if (error.status === 5008) {
+        Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
+        setRegisteredEvents([]);
       } else {
-        Alert.alert("Lỗi", "Không thể kết nối máy chủ");
+        Alert.alert("Lỗi", error.message || "Không thể kết nối máy chủ");
       }
     } finally {
       setLoadingEvents(false);
