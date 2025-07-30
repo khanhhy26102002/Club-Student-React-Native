@@ -279,10 +279,8 @@ const Homepage = ({ navigation }) => {
                     resizeMode="cover"
                   />
                   <View style={styles.blogCardContent}>
-                    <Text style={styles.blogTitle} numberOfLines={2}>
-                      {item.title}
-                    </Text>
-                    <Text style={styles.blogContentPreview} numberOfLines={2}>
+                    <Text style={styles.blogTitle}>{item.title}</Text>
+                    <Text style={styles.blogContentPreview}>
                       {item.content}
                     </Text>
                     <Text style={styles.blogInfo}>📝 {item.authorName}</Text>
@@ -303,18 +301,19 @@ const Homepage = ({ navigation }) => {
 export default Homepage;
 
 const styles = StyleSheet.create({
- cardWrapper: {
-    width: 260 // Đảm bảo các card có cùng kích thước
+  cardWrapper: {
+    width: 260, // hoặc 280 nếu bạn muốn rộng hơn
   },
   blogCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
+    elevation: 3,
     shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3
+    shadowRadius: 4,
+    minHeight: 360 // ⬅️ Chiều cao cố định để đều nhau
   },
   thumbnail: {
     width: "100%",
@@ -324,20 +323,24 @@ const styles = StyleSheet.create({
   },
   blogCardContent: {
     padding: 12,
-    gap: 4
+    flexDirection: "column",
+    justifyContent: "space-between"
   },
   blogTitle: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#1f2937"
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 4
   },
   blogContentPreview: {
     fontSize: 14,
-    color: "#4b5563"
+    color: "#666",
+    marginBottom: 8
   },
   blogInfo: {
     fontSize: 12,
-    color: "#6b7280"
+    color: "#999",
+    marginBottom: 2
   },
   container: {
     paddingHorizontal: 20,
