@@ -7,25 +7,26 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from "react-native";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { API_URL } from "@env";
 
 const API = API_URL;
 
 const FormBlog = () => {
+  const navigation = useNavigation();
   const route = useRoute();
   const { clubId } = route.params;
-
   const [title, setTitle] = React.useState("");
   const [content, setContent] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState(null);
-  const [images, setImages] = React.useState([]); // ✅ default = []
+  const [images, setImages] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
 
   const pickImage = async (setImage) => {
@@ -35,9 +36,10 @@ const FormBlog = () => {
       quality: 1
     });
 
-    if (!result.canceled && result.assets.length > 0) {
-      const asset = result.assets[0];
-      setImage(asset);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageObj = result.assets[0];
+      console.log("🔍 Thumbnail object:", imageObj);
+      setImage(imageObj); // full object with uri, type
     }
   };
 
@@ -54,19 +56,15 @@ const FormBlog = () => {
   };
 
   const compressImage = async (image) => {
+    if (!image?.uri) throw new Error("❌ Image không có uri!");
+
     const result = await ImageManipulator.manipulateAsync(image.uri, [], {
       compress: 0.5,
       format: ImageManipulator.SaveFormat.JPEG
     });
+
     return result;
   };
-  console.log("FormData debug:", {
-    title,
-    content,
-    clubId,
-    thumbnail: thumbnail?.uri,
-    images: images?.map((img) => img.uri)
-  });
 
   const handleSubmit = async () => {
     if (!title || !content) {
@@ -74,7 +72,7 @@ const FormBlog = () => {
       return;
     }
 
-    if (!thumbnail) {
+    if (!thumbnail?.uri) {
       Alert.alert("⚠️ Thiếu ảnh", "Vui lòng chọn ảnh thumbnail cho blog.");
       return;
     }
@@ -95,12 +93,12 @@ const FormBlog = () => {
 
       const formData = new FormData();
 
-      // Append basic text fields
       formData.append("clubId", clubId.toString());
       formData.append("title", title);
       formData.append("content", content);
 
-      // Compress and append thumbnail image
+      console.log("🔍 Thumbnail trước khi nén:", thumbnail);
+
       const compressedThumbnail = await compressImage(thumbnail);
       formData.append("thumbnail", {
         uri: compressedThumbnail.uri,
@@ -108,7 +106,6 @@ const FormBlog = () => {
         type: "image/jpeg"
       });
 
-      // Compress and append multiple content images
       for (let i = 0; i < images.length; i++) {
         const compressed = await compressImage(images[i]);
         formData.append("images", {
@@ -118,31 +115,34 @@ const FormBlog = () => {
         });
       }
 
-      // Debug FormData content
       for (let pair of formData.entries()) {
         console.log("📝 FormData:", pair[0], pair[1]);
       }
 
-      // Send API request
       const response = await fetch(`${API}/api/blogs`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
-          // ❗ Không thêm "Content-Type" khi gửi FormData
         },
         body: formData
       });
 
-      // Parse response (support JSON or plain text)
       const contentType = response.headers.get("content-type");
       const result = contentType?.includes("application/json")
         ? await response.json()
         : await response.text();
 
       console.log("📥 Blog response:", result);
-
       if (response.ok && result?.status === 200) {
         Alert.alert("🎉 Thành công", "Blog đã được tạo.");
+
+        navigation.navigate("Club", {
+          screen: "ClubGroup",
+          params: {
+            clubId: clubId,
+            refresh: true // 👈 Gửi cờ refresh về
+          }
+        });
       } else {
         Alert.alert("❌ Lỗi", result?.message || "Tạo blog thất bại.");
       }
@@ -155,32 +155,35 @@ const FormBlog = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
+    <View style={{ flex: 1, backgroundColor: "#f0f9ff" }}>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.label}>Chủ đề</Text>
+
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+        <Text style={styles.header}>🌟 Tạo Blog Mới</Text>
+
+        <Text style={styles.label}>🎯 Chủ đề</Text>
         <TextInput
           style={styles.input}
           placeholder="Mời bạn nhập chủ đề"
           value={title}
           onChangeText={setTitle}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor="#94a3b8"
         />
 
-        <Text style={styles.label}>Nội dung</Text>
+        <Text style={styles.label}>📖 Nội dung</Text>
         <TextInput
           style={[styles.input, styles.multiline]}
           placeholder="Mời bạn nhập nội dung"
           value={content}
           onChangeText={setContent}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor="#94a3b8"
           multiline
-          numberOfLines={4}
+          numberOfLines={6}
           textAlignVertical="top"
         />
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#4B5563", marginTop: 16 }]}
+          style={[styles.button, { backgroundColor: "#ec4899" }]}
           onPress={() => pickImage(setThumbnail)}
         >
           <Text style={styles.buttonText}>
@@ -188,63 +191,113 @@ const FormBlog = () => {
           </Text>
         </TouchableOpacity>
 
+        {thumbnail && thumbnail.uri && (
+          <Image
+            source={{ uri: thumbnail.uri }}
+            style={styles.thumbnailPreview}
+          />
+        )}
+
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#6B7280", marginTop: 12 }]}
+          style={[styles.button, { backgroundColor: "#10b981", marginTop: 16 }]}
           onPress={pickMultipleImages}
         >
           <Text style={styles.buttonText}>
             {images.length > 0
-              ? `✅ ${images.length} ảnh đã chọn`
-              : "🖼️ Chọn ảnh nội dung"}
+              ? `✅ Đã chọn ${images.length} ảnh`
+              : "📷 Chọn ảnh nội dung"}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        {images.length > 0 && (
+          <ScrollView
+            horizontal
+            style={{ marginTop: 12 }}
+            showsHorizontalScrollIndicator={false}
+          >
+            {images.map((img, index) => (
+              <Image
+                key={index}
+                source={{ uri: img.uri }}
+                style={styles.contentImagePreview}
+              />
+            ))}
+          </ScrollView>
+        )}
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#3b82f6", marginTop: 28 }]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
           <Text style={styles.buttonText}>
-            {loading ? "Đang gửi..." : "Tạo Blog"}
+            {loading ? "⏳ Đang gửi..." : "🚀 Tạo Blog"}
           </Text>
         </TouchableOpacity>
 
-        {loading && <ActivityIndicator size="large" color="#2563eb" />}
+        {loading && (
+          <ActivityIndicator
+            size="large"
+            color="#2563eb"
+            style={{ marginTop: 20 }}
+          />
+        )}
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20
+  header: {
+    fontSize: 26,
+    fontWeight: "800",
+    marginBottom: 16,
+    color: "#0c4a6e"
   },
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111827",
-    marginBottom: 8,
-    marginTop: 16
+    color: "#0f172a",
+    marginBottom: 6,
+    marginTop: 18
   },
   input: {
-    backgroundColor: "#ffffff",
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    fontSize: 16,
-    color: "#111827"
+    borderWidth: 1.3,
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#fff",
+    color: "#0f172a",
+    fontSize: 15
   },
   multiline: {
-    height: 120
+    minHeight: 120
   },
   button: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 24
+    marginTop: 20,
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: "center"
   },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600"
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16
+  },
+  thumbnailPreview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 14,
+    marginTop: 12,
+    resizeMode: "cover"
+  },
+  contentImagePreview: {
+    width: 100,
+    height: 70,
+    borderRadius: 10,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#bae6fd"
   }
 });
 

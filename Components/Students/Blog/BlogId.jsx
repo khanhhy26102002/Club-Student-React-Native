@@ -6,12 +6,15 @@ import {
   View,
   ActivityIndicator,
   ScrollView,
-  Image
+  Image,
+  Dimensions
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const screenWidth = Dimensions.get("window").width;
 
 const BlogId = () => {
   const route = useRoute();
@@ -34,14 +37,22 @@ const BlogId = () => {
             }
           }
         );
-        console.log("Response:", response);
-        if (!response || response.length === 0) {
+
+        if (!response || !response.data) {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
         } else {
           setData(response.data);
         }
       } catch (error) {
-        Alert.alert("Lỗi khi tải bài viết", error.message || "Đã xảy ra lỗi");
+        console.error("Error:",error);
+        if (error?.status === 3001) {
+          Alert.alert(
+            "🚫 Không thể truy cập",
+            "Bạn không có quyền xem blog này vì nó thuộc một CLB khác."
+          );
+        } else {
+          Alert.alert("Lỗi khi tải bài viết", error.message || "Đã xảy ra lỗi");
+        }
       } finally {
         setLoading(false);
       }
@@ -69,27 +80,34 @@ const BlogId = () => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        {data.coverImage && (
-          <Image source={{ uri: data.coverImage }} style={styles.coverImage} />
+        {/* Thumbnail đẹp như banner */}
+        {data.thumbnailUrl && (
+          <Image
+            source={{ uri: data.thumbnailUrl }}
+            style={styles.bannerImage}
+          />
         )}
 
-        <Text style={styles.title}>{data.title}</Text>
-
-        <View style={styles.metaWrapper}>
-          <Text style={styles.author}>✍️ {data.authorName || "Không rõ"}</Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.date}>
-            📅{" "}
-            {new Date(data.createdAt).toLocaleDateString("vi-VN", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}
-          </Text>
-        </View>
-
+        {/* Nội dung chính */}
         <View style={styles.card}>
+          <Text style={styles.title}>{data.title}</Text>
+
+          <View style={styles.metaWrapper}>
+            <Text style={styles.metaText}>
+              ✍️ {data.authorName || "Không rõ"}
+            </Text>
+            <Text style={styles.dot}>•</Text>
+            <Text style={styles.metaText}>
+              📅{" "}
+              {new Date(data.createdAt).toLocaleDateString("vi-VN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              })}
+            </Text>
+          </View>
+
           <Text style={styles.content}>{data.content}</Text>
         </View>
       </ScrollView>
@@ -101,8 +119,8 @@ export default BlogId;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f3f4f6",
-    padding: 20
+    backgroundColor: "#f2f4f8",
+    paddingBottom: 40
   },
   loadingContainer: {
     flex: 1,
@@ -118,51 +136,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#d32f2f"
   },
-  coverImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 20
+  bannerImage: {
+    width: screenWidth,
+    height: 220,
+    resizeMode: "cover",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginBottom: 16
+  },
+  card: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    marginTop: -20,
+    padding: 24,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6
   },
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#111827",
-    marginBottom: 10,
-    textAlign: "center"
+    color: "#1f2937",
+    marginBottom: 14,
+    lineHeight: 34
   },
   metaWrapper: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16
+    marginBottom: 18
   },
-  author: {
+  metaText: {
     fontSize: 14,
     color: "#6b7280"
   },
   dot: {
-    marginHorizontal: 6,
-    fontSize: 14,
-    color: "#6b7280"
-  },
-  date: {
-    fontSize: 14,
-    color: "#6b7280"
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4
+    marginHorizontal: 8,
+    fontSize: 16,
+    color: "#9ca3af"
   },
   content: {
-    fontSize: 18,
-    lineHeight: 30,
-    color: "#374151"
+    fontSize: 17,
+    lineHeight: 28,
+    color: "#374151",
+    marginTop: 6
   }
 });

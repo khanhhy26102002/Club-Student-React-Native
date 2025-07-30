@@ -30,69 +30,67 @@ export default function ClubGroup() {
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
-
-  React.useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      const token = await AsyncStorage.getItem("jwt");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      };
-
-      try {
-        const [clubRes, roleRes, blogRes] = await Promise.all([
-          fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
-          fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
-          fetchBaseResponse(`/api/blogs/leader-club`, { headers })
-        ]);
-
-        if (clubRes.status === 200) {
-          setClubInfo(clubRes.data);
-          setJoined(clubRes.data.status === "APPROVED");
-        }
-
-        let isClubLeader = false;
-        let canCreateEvent = false;
-        let roles = [];
-
-        if (roleRes.status === 200) {
-          roles = roleRes.data || [];
-          setRoleList(roles);
-
-          isClubLeader = roles.some(
-            (role) => role.clubId == clubId && role.role === "CLUBLEADER"
-          );
-          canCreateEvent = roles.some(
-            (role) =>
-              role.clubId == clubId &&
-              (role.role === "CLUBLEADER" || role.role === "MEMBER")
-          );
-
-          setIsLeader(isClubLeader);
-          setIsEventCreator(canCreateEvent);
-        }
-        const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
-        const blogs = blogsRaw.map((blog) => ({
-          ...blog,
-          type: "blog"
-        }));
-        console.log("BlogRes", blogRes);
-        const combined = [...blogs].sort((a, b) => {
-          const dateA = new Date(a.date || a.createdAt);
-          const dateB = new Date(b.date || b.createdAt);
-          return dateB - dateA;
-        });
-
-        setAllData(combined);
-      } catch (err) {
-        console.error("Lỗi khi tải dữ liệu:", err);
-        Alert.alert("Lỗi", "Không thể tải dữ liệu câu lạc bộ.");
-      } finally {
-        setLoading(false);
-      }
+  const fetchAll = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem("jwt");
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     };
 
+    try {
+      const [clubRes, roleRes, blogRes] = await Promise.all([
+        fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
+        fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
+        fetchBaseResponse(`/api/blogs/my-clubs`, { headers })
+      ]);
+
+      if (clubRes.status === 200) {
+        setClubInfo(clubRes.data);
+        setJoined(clubRes.data.status === "APPROVED");
+      }
+
+      let isClubLeader = false;
+      let canCreateEvent = false;
+      let roles = [];
+
+      if (roleRes.status === 200) {
+        roles = roleRes.data || [];
+        setRoleList(roles);
+
+        isClubLeader = roles.some(
+          (role) => role.clubId == clubId && role.role === "CLUBLEADER"
+        );
+        canCreateEvent = roles.some(
+          (role) =>
+            role.clubId == clubId &&
+            (role.role === "CLUBLEADER" || role.role === "MEMBER")
+        );
+
+        setIsLeader(isClubLeader);
+        setIsEventCreator(canCreateEvent);
+      }
+      const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
+      const blogs = blogsRaw.map((blog) => ({
+        ...blog,
+        type: "blog"
+      }));
+      console.log("BlogRes", blogRes);
+      const combined = [...blogs].sort((a, b) => {
+        const dateA = new Date(a.date || a.createdAt);
+        const dateB = new Date(b.date || b.createdAt);
+        return dateB - dateA;
+      });
+
+      setAllData(combined);
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu:", err);
+      Alert.alert("Lỗi", "Không thể tải dữ liệu câu lạc bộ.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  React.useEffect(() => {
     if (clubId) fetchAll();
   }, [clubId]);
 
@@ -101,7 +99,13 @@ export default function ClubGroup() {
   );
 
   const canCreateEvent = selectedTab === "event" && joined && isEventCreator;
-
+  const handleDelete = (blogId) => {
+    setRoleList((prev) =>
+      prev.filter((item) => {
+        return item.eventId !== blogId && item.blogId !== blogId;
+      })
+    );
+  };
   return (
     <>
       <Header />
@@ -275,6 +279,7 @@ export default function ClubGroup() {
                 data={item}
                 navigation={navigation}
                 isLeader={isLeader}
+                onDelete={() => fetchAll()}
               />
             )}
             contentContainerStyle={{

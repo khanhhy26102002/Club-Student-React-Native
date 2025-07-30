@@ -10,7 +10,6 @@ export async function fetchBaseResponse(url, config) {
     const response = await API(url, config);
     const raw = response.data;
 
-    // Nếu là mảng → bọc lại như bạn đã làm
     if (Array.isArray(raw)) {
       return {
         status: response.status,
@@ -20,17 +19,15 @@ export async function fetchBaseResponse(url, config) {
       };
     }
 
-    // Nếu là object nhưng không có key "data"
     if (typeof raw === "object" && raw !== null) {
       return {
         status: response.status,
-        data: raw.data !== undefined ? raw.data : raw, // fallback
+        data: raw.data !== undefined ? raw.data : raw,
         message: raw.message || "Success",
         serverStatus: raw.status || response.status
       };
     }
 
-    // Nếu là kiểu khác (string, number,...)
     return {
       status: response.status,
       data: raw,
@@ -38,8 +35,12 @@ export async function fetchBaseResponse(url, config) {
       serverStatus: response.status
     };
   } catch (error) {
+    const apiError = new Error(
+      error?.response?.data?.message || "Lỗi kết nối máy chủ"
+    );
+    apiError.status = error?.response?.data?.status || error?.response?.status;
     console.log("❌ API Error:", error?.response?.data || error.message);
-    throw error;
+    throw apiError; // ✅ Gắn status rồi mới throw
   }
 }
 
