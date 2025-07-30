@@ -5,12 +5,14 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
+
 const formatDate = (isoString) => {
   const date = new Date(isoString);
   return date.toLocaleDateString("vi-VN", {
@@ -23,15 +25,17 @@ const formatDate = (isoString) => {
 const Blog = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+
   useFocusEffect(
     React.useCallback(() => {
       const fetchData = async () => {
         try {
           setLoading(true);
-          const response = await fetchBaseResponse(`/api/blogs`, {
+          const response = await fetchBaseResponse(`/api/blogs/public`, {
             method: "GET"
           });
-          if (!response || response.length === 0) {
+
+          if (!response || !response.data || response.data.length === 0) {
             Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
             setData([]);
           } else {
@@ -43,35 +47,41 @@ const Blog = ({ navigation }) => {
           setLoading(false);
         }
       };
+
       fetchData();
     }, [])
   );
-  
-  const renderItem = ({ item }) => {
-    return (
-      <View style={styles.card}>
-        {item.thumbnail && (
-          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-        )}
-        <View style={styles.cardContent}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.meta}>
-            Đăng bởi <Text style={styles.author}>{item.authorName}</Text> •{" "}
-            {formatDate(item.createdAt)}
-          </Text>
-          <Text style={styles.description} numberOfLines={3}>
-            {item.content}
-          </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate("BlogId", { id: item.blogId })}
-          >
-            <Text style={styles.buttonText}>Xem chi tiết</Text>
-          </TouchableOpacity>
-        </View>
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      {item.thumbnailUrl && (
+        <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
+      )}
+      <View style={styles.cardContent}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.meta}>
+          📝 <Text style={styles.author}>{item.authorName}</Text> •{" "}
+          {formatDate(item.createdAt)}
+        </Text>
+        <Text style={styles.description} numberOfLines={3}>
+          {item.content}
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            navigation.navigate("Club", {
+              screen: "BlogDetail",
+              params: {
+                blogId: item.blogId
+              }
+            })
+          }
+        >
+          <Text style={styles.buttonText}>Xem chi tiết</Text>
+        </TouchableOpacity>
       </View>
-    );
-  };
+    </View>
+  );
 
   return (
     <>
@@ -143,7 +153,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   author: {
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "#2563eb"
   },
   description: {
@@ -164,7 +174,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14
   },
-
   loadingContainer: {
     marginTop: 50,
     justifyContent: "center",

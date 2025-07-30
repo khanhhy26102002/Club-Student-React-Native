@@ -19,6 +19,7 @@ const Homepage = ({ navigation }) => {
   const [user, setUser] = React.useState(null);
   const [data, setData] = React.useState([]);
   const [event, setEvent] = React.useState([]);
+  const [blog, setBlog] = React.useState([]);
   React.useEffect(() => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
@@ -76,7 +77,27 @@ const Homepage = ({ navigation }) => {
     };
     fetchClub();
   }, []);
-
+  React.useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        const response = await fetchBaseResponse(`/api/blogs/public`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          setBlog(response.data);
+        } else {
+          throw new Error(`HTTP Status:${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Alert.alert("Không fetch được data event public");
+      }
+    };
+    fetchClub();
+  }, []);
   return (
     <>
       <Header />
@@ -218,6 +239,64 @@ const Homepage = ({ navigation }) => {
             ))}
           </ScrollView>
         </View>
+        <View style={[styles.sectionRow, { marginTop: 30 }]}>
+          <Text style={styles.sectionTitle}>Bài viết nổi bật</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Club", {
+                screen: "Blog"
+              })
+            }
+          >
+            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ gap: 12, marginTop: 12 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 16,
+              paddingLeft: 16,
+              paddingRight: 16
+            }}
+          >
+            {blog.map((item) => (
+              <TouchableOpacity
+                key={item.blogId}
+                activeOpacity={0.8}
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "BlogId",
+                    params: {
+                      blogId: item.blogId
+                    }
+                  })
+                }
+              >
+                <View style={styles.blogCard}>
+                  <Image
+                    source={{ uri: item.thumbnailUrl }}
+                    style={styles.thumbnail}
+                    resizeMode="cover"
+                  />
+                  <View style={styles.blogCardContent}>
+                    <Text style={styles.blogTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.blogContentPreview} numberOfLines={2}>
+                      {item.content}
+                    </Text>
+                    <Text style={styles.blogInfo}>📝 {item.authorName}</Text>
+                    <Text style={styles.blogInfo}>
+                      🕒 {new Date(item.createdAt).toLocaleString()}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </ScrollView>
     </>
   );
@@ -226,6 +305,37 @@ const Homepage = ({ navigation }) => {
 export default Homepage;
 
 const styles = StyleSheet.create({
+  blogCard: {
+    width: 260,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4
+  },
+  thumbnail: {
+    width: "100%",
+    height: 140
+  },
+  blogCardContent: {
+    padding: 12,
+    gap: 6
+  },
+  blogTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1f2937"
+  },
+  blogContentPreview: {
+    fontSize: 14,
+    color: "#4b5563"
+  },
+  blogInfo: {
+    fontSize: 12,
+    color: "#6b7280"
+  },
   container: {
     paddingHorizontal: 20,
     paddingTop: 20,
