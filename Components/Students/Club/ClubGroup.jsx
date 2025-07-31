@@ -42,7 +42,8 @@ export default function ClubGroup() {
       const [clubRes, roleRes, blogRes] = await Promise.all([
         fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
         fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
-        fetchBaseResponse(`/api/blogs/my-clubs`, { headers })
+        fetchBaseResponse(`/api/blogs/my-clubs`, { headers }),
+        fetchBaseResponse(`/api/events`, { headers })
       ]);
 
       if (clubRes.status === 200) {
