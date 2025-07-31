@@ -4,19 +4,22 @@ import {
   FlatList,
   StyleSheet,
   Text,
-  View
+  View,
+  Image,
+  TouchableOpacity
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// list event của user
+
 const EventRoles = () => {
   const route = useRoute();
   const { eventId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const navigation = useNavigation();
   React.useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -51,66 +54,94 @@ const EventRoles = () => {
         }
       } catch (error) {
         console.error("❌ Lỗi lấy vai trò sự kiện:", error);
-
-        // Nếu server trả response cụ thể
-        if (error.response) {
-          console.log(
-            "📦 Response Error Detail:",
-            JSON.stringify(error.response.data, null, 2)
-          );
-          Alert.alert(
-            "Lỗi từ máy chủ",
-            error.response.data?.message || "Lỗi không xác định từ server"
-          );
-        } else if (error.request) {
-          console.log("📡 Không nhận được phản hồi:", error.request);
-          Alert.alert("Lỗi kết nối", "Không nhận được phản hồi từ máy chủ");
-        } else {
-          console.log("❗ Lỗi khác:", error.message);
-          Alert.alert("Lỗi", error.message || "Lỗi không xác định");
-        }
+        Alert.alert("Lỗi", "Không thể tải vai trò sự kiện.");
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, []);
+
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.name}>👤 {item?.userFullName}</Text>
-      <Text style={styles.role}>🔖 Vai trò: {item?.roleName}</Text>
-      <Text style={styles.date}>
-        🕓 Ngày phân công:{" "}
-        {new Date(item?.assignedAt).toLocaleString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit"
-        })}
-      </Text>
+      <View style={styles.row}>
+        <Image
+          source={{
+            uri:
+              item?.avatarUrl ||
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          }}
+          style={styles.avatar}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>{item?.userFullName}</Text>
+          <Text style={styles.role}>🔖 Vai trò: {item?.roleName}</Text>
+          <Text style={styles.date}>
+            🕓 Ngày phân công:{" "}
+            {new Date(item?.assignedAt).toLocaleString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            })}
+          </Text>
+        </View>
+      </View>
     </View>
   );
+
+  const listData = data ? [data] : [];
+
   return (
     <>
       <Header />
       <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-        <Text style={styles.title}>📋 Danh sách vai trò sự kiện</Text>
+        <Text style={styles.title}>📋 Vai trò của bạn trong sự kiện</Text>
+
+        <TouchableOpacity
+          style={styles.assignButton}
+          onPress={() =>
+            navigation.navigate("Event", {
+              screen: "EventTask",
+              params: {
+                eventId: eventId
+              }
+            })
+          }
+        >
+          <Text style={styles.assignButtonText}>
+            ➕ Tạo task cho sự kiện này
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.assignButton}
+          onPress={() =>
+            navigation.navigate("Event", {
+              screen: "EventAllTask",
+              params: {
+                eventId: eventId
+              }
+            })
+          }
+        >
+          <Text style={styles.assignButtonText}>Xem danh sách task đã tạo</Text>
+        </TouchableOpacity>
         {loading ? (
           <ActivityIndicator
             size="large"
             color="#2563EB"
-            style={{ marginTop: 30 }}
+            style={{ marginTop: 40 }}
           />
-        ) : data?.length === 0 ? (
-          <Text
-            style={{ textAlign: "center", color: "#6B7280", marginTop: 20 }}
-          >
-            Không có thành viên nào được phân vai trong sự kiện này.
-          </Text>
+        ) : listData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              ❗ Bạn chưa được phân vai trong sự kiện này.
+            </Text>
+          </View>
         ) : (
           <FlatList
-            data={data}
+            data={listData}
             keyExtractor={(item) => item.userId.toString()}
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16 }}
@@ -128,35 +159,82 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
     textAlign: "center",
-    color: "#2563EB",
-    marginTop: 12,
-    marginBottom: 16
+    color: "#1D4ED8",
+    marginTop: 16,
+    marginBottom: 12
   },
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 16,
+  assignButton: {
+    backgroundColor: "#3B82F6",
+    marginHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
     marginBottom: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 3
+  },
+  assignButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600"
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 40
+  },
+  emptyText: {
+    color: "#9CA3AF",
+    fontSize: 16,
+    fontStyle: "italic"
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#E5E7EB"
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 16,
+    backgroundColor: "#E0E7FF"
   },
   name: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1E3A8A",
+    color: "#1F2937",
     marginBottom: 6
   },
   role: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "500",
     color: "#374151",
     marginBottom: 4
   },
   date: {
     fontSize: 14,
     color: "#6B7280"
+  },
+  emptyContainer: {
+    marginTop: 50,
+    alignItems: "center",
+    justifyContent: "center"
   }
 });

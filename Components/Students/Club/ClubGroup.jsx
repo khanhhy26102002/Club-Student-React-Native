@@ -39,11 +39,11 @@ export default function ClubGroup() {
     };
 
     try {
-      const [clubRes, roleRes, blogRes] = await Promise.all([
+      const [clubRes, roleRes, blogRes, eventRes] = await Promise.all([
         fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
         fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
         fetchBaseResponse(`/api/blogs/my-clubs`, { headers }),
-        fetchBaseResponse(`/api/events`, { headers })
+        fetchBaseResponse(`/api/events/my-events`, { headers })
       ]);
 
       if (clubRes.status === 200) {
@@ -76,8 +76,16 @@ export default function ClubGroup() {
         ...blog,
         type: "blog"
       }));
+      const eventsRaw = Array.isArray(eventRes)
+        ? eventRes
+        : eventRes.data || [];
+      const events = eventsRaw.map((event) => ({
+        ...event,
+        type: "event"
+      }));
       console.log("BlogRes", blogRes);
-      const combined = [...blogs].sort((a, b) => {
+      console.log("EventRes", eventRes);
+      const combined = [...blogs, ...events].sort((a, b) => {
         const dateA = new Date(a.date || a.createdAt);
         const dateB = new Date(b.date || b.createdAt);
         return dateB - dateA;
@@ -100,13 +108,6 @@ export default function ClubGroup() {
   );
 
   const canCreateEvent = selectedTab === "event" && joined && isEventCreator;
-  const handleDelete = (blogId) => {
-    setRoleList((prev) =>
-      prev.filter((item) => {
-        return item.eventId !== blogId && item.blogId !== blogId;
-      })
-    );
-  };
   return (
     <>
       <Header />

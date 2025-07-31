@@ -35,12 +35,13 @@ export async function fetchBaseResponse(url, config) {
       serverStatus: response.status
     };
   } catch (error) {
-    const apiError = new Error(
-      error?.response?.data?.message || "Lỗi kết nối máy chủ"
-    );
-    apiError.status = error?.response?.data?.status || error?.response?.status;
-    console.log("❌ API Error:", error?.response?.data || error.message);
-    throw apiError; // ✅ Gắn status rồi mới throw
+    const raw = error?.response?.data;
+    console.log("❌ API Error:", raw || error.message);
+
+    throw {
+      status: raw?.status || error?.response?.status || 500,
+      message: raw?.message || "Lỗi kết nối máy chủ"
+    };
   }
 }
 
