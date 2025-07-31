@@ -8,6 +8,7 @@ import React from "react";
 import * as Notifications from "expo-notifications";
 import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
+import { registerForPushNotificationsAsync } from "./utils/notification";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -19,8 +20,19 @@ Notifications.setNotificationHandler({
 const Stack = createNativeStackNavigator();
 export default function App() {
   React.useEffect(() => {
-    registerForPushNotificationAsync();
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        if (token) {
+          console.log("✅ Push Token:", token);
+        } else {
+          console.log("⚠️ Không nhận được token.");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi gọi hàm:", err);
+      });
   }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Main">
@@ -61,12 +73,4 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
-async function registerForPushNotificationAsync() {
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status !== "granted") {
-    return;
-  }
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
-  console.log("Expo token:", token);
 }
