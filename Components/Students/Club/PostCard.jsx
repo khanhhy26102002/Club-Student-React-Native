@@ -47,7 +47,7 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
     } else {
       navigation.navigate("Club", {
         screen: "UpdateBlog",
-        params: { blogId: data.blogId }
+        params: { blogId: data.blogId, clubId: data.clubId }
       });
     }
   };
