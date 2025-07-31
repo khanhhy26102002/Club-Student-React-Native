@@ -18,7 +18,7 @@ import { API_URL } from "@env";
 const API = API_URL;
 const UpdateBlog = ({ navigation }) => {
   const route = useRoute();
-  const { blogId } = route.params;
+  const { blogId, clubId } = route.params;
   const [title, setTitle] = React.useState("");
   const [content, setContent] = React.useState("");
   const [thumbnail, setThumbnail] = React.useState(null);
@@ -154,7 +154,13 @@ const UpdateBlog = ({ navigation }) => {
 
       if (response.ok && result?.status === 200) {
         Alert.alert("🎉 Thành công", "Blog đã được cập nhật");
-        navigation.goBack();
+        navigation.navigate("Club", {
+          screen: "ClubGroup",
+          params: {
+            clubId: clubId,
+            refresh: true // 👈 Gửi cờ refresh về
+          }
+        });
       } else {
         Alert.alert("❌ Lỗi", result?.message || "Tạo blog thất bại.");
       }
