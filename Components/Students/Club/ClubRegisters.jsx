@@ -21,7 +21,7 @@ const ClubRegisters = ({ navigation }) => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse("/api/clubs/my-clubs", {
+      const response = await fetchBaseResponse("/api/memberships", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -65,12 +65,12 @@ const ClubRegisters = ({ navigation }) => {
         ) : (
           data.map((club) => (
             <TouchableOpacity
-              key={club.clubId}
+              key={club.membershipId}
               onPress={() =>
                 navigation.navigate("Club", {
-                  screen: "ClubGroup",
+                  screen: "ClubRegisterId",
                   params: {
-                    clubId: club.clubId
+                    membershipId: club.membershipId
                   }
                 })
               }
@@ -84,9 +84,10 @@ const ClubRegisters = ({ navigation }) => {
                   style={styles.clubImage}
                 />
                 <View style={styles.clubInfo}>
-                  <Text style={styles.clubName}>{club.name}</Text>
+                  <Text style={styles.clubName}>{club.clubName}</Text>
                   <Text style={styles.description}>
-                    {stripMarkdown(club.description)}
+                    Ngày tham gia:{" "}
+                    {new Date(club.joinDate).toLocaleDateString("vi-VN")}
                   </Text>
                 </View>
               </View>
