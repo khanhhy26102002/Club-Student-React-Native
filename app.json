@@ -4,7 +4,7 @@
     "slug": "final-project-mobile-javascript",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/FPT_logo_2010.svg.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "yourapp",
@@ -25,10 +25,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ledangkhanhhy.finalprojectmobilejavascript",
-      "config": {
-        "cleartextTraffic": true
-      }
+      "package": "com.ledangkhanhhy.finalprojectmobilejavascript"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,9 +36,7 @@
       },
       "API_URL": "http://103.90.226.175:8080/api"
     },
-    "plugins": [
-      "expo-asset"
-    ],
+    "plugins": ["expo-asset"],
     "owner": "ledangkhanhhy"
   }
 }
