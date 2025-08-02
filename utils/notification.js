@@ -1,41 +1,38 @@
-// utils/notification.js
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
-import { Platform } from "react-native";
-
 export async function registerForPushNotificationsAsync() {
-  let token;
-  console.log("🔍 Bắt đầu đăng ký push notification...");
+  console.log("🔔 Bắt đầu đăng ký nhận Push Notification...");
 
+  // ✅ Kiểm tra nếu không phải thiết bị thật (Expo Go không hỗ trợ push)
   if (!Constants.isDevice) {
-    alert("Bạn phải dùng thiết bị thật để nhận thông báo");
-    console.log("❌ Không phải thiết bị thật");
-    return;
-  }
-
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  console.log("📋 Quyền hiện tại:", existingStatus);
-
-  let finalStatus = existingStatus;
-
-  if (existingStatus !== "granted") {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-    console.log("📥 Quyền sau khi yêu cầu:", status);
-  }
-
-  if (finalStatus !== "granted") {
-    alert("Không có quyền gửi thông báo!");
-    console.log("❌ Không có quyền");
-    return;
+    console.warn("⚠️ Phải dùng thiết bị thật để nhận push notification.");
+    return null;
   }
 
   try {
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log("✅ Expo Push Token:", token);
-  } catch (err) {
-    console.error("❌ Lỗi khi lấy token:", err);
-  }
+    // ✅ Kiểm tra quyền hiện tại
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
 
-  return token;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== "granted") {
+      console.warn("🚫 Không được cấp quyền nhận thông báo.");
+      return null;
+    }
+
+    // ✅ Lấy Expo Push Token
+    const { data: token } = await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig.extra.eas.projectId,
+    });
+
+    console.log("✅ Đã lấy được Expo Push Token:", token);
+    return token;
+  } catch (error) {
+    console.error("❌ Lỗi khi đăng ký push notification:", error);
+    return null;
+  }
 }

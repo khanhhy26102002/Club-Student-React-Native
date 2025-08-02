@@ -31,12 +31,14 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "API_URL": "http://103.90.226.175:8080/api",
       "eas": {
-        "projectId": "3c9eb8cb-7e7a-4569-8ff8-7d71d0f7e11e"
-      },
-      "API_URL": "http://103.90.226.175:8080/api"
+        "projectId": "760af945-45c1-498c-b8de-aca0c9fcb6a4"
+      }
     },
-    "plugins": ["expo-asset"],
+    "plugins": [
+      "expo-asset"
+    ],
     "owner": "ledangkhanhhy"
   }
 }

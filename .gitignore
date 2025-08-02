@@ -36,5 +36,3 @@ yarn-error.*
 *.tsbuildinfo
 # ignore all .txt files
 *.txt
-/android
-/ios
