@@ -8,9 +8,9 @@ export async function registerForPushNotificationsAsync() {
   console.log("🔍 Bắt đầu đăng ký push notification...");
 
   if (!Constants.isDevice) {
-    alert("Bạn phải dùng thiết bị thật để nhận thông báo");
-    console.log("❌ Không phải thiết bị thật");
-    return;
+    console.warn(
+      "⚠️ Không phải thiết bị thật – một số chức năng có thể không hoạt động đúng"
+    );
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
