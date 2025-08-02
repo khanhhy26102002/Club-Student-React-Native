@@ -1,19 +1,16 @@
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
+
 export async function registerForPushNotificationsAsync() {
   console.log("🔔 Bắt đầu đăng ký nhận Push Notification...");
 
-  // ✅ Kiểm tra nếu không phải thiết bị thật (Expo Go không hỗ trợ push)
+  // ⚠️ Cảnh báo nhưng KHÔNG return để vẫn tiếp tục trên máy giả
   if (!Constants.isDevice) {
-    console.warn(
-      "⚠️ Không phải thiết bị thật – một số chức năng có thể không hoạt động đúng"
-    );
-    console.warn("⚠️ Phải dùng thiết bị thật để nhận push notification.");
-    return null;
+    console.warn("⚠️ Đây không phải thiết bị thật – một số chức năng có thể không hoạt động đúng.");
+    // ❗️ KHÔNG return null ở đây
   }
 
   try {
-    // ✅ Kiểm tra quyền hiện tại
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
@@ -29,8 +26,10 @@ export async function registerForPushNotificationsAsync() {
 
     // ✅ Lấy Expo Push Token
     const { data: token } = await Notifications.getExpoPushTokenAsync({
-      projectId: Constants.expoConfig.extra.eas.projectId,
+      projectId: Constants.expoConfig?.extra?.eas?.projectId,
+      
     });
+console.log("ℹ️ projectId:", Constants.expoConfig?.extra?.eas?.projectId);
 
     console.log("✅ Đã lấy được Expo Push Token:", token);
     return token;
