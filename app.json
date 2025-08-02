@@ -39,6 +39,12 @@
     "plugins": [
       "expo-asset"
     ],
-    "owner": "ledangkhanhhy"
+    "owner": "ledangkhanhhy",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/760af945-45c1-498c-b8de-aca0c9fcb6a4"
+    }
   }
 }
