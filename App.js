@@ -8,7 +8,7 @@ import React from "react";
 import * as Notifications from "expo-notifications";
 import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
-import { registerForPushNotificationsAsync } from "./utils/notification";
+import { getFirebaseToken } from "./getFirebaseToken";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -20,7 +20,7 @@ Notifications.setNotificationHandler({
 const Stack = createNativeStackNavigator();
 export default function App() {
   React.useEffect(() => {
-    registerForPushNotificationsAsync()
+    getFirebaseToken()
       .then((token) => {
         if (token) {
           console.log("✅ Push Token:", token);
@@ -31,8 +31,7 @@ export default function App() {
       .catch((err) => {
         console.error("❌ Lỗi khi gọi hàm:", err);
       });
-  }, []);
-
+  });
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Main">

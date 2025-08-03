@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "852344065809",
+    "project_id": "clubsync-72327",
+    "storage_bucket": "clubsync-72327.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852344065809:android:750cad25754f8311c9c6b0",
+        "android_client_info": {
+          "package_name": "com.ledangkhanhhy.finalprojectmobilejavascript"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtOXfMLkgd-NxnU0Fbqx2XJ19a38stt1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

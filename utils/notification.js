@@ -6,12 +6,15 @@ export async function registerForPushNotificationsAsync() {
 
   // ⚠️ Cảnh báo nhưng KHÔNG return để vẫn tiếp tục trên máy giả
   if (!Constants.isDevice) {
-    console.warn("⚠️ Đây không phải thiết bị thật – một số chức năng có thể không hoạt động đúng.");
+    console.warn(
+      "⚠️ Đây không phải thiết bị thật – một số chức năng có thể không hoạt động đúng."
+    );
     // ❗️ KHÔNG return null ở đây
   }
 
   try {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== "granted") {
@@ -26,11 +29,10 @@ export async function registerForPushNotificationsAsync() {
 
     // ✅ Lấy Expo Push Token
     const { data: token } = await Notifications.getExpoPushTokenAsync({
-      projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      
+      projectId: Constants.expoConfig.extra.eas.projectId
     });
-console.log("ℹ️ projectId:", Constants.expoConfig?.extra?.eas?.projectId);
-
+    console.log("ℹ️ projectId:", Constants.expoConfig?.extra?.eas?.projectId);
+    console.log(Constants.expoConfig);
     console.log("✅ Đã lấy được Expo Push Token:", token);
     return token;
   } catch (error) {
