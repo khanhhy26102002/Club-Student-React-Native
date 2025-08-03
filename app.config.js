@@ -6,7 +6,8 @@ export default {
     runtimeVersion: "1.0.0",
     android: {
       package: "com.ledangkhanhhy.finalprojectmobilejavascript",
-      googleServicesFile: "./android/app/google-services.json"
+      googleServicesFile: "./google-services.json",
+      versionCode: 1,
     },
     extra: {
       eas: {
