@@ -28,7 +28,7 @@ const BlogId = () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse(
-          `/api/blogs/leader-club/${blogId}`,
+          `/api/blogs/public/${blogId}`,
           {
             method: "GET",
             headers: {

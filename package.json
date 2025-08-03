@@ -64,13 +64,13 @@
     "react-icons": "^5.5.0",
     "react-native": "0.79.5",
     "react-native-dotenv": "^3.4.11",
-    "react-native-gesture-handler": "2.24.0",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-image-picker": "^8.2.1",
     "react-native-markdown-display": "^7.0.2",
     "react-native-pager-view": "6.7.1",
     "react-native-qrcode-svg": "^6.3.15",
-    "react-native-reanimated": "3.17.4",
+    "react-native-reanimated": "~3.17.4",
     "react-native-reanimated-carousel": "^4.0.2",
     "react-native-render-html": "^6.3.4",
     "react-native-responsive-dimensions": "^3.1.1",
@@ -83,7 +83,8 @@
     "react-native-webview": "13.13.5",
     "react-redux": "^9.2.0",
     "remove-markdown": "^0.6.2",
-    "scheduler": "^0.26.0"
+    "scheduler": "^0.26.0",
+    "undefined": "react-native-masked-view/masked-view"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

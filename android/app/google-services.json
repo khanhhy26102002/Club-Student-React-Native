@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "852344065809",
-    "project_id": "clubsync-72327",
-    "storage_bucket": "clubsync-72327.firebasestorage.app"
+    "project_number": "229693370621",
+    "project_id": "clubsystem-c2b4f",
+    "storage_bucket": "clubsystem-c2b4f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:852344065809:android:750cad25754f8311c9c6b0",
+        "mobilesdk_app_id": "1:229693370621:android:9ee9982c4e6855a3e50e94",
         "android_client_info": {
           "package_name": "com.ledangkhanhhy.finalprojectmobilejavascript"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDtOXfMLkgd-NxnU0Fbqx2XJ19a38stt1I"
+          "current_key": "AIzaSyBGV_6GiDH0GfmVHvHWSGFWgIj63silOac"
         }
       ],
       "services": {
