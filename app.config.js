@@ -7,12 +7,12 @@ export default {
     android: {
       package: "com.ledangkhanhhy.finalprojectmobilejavascript",
       googleServicesFile: "./google-services.json",
-      versionCode: 1,
+      versionCode: 1
     },
     extra: {
       eas: {
-        projectId: "d2e79d09-e794-4f88-9128-c43c0b2e84d5"
+        projectId: "381e44fe-e63e-49a9-9f1c-08e32118af09"
       }
     }
   }
-}
+};
