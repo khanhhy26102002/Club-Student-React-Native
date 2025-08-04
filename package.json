@@ -19,7 +19,6 @@
     "@react-native-community/datetimepicker": "8.4.1",
     "@react-native-firebase/app": "^22.4.0",
     "@react-native-firebase/messaging": "^22.4.0",
-    "@react-native-masked-view/masked-view": "^0.3.2",
     "@react-native-picker/picker": "^2.11.1",
     "@react-native/virtualized-lists": "^0.72.8",
     "@react-navigation/bottom-tabs": "^7.3.13",
@@ -83,8 +82,7 @@
     "react-native-webview": "13.13.5",
     "react-redux": "^9.2.0",
     "remove-markdown": "^0.6.2",
-    "scheduler": "^0.26.0",
-    "undefined": "react-native-masked-view/masked-view"
+    "scheduler": "^0.26.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

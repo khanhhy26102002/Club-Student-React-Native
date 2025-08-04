@@ -14,6 +14,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { stripMarkdown } from "../../../stripmarkdown";
+import { Ionicons } from "@expo/vector-icons";
 
 const ClubId = ({ navigation }) => {
   const route = useRoute();
@@ -160,6 +161,13 @@ const ClubId = ({ navigation }) => {
   return (
     <>
       <Header />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={20} color="#000" />
+        <Text style={styles.backText}>Quay về</Text>
+      </TouchableOpacity>
       <ScrollView style={{ flex: 1, backgroundColor: "#f0f9ff" }}>
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -247,6 +255,18 @@ const ClubId = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  backButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 12,
+  backgroundColor: "#e0f2fe",
+},
+backText: {
+  marginLeft: 6,
+  fontSize: 16,
+  color: "#000",
+  fontWeight: "500"
+},
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -316,6 +336,5 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 });
-
 
 export default ClubId;
