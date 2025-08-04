@@ -7,16 +7,18 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
-  Dimensions
+  Dimensions,
+  TouchableOpacity
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 const screenWidth = Dimensions.get("window").width;
 
-const BlogId = () => {
+const BlogId = ({ navigation }) => {
   const route = useRoute();
   const { blogId } = route.params;
 
@@ -44,7 +46,7 @@ const BlogId = () => {
           setData(response.data);
         }
       } catch (error) {
-        console.error("Error:",error);
+        console.error("Error:", error);
         if (error?.status === 3001) {
           Alert.alert(
             "🚫 Không thể truy cập",
@@ -79,6 +81,13 @@ const BlogId = () => {
   return (
     <>
       <Header />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+        <Text style={styles.backText}>Quay về</Text>
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Thumbnail đẹp như banner */}
         {data.thumbnailUrl && (
@@ -118,6 +127,18 @@ const BlogId = () => {
 export default BlogId;
 
 const styles = StyleSheet.create({
+  backButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  backgroundColor: "#f2f2f2",
+},
+backText: {
+  marginLeft: 8,
+  fontSize: 16,
+  color: "#333",
+},
   container: {
     backgroundColor: "#f2f4f8",
     paddingBottom: 40

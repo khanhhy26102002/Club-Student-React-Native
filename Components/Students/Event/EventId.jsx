@@ -14,6 +14,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { stripMarkdown } from "../../../stripmarkdown";
+import { Ionicons } from "@expo/vector-icons";
 
 const EventId = ({ navigation }) => {
   const route = useRoute();
@@ -102,6 +103,13 @@ const EventId = ({ navigation }) => {
   return (
     <View style={styles.wrapper}>
       <Header />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={20} color="#000" />
+        <Text style={styles.backText}>Quay về</Text>
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Banner */}
         <Image
@@ -269,6 +277,18 @@ const EventId = ({ navigation }) => {
 export default EventId;
 
 const styles = StyleSheet.create({
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#e0f2fe"
+  },
+  backText: {
+    marginLeft: 6,
+    fontSize: 16,
+    color: "#000",
+    fontWeight: "500"
+  },
   wrapper: {
     flex: 1,
     backgroundColor: "#F9FAFB"
