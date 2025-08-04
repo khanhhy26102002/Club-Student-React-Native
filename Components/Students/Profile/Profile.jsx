@@ -118,7 +118,7 @@ const Profile = () => {
               color="#FF9800"
             /> */}
 
-            <ActionItem
+            {/* <ActionItem
               icon="bar-chart-outline"
               label="Quản lí sự kiện"
               onPress={() =>
@@ -127,7 +127,7 @@ const Profile = () => {
                 })
               }
               color="#f44336"
-            />
+            /> */}
             {/* <ActionItem
               icon="albums-outline"
               label="Đăng kí câu lạc bộ của tôi"
@@ -146,15 +146,18 @@ const Profile = () => {
                 })
               }
             />
-            <ActionItem
+            {/* <ActionItem
               icon="ticket-outline"
               label="Đăng kí sự kiện"
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "History"
+                  screen: "History",
+                  params: {
+                    userId: user.userId
+                  }
                 })
               }
-            />
+            /> */}
             {/* <ActionItem
               icon="list-circle-outline"
               label="Sự kiện của tôi"
