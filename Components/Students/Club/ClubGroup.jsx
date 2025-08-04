@@ -39,11 +39,10 @@ export default function ClubGroup() {
     };
 
     try {
-      const [clubRes, roleRes, blogRes, eventRes] = await Promise.all([
+      // Gọi club info và roles trước
+      const [clubRes, roleRes] = await Promise.all([
         fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
-        fetchBaseResponse(`/api/clubs/my-club-roles`, { headers }),
-        fetchBaseResponse(`/api/blogs/my-clubs`, { headers }),
-        fetchBaseResponse(`/api/events/my-events`, { headers })
+        fetchBaseResponse(`/api/clubs/my-club-roles`, { headers })
       ]);
 
       if (clubRes.status === 200) {
@@ -71,20 +70,38 @@ export default function ClubGroup() {
         setIsLeader(isClubLeader);
         setIsEventCreator(canCreateEvent);
       }
+
+      // Gọi blog API tùy theo vai trò
+      const blogUrl = isClubLeader
+        ? `/api/blogs/leader-club`
+        : `/api/blogs/my-clubs`;
+      const blogRes = await fetchBaseResponse(blogUrl, { headers });
+
+      // Gọi event sau cùng
+      const eventRes = await fetchBaseResponse(`/api/events/my-events`, {
+        headers
+      });
+
       const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
-      const blogs = blogsRaw.map((blog) => ({
-        ...blog,
-        type: "blog"
-      }));
+
+      // Lọc blog theo clubId
+      const blogs = blogsRaw
+        .filter((blog) => blog.clubId === clubId)
+        .map((blog) => ({
+          ...blog,
+          type: "blog"
+        }));
+
       const eventsRaw = Array.isArray(eventRes)
         ? eventRes
         : eventRes.data || [];
-      const events = eventsRaw.map((event) => ({
-        ...event,
-        type: "event"
-      }));
-      console.log("BlogRes", blogRes);
-      console.log("EventRes", eventRes);
+      const events = eventsRaw
+        .filter((event) => event.clubId === clubId) // Thêm điều kiện lọc nếu cần
+        .map((event) => ({
+          ...event,
+          type: "event"
+        }));
+
       const combined = [...blogs, ...events].sort((a, b) => {
         const dateA = new Date(a.date || a.createdAt);
         const dateB = new Date(b.date || b.createdAt);
@@ -99,6 +116,7 @@ export default function ClubGroup() {
       setLoading(false);
     }
   };
+
   React.useEffect(() => {
     if (clubId) fetchAll();
   }, [clubId]);
