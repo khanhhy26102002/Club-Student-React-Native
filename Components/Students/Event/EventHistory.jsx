@@ -10,26 +10,31 @@ import {
 } from "react-native";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import QRCode from "react-native-qrcode-svg";
 
 const EventHistory = () => {
+  const navigation = useNavigation();
   const route = useRoute();
   const { userId } = route.params;
+
   const [statusFilter, setStatusFilter] = React.useState("COMPLETED");
   const [registeredEvents, setRegisteredEvents] = React.useState([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
   const [qrValue, setQrValue] = React.useState(null);
   const [showQRModal, setShowQRModal] = React.useState(false);
+  const [firstLoad, setFirstLoad] = React.useState(true);
 
   const fetchEventsByStatus = async (status) => {
     setLoadingEvents(true);
     const token = await AsyncStorage.getItem("jwt");
 
     if (!token) {
-      Alert.alert("Lỗi", "Không tìm thấy token");
+      if (!firstLoad) {
+        Alert.alert("Lỗi", "Không tìm thấy token");
+      }
       return;
     }
 
@@ -47,22 +52,31 @@ const EventHistory = () => {
       if (response.status === 200) {
         setRegisteredEvents(response.data || []);
       } else if (response.status === 5008) {
-        Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
         setRegisteredEvents([]);
+        if (!firstLoad) {
+          Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
+        }
       } else {
-        Alert.alert("Lỗi", response.message || "Không lấy được sự kiện");
+        if (!firstLoad) {
+          Alert.alert("Lỗi", response.message || "Không lấy được sự kiện");
+        }
       }
     } catch (error) {
       console.error("❌ Fetch error:", error);
-      Alert.alert("Lỗi", error.message || "Không thể kết nối máy chủ");
+      if (!firstLoad) {
+        Alert.alert("Lỗi", error.message || "Không thể kết nối máy chủ");
+      }
     } finally {
       setLoadingEvents(false);
+      if (firstLoad) setFirstLoad(false);
     }
   };
 
   React.useEffect(() => {
-    fetchEventsByStatus(statusFilter);
-  }, [statusFilter]);
+    if (userId) {
+      fetchEventsByStatus(statusFilter);
+    }
+  }, [statusFilter, userId]);
 
   const handleFetchQR = async (eventId) => {
     try {
@@ -153,6 +167,14 @@ const EventHistory = () => {
                       setQrValue(null);
                       await handleFetchQR(event.eventId);
                       setShowQRModal(true);
+                    } else if (event.paymentStatus === "PENDING") {
+                      navigation.navigate("Event", {
+                        screen: "EventRegistration",
+                        params: {
+                          eventId: event.eventId,
+                          title: event.title
+                        }
+                      });
                     } else {
                       Alert.alert(
                         "Thông báo",

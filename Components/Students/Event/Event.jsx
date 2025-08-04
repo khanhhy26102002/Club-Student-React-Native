@@ -96,12 +96,12 @@ const Event = ({ navigation }) => {
         </View>
 
         {/* Search */}
-        <TextInput
+        {/* <TextInput
           placeholder="🔍 Tìm kiếm sự kiện..."
           value={searchTerm}
           onChangeText={setSearchTerm}
           style={styles.searchInput}
-        />
+        /> */}
 
         {/* Loading or Empty */}
         {loading ? (
