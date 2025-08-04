@@ -44,6 +44,7 @@ const LoginPage = ({ navigation }) => {
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("userId", userId);
+
         setRoleName(roleName);
         if (eventId) {
           const role = await checkEventRole(eventId);

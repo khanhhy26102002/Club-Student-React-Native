@@ -3,25 +3,27 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  Alert
+  Alert,
+  Modal
 } from "react-native";
 import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import QRCode from "react-native-qrcode-svg";
 
-const EventHistory = ({ navigation }) => {
+const EventHistory = () => {
   const route = useRoute();
   const { userId } = route.params;
   const [statusFilter, setStatusFilter] = React.useState("COMPLETED");
   const [registeredEvents, setRegisteredEvents] = React.useState([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
-  const [eventId, setEventId] = React.useState("");
-  const [selectedEvent, setSelectedEvent] = React.useState(null);
+  const [qrValue, setQrValue] = React.useState(null);
+  const [showQRModal, setShowQRModal] = React.useState(false);
+
   const fetchEventsByStatus = async (status) => {
     setLoadingEvents(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -42,27 +44,17 @@ const EventHistory = ({ navigation }) => {
         }
       );
 
-      // ✅ Thành công
       if (response.status === 200) {
-        console.log("✅ Registered events:", response.data);
         setRegisteredEvents(response.data || []);
       } else if (response.status === 5008) {
-        // 🔁 Có thể không vào đây, vì bạn đã throw trong fetchBaseResponse
         Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
         setRegisteredEvents([]);
       } else {
         Alert.alert("Lỗi", response.message || "Không lấy được sự kiện");
       }
     } catch (error) {
-      // ✅ Bắt lỗi đã được throw từ fetchBaseResponse
       console.error("❌ Fetch error:", error);
-
-      if (error.status === 5008) {
-        Alert.alert("Thông báo", "Bạn chưa đăng ký sự kiện nào.");
-        setRegisteredEvents([]);
-      } else {
-        Alert.alert("Lỗi", error.message || "Không thể kết nối máy chủ");
-      }
+      Alert.alert("Lỗi", error.message || "Không thể kết nối máy chủ");
     } finally {
       setLoadingEvents(false);
     }
@@ -72,13 +64,37 @@ const EventHistory = ({ navigation }) => {
     fetchEventsByStatus(statusFilter);
   }, [statusFilter]);
 
-  const handleFetchQR = () => {
-    if (!eventId) {
-      Alert.alert("Lỗi", "Vui lòng nhập mã sự kiện.");
-      return;
-    }
+  const handleFetchQR = async (eventId) => {
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        Alert.alert("Lỗi", "Không tìm thấy token.");
+        return;
+      }
 
-    Alert.alert("QR", `Lấy QR cho sự kiện ID: ${eventId}`);
+      const response = await fetchBaseResponse(
+        `/api/registrations/myqr?eventId=${eventId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        let qrData = response.data;
+        if (typeof qrData === "object" && qrData.image) {
+          qrData = qrData.image;
+        }
+        setQrValue(qrData);
+      } else {
+        Alert.alert("Lỗi", response.message || "Không thể lấy mã QR.");
+      }
+    } catch (error) {
+      console.error("❌ QR error:", error);
+      Alert.alert("Lỗi", error.message || "Lỗi máy chủ khi lấy mã QR.");
+    }
   };
 
   return (
@@ -95,7 +111,10 @@ const EventHistory = ({ navigation }) => {
                 styles.filterButton,
                 statusFilter === status && styles.activeFilterButton
               ]}
-              onPress={() => setStatusFilter(status)}
+              onPress={() => {
+                setStatusFilter(status);
+                setQrValue(null);
+              }}
             >
               <Text
                 style={[
@@ -126,59 +145,58 @@ const EventHistory = ({ navigation }) => {
         ) : (
           <View style={{ width: "100%", marginBottom: 20 }}>
             {registeredEvents.map((event) => (
-              <TouchableOpacity
-                key={event.eventId}
-                style={styles.eventCard}
-                onPress={() => {
-                  setEventId(String(event.eventId));
-                  setSelectedEvent(event); // lưu cả sự kiện để kiểm tra status
-                  navigation.navigate("Event", {
-                    screen: "EventRegistration",
-                    params: {
-                      eventId: event.eventId,
-                      title: event.title
+              <View key={event.eventId} style={styles.eventCardWrapper}>
+                <TouchableOpacity
+                  style={styles.eventCard}
+                  onPress={async () => {
+                    if (event.paymentStatus === "COMPLETED") {
+                      setQrValue(null);
+                      await handleFetchQR(event.eventId);
+                      setShowQRModal(true);
+                    } else {
+                      Alert.alert(
+                        "Thông báo",
+                        "Sự kiện chưa thanh toán hoặc chưa hoàn tất."
+                      );
                     }
-                  });
-                }}
-              >
-                <Text style={styles.eventTitle}>📌 {event.title}</Text>
-                <Text style={styles.eventDate}>
-                  🕓 {new Date(event.eventDate).toLocaleString("vi-VN")}
-                </Text>
-                <Text style={styles.eventLocation}>📍 {event.location}</Text>
-              </TouchableOpacity>
+                  }}
+                >
+                  <Text style={styles.eventTitle}>📌 {event.title}</Text>
+                  <Text style={styles.eventDate}>
+                    🕓 {new Date(event.eventDate).toLocaleString("vi-VN")}
+                  </Text>
+                  <Text style={styles.eventLocation}>📍 {event.location}</Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
         )}
-
-        {selectedEvent ? (
-          selectedEvent.status === "COMPLETED" ? (
-            <>
-              <Text style={styles.label}>🔍 Mã QR của sự kiện đã tham gia</Text>
-              <TouchableOpacity style={styles.button} onPress={handleFetchQR}>
-                <Text style={styles.buttonText}>
-                  📥 Lấy mã QR cho sự kiện #{selectedEvent.eventId}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <Text style={styles.label} color="red">
-              ❗ Bạn chưa thanh toán hoặc sự kiện chưa hoàn tất nên không thể
-              lấy mã QR.
-            </Text>
-          )
-        ) : (
-          <Text style={styles.label}>📌 Bấm vào một sự kiện để hiện mã QR</Text>
-        )}
-
-        {loadingEvents && (
-          <ActivityIndicator
-            size="large"
-            color="#007bff"
-            style={{ marginTop: 20 }}
-          />
-        )}
       </ScrollView>
+
+      {/* Modal QR */}
+      <Modal
+        visible={showQRModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowQRModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>📎 Mã QR sự kiện của bạn</Text>
+            {qrValue ? (
+              <QRCode value={qrValue} size={200} />
+            ) : (
+              <Text>Đang tải mã QR...</Text>
+            )}
+            <TouchableOpacity
+              onPress={() => setShowQRModal(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Đóng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -223,11 +241,13 @@ const styles = StyleSheet.create({
   activeFilterButtonText: {
     color: "#fff"
   },
+  eventCardWrapper: {
+    marginBottom: 20
+  },
   eventCard: {
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 16,
-    marginBottom: 14,
     width: "100%",
     shadowColor: "#000",
     shadowOpacity: 0.08,
@@ -249,36 +269,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888"
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginTop: 20,
-    marginBottom: 10,
-    color: "#333"
-  },
-  input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    marginBottom: 12
-  },
-  button: {
-    backgroundColor: "#1f3c88",
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600"
-  },
   emptyText: {
     textAlign: "center",
     color: "#999",
     fontStyle: "italic",
     marginBottom: 10
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 16,
+    alignItems: "center",
+    width: "80%",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 6
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#1f3c88"
+  },
+  closeButton: {
+    marginTop: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    backgroundColor: "#1f3c88",
+    borderRadius: 10
+  },
+  closeButtonText: {
+    color: "white",
+    fontWeight: "600"
   }
 });
