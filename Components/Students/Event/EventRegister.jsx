@@ -21,11 +21,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import QuillEditor from "../../QuillEditor";
 import { useRoute } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
 import { API_URL } from "@env";
 import dayjs from "dayjs";
-const EventRegister = () => {
+const EventRegister = ({ navigation }) => {
   const route = useRoute();
   const [title, setTitle] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -136,6 +134,12 @@ const EventRegister = () => {
 
       if (responseJson.message === "Event creation request successful") {
         Alert.alert("🎉 Thành công", "Tạo sự kiện thành công chờ admin duyệt");
+        navigation.navigate("Club", {
+          screen: "ClubGroup",
+          params: {
+            clubId
+          }
+        });
       } else {
         Alert.alert("❌", responseJson.message || "Có lỗi xảy ra.");
       }

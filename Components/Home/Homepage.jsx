@@ -51,6 +51,25 @@ const Homepage = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [event, setEvent] = React.useState([]);
   const [blog, setBlog] = React.useState([]);
+  const [myClubRoles, setMyClubRoles] = React.useState([]);
+  React.useEffect(() => {
+    const fetchMyClubRoles = async () => {
+      try {
+        const token = await AsyncStorage.getItem("jwt");
+        const response = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.status === 200) {
+          setMyClubRoles(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching my club roles:", error);
+      }
+    };
+    fetchMyClubRoles();
+  }, []);
 
   React.useEffect(() => {
     const fetchUser = async () => {
@@ -298,13 +317,49 @@ const Homepage = ({ navigation }) => {
           />
           <GridClubList
             data={data}
-            onPressItem={(clubId) =>
-              navigation.navigate("Club", {
-                screen: "ClubId",
-                params: { clubId }
-              })
-            }
+            onPressItem={async (clubId) => {
+              const matched = myClubRoles.find(
+                (role) => role.clubId === clubId
+              );
+
+              const token = await AsyncStorage.getItem("jwt");
+              try {
+                const response = await fetchBaseResponse(
+                  `/api/memberships/status?clubId=${clubId}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  }
+                );
+
+                const isMember = response.data;
+
+                if (
+                  isMember === "APPROVED" ||
+                  (isMember === null &&
+                    ["CLUBLEADER", "MEMBER"].includes(matched?.role))
+                ) {
+                  navigation.navigate("Club", {
+                    screen: "ClubGroup",
+                    params: { clubId }
+                  });
+                } else {
+                  navigation.navigate("Club", {
+                    screen: "ClubId",
+                    params: { clubId }
+                  });
+                }
+              } catch (error) {
+                console.error("Failed to check membership status:", error);
+                Alert.alert(
+                  "Lỗi",
+                  "Bạn phải đăng nhập mới đăng ký được câu lạc bộ"
+                );
+              }
+            }}
           />
+
           <SectionHeader
             title="Sự kiện nổi bật"
             onPressAll={() =>

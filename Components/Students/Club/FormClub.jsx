@@ -26,7 +26,7 @@ import * as FileSystem from "expo-file-system";
 import { Picker } from "@react-native-picker/picker";
 import { API_URL } from "@env";
 const screenWidth = Dimensions.get("window").width;
-const FormClub = () => {
+const FormClub = ({ navigation }) => {
   const scrollViewRef = React.useRef(null);
   const quillRef = React.useRef(null);
   const [name, setName] = React.useState("");
@@ -130,6 +130,9 @@ const FormClub = () => {
         "Your request to create the club has been successfully submitted and is currently awaiting approval."
       ) {
         Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
+        navigation.navigate("Club", {
+          screen: "ClubNo"
+        });
       } else if (
         responseJson.message ===
         "You have already submitted a club creation request"
@@ -449,8 +452,7 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: 50,
-    marginLeft: -10,
-
+    marginLeft: -10
   },
   label: {
     fontSize: 16,

@@ -86,7 +86,9 @@ const BlogId = ({ navigation }) => {
         onPress={() => navigation.navigate("Home")}
       >
         <Ionicons name="arrow-back" size={24} color="black" />
-        <Text style={styles.backText}>Quay về</Text>
+        <Text style={[styles.backText, { marginLeft: 25, marginTop: -22 }]}>
+          Quay về trang chủ
+        </Text>
       </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Thumbnail đẹp như banner */}
@@ -128,17 +130,23 @@ export default BlogId;
 
 const styles = StyleSheet.create({
   backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
+    backgroundColor: "#f0f0f0", // hoặc màu theo chủ đề
     paddingVertical: 10,
-    backgroundColor: "#f2f2f2",
-    paddingTop: 30
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignSelf: "flex-start", // để nó không chiếm toàn bộ chiều ngang
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+    marginBottom: 20
   },
   backText: {
-    marginLeft: 8,
+    color: "#333",
     fontSize: 16,
-    color: "#333"
+    fontWeight: "500"
   },
   container: {
     backgroundColor: "#f2f4f8",
