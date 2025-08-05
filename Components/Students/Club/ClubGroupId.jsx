@@ -5,6 +5,7 @@ import {
   View,
   ActivityIndicator,
   ScrollView,
+  Image,
   TouchableOpacity
 } from "react-native";
 import React from "react";
@@ -17,12 +18,12 @@ const ClubGroupId = ({ navigation }) => {
   const [loading, setLoading] = React.useState(true);
   const [data, setData] = React.useState(null);
   const route = useRoute();
-  const params = route.params;
-  const { clubId, userId } = params;
+  const { clubId, userId } = route.params;
+  const [clubRole, setClubRole] = React.useState(null);
 
   React.useEffect(() => {
-    setLoading(true);
     const fetchData = async () => {
+      setLoading(true);
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse(
@@ -57,48 +58,127 @@ const ClubGroupId = ({ navigation }) => {
 
     fetchData();
   }, [clubId, userId]);
+  React.useEffect(() => {
+    const fetchRoles = async () => {
+      const token = await AsyncStorage.getItem("jwt");
+      try {
+        const response = await fetchBaseResponse("/api/clubs/my-club-roles", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+        if (response.status === 200) {
+          const roles = response.data;
+          const matched = roles.find(
+            (item) => item.clubId === clubId && item.userId === userId
+          );
+          setClubRole(matched?.roleName || null);
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API role:", error.message);
+      }
+    };
+
+    if (data) {
+      fetchRoles();
+    }
+  }, [data]);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0f172a" />
+        </View>
+      </>
+    );
+  }
+
+  if (!data) {
+    return (
+      <>
+        <Header />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.noData}>
+            Không tìm thấy thông tin thành viên.
+          </Text>
+        </View>
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>👤 Thông tin thành viên</Text>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>← Quay lại</Text>
-        </TouchableOpacity>
-        {loading ? (
-          <ActivityIndicator size="large" color="#0f172a" />
-        ) : data ? (
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text style={styles.label}>🆔 Mã số sinh viên:</Text>
-              <Text style={styles.value}>{data.studentCode}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>👤 Họ và tên:</Text>
-              <Text style={styles.value}>{data.fullName}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>📧 Email:</Text>
-              <Text style={styles.value}>{data.email}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>🎓 Niên khóa:</Text>
-              <Text style={styles.value}>{data.academicYear}</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.label}>💻 Ngành học:</Text>
-              <Text style={styles.value}>{data.majorName}</Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.backText}>← Quay về</Text>
+      </TouchableOpacity>
+
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#f1f5f9", marginTop: 20 }}
+      >
+        {/* Cover + Avatar */}
+        <View>
+          <Image
+            source={{ uri: "https://source.unsplash.com/800x400/?club" }}
+            style={styles.coverImage}
+          />
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatarBorder}>
+              <Image
+                source={{ uri: "https://i.pravatar.cc/150?img=16" }}
+                style={styles.avatar}
+              />
             </View>
           </View>
-        ) : (
-          <Text style={styles.noData}>
-            Không tìm thấy thông tin thành viên.
-          </Text>
-        )}
+        </View>
+
+        {/* Tên & Email */}
+        <View style={{ alignItems: "center", marginTop: 12 }}>
+          <Text style={styles.name}>{data.fullName}</Text>
+          <Text style={styles.email}>{data.email}</Text>
+        </View>
+
+        {/* Thông tin chi tiết */}
+        <View style={styles.infoCard}>
+          {[
+            { icon: "🎓", label: "Niên khóa", value: data.academicYear },
+            { icon: "💻", label: "Ngành học", value: data.majorName },
+            { icon: "🆔", label: "Mã sinh viên", value: data.studentCode },
+            {
+              icon: "⭐",
+              label: "Vai trò",
+              value: clubRole || data.role || "Thành viên"
+            }
+          ].map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.infoRow,
+                index !== 3 && styles.infoRowBorder // không border dòng cuối
+              ]}
+            >
+              <View style={styles.labelBox}>
+                <Text style={styles.icon}>{item.icon}</Text>
+                <Text style={styles.infoLabel}>{item.label}</Text>
+              </View>
+              <Text
+                style={[
+                  styles.infoValue,
+                  item.label === "Vai trò" && styles.roleText // tô đậm vai trò
+                ]}
+              >
+                {item.value}
+              </Text>
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </>
   );
@@ -107,58 +187,114 @@ const ClubGroupId = ({ navigation }) => {
 export default ClubGroupId;
 
 const styles = StyleSheet.create({
-  backButton: {
-    marginLeft: 16,
-    marginTop: 8,
-    marginBottom: 30
-  },
-  backText: {
-    fontSize: 16,
-    color: "#1a73e8",
-    fontWeight: "600"
-  },
-  container: {
-    padding: 20,
-    backgroundColor: "#f1f5f9",
-    flexGrow: 1
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 24,
-    textAlign: "center",
-    color: "#0f172a"
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3
-  },
-  row: {
-    flexDirection: "row",
-    marginBottom: 12,
-    alignItems: "center"
-  },
-  label: {
-    fontWeight: "600",
-    fontSize: 15,
-    color: "#1e293b",
-    width: 140
-  },
-  value: {
-    fontSize: 15,
-    color: "#334155",
-    flexShrink: 1
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8fafc"
   },
   noData: {
     fontSize: 16,
     color: "#64748b",
-    textAlign: "center",
-    marginTop: 40
+    textAlign: "center"
+  },
+  coverImage: {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#ccc"
+  },
+  avatarWrapper: {
+    alignItems: "center",
+    marginTop: -50
+  },
+  avatarBorder: {
+    borderWidth: 3,
+    borderColor: "#3b82f6",
+    borderRadius: 60,
+    padding: 3,
+    backgroundColor: "#fff"
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#0f172a"
+  },
+  email: {
+    fontSize: 14,
+    color: "#64748b",
+    marginTop: 4
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12
+  },
+  actionButton: {
+    backgroundColor: "#e2e8f0",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12
+  },
+  actionText: {
+    color: "#1e293b",
+    fontSize: 14,
+    fontWeight: "600"
+  },
+  infoCard: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    borderRadius: 12,
+    padding: 16
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12
+  },
+  infoRowBorder: {
+    borderBottomWidth: 1,
+    borderColor: "#e2e8f0"
+  },
+  labelBox: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  icon: {
+    fontSize: 16,
+    marginRight: 8
+  },
+  infoLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#334155"
+  },
+  infoValue: {
+    fontSize: 15,
+    color: "#1e293b",
+    fontWeight: "500"
+  },
+  roleText: {
+    color: "#0f766e",
+    fontWeight: "700"
+  },
+  backButton: {
+    marginTop: 12,
+    marginLeft: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: "#e2e8f0",
+    borderRadius: 8,
+    alignSelf: "flex-start"
+  },
+  backText: {
+    color: "#1e293b",
+    fontSize: 14,
+    fontWeight: "600"
   }
 });
