@@ -129,6 +129,7 @@ const Homepage = ({ navigation }) => {
           <View
             style={{
               width: 240,
+              height: 230,
               borderRadius: 12,
               backgroundColor: "#fff",
               overflow: "hidden",
@@ -141,10 +142,12 @@ const Homepage = ({ navigation }) => {
           >
             <Image
               source={{ uri: item.logoUrl }}
-              style={{ width: "100%", height: 120 }}
+              style={{ width: "100%", height: 100 }}
               resizeMode="cover"
             />
-            <View style={{ padding: 12 }}>
+            <View
+              style={{ padding: 12, flex: 1, justifyContent: "space-between" }}
+            >
               <Text
                 style={{
                   fontSize: 16,
@@ -157,8 +160,8 @@ const Homepage = ({ navigation }) => {
                 {item.name}
               </Text>
               <Text
-                style={{ fontSize: 13, color: "#6b7280" }}
-                numberOfLines={2}
+                style={{ fontSize: 13, color: "#6b7280", flex: 1 }}
+                numberOfLines={3}
               >
                 {stripMarkdown(item.description)}
               </Text>
@@ -189,6 +192,7 @@ const Homepage = ({ navigation }) => {
           <View
             style={{
               width: 260,
+              height: 230,
               borderRadius: 12,
               backgroundColor: "#fff",
               overflow: "hidden",
@@ -197,31 +201,36 @@ const Homepage = ({ navigation }) => {
               shadowOffset: { width: 0, height: 2 },
               shadowRadius: 6,
               elevation: 3,
-              padding: 12
+              padding: 12,
+              justifyContent: "space-between"
             }}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "700",
-                color: "#111827",
-                marginBottom: 6
-              }}
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-            <Text
-              style={{ fontSize: 13, color: "#6b7280", marginBottom: 6 }}
-              numberOfLines={2}
-            >
-              {stripMarkdown(item.description)}
-            </Text>
-            <Text style={styles.eventInfoText}>
-              🕒 {new Date(item.eventDate).toLocaleString("vi-VN")}
-            </Text>
-            <Text style={styles.eventInfoText}>🧑‍💻 {item.format}</Text>
-            <Text style={styles.eventInfoText}>📍 {item.location}</Text>
+            <View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#111827",
+                  marginBottom: 6
+                }}
+                numberOfLines={2}
+              >
+                {item.title}
+              </Text>
+              <Text
+                style={{ fontSize: 13, color: "#6b7280", marginBottom: 6 }}
+                numberOfLines={2}
+              >
+                {stripMarkdown(item.description)}
+              </Text>
+            </View>
+            <View style={{ gap: 2 }}>
+              <Text style={styles.eventInfoText}>
+                🕒 {new Date(item.eventDate).toLocaleString("vi-VN")}
+              </Text>
+              <Text style={styles.eventInfoText}>🧑‍💻 {item.format}</Text>
+              <Text style={styles.eventInfoText}>📍 {item.location}</Text>
+            </View>
           </View>
         </TouchableOpacity>
       ))}
@@ -246,6 +255,7 @@ const Homepage = ({ navigation }) => {
           onPress={() => onPressItem(item.blogId)}
           style={{
             width: 280,
+            height: 280,
             backgroundColor: "#fff",
             borderRadius: 12,
             overflow: "hidden",
@@ -260,32 +270,42 @@ const Homepage = ({ navigation }) => {
             source={{ uri: item.thumbnailUrl }}
             style={{
               width: "100%",
-              height: 140,
+              height: 130,
               resizeMode: "cover"
             }}
           />
-          <View style={{ padding: 12 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "700",
-                color: "#111827",
-                marginBottom: 6
-              }}
-              numberOfLines={2}
-            >
-              {item.title}
-            </Text>
-            <Text
-              style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}
-              numberOfLines={2}
-            >
-              {stripMarkdown(item.content)}
-            </Text>
-            <Text style={styles.blogInfoText}>📝 {item.authorName}</Text>
-            <Text style={styles.blogInfoText}>
-              🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
-            </Text>
+          <View
+            style={{
+              padding: 12,
+              flex: 1,
+              justifyContent: "space-between"
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#111827",
+                  marginBottom: 6
+                }}
+                numberOfLines={2}
+              >
+                {item.title}
+              </Text>
+              <Text
+                style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}
+                numberOfLines={2}
+              >
+                {stripMarkdown(item.content)}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.blogInfoText}>📝 {item.authorName}</Text>
+              <Text style={styles.blogInfoText}>
+                🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
       ))}

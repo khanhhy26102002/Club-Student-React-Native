@@ -448,7 +448,9 @@ const styles = StyleSheet.create({
     marginBottom: 18
   },
   fieldContainer: {
-    marginBottom: 20
+    marginBottom: 50,
+    marginLeft: -10,
+
   },
   label: {
     fontSize: 16,
@@ -461,7 +463,7 @@ const styles = StyleSheet.create({
     padding: 10,
     minHeight: 70,
     marginBottom: -20,
-    width: 850
+    width: 400
   },
   editor: {
     flex: 1,

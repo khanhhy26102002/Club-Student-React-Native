@@ -28,6 +28,7 @@ export default function ClubGroup() {
   const [roleList, setRoleList] = React.useState([]);
   const [isLeader, setIsLeader] = React.useState(false);
   const [isEventCreator, setIsEventCreator] = React.useState(false);
+  const [memberCount, setMemberCount] = React.useState(0); // ✅
 
   const route = useRoute();
   const navigation = useNavigation();
@@ -73,6 +74,18 @@ export default function ClubGroup() {
         setIsEventCreator(canCreateEvent);
       }
 
+      // ✅ Fetch members and count APPROVED ones
+      const memberRes = await fetchBaseResponse(
+        `/api/clubs/${clubId}/members`,
+        { headers }
+      );
+      if (memberRes.status === 200) {
+        const approved = (memberRes.data || []).filter(
+          (m) => m.status === "APPROVED"
+        );
+        setMemberCount(approved.length);
+      }
+
       const blogUrl = isClubLeader
         ? `/api/blogs/leader-club`
         : `/api/blogs/my-clubs`;
@@ -85,20 +98,14 @@ export default function ClubGroup() {
       const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
       const blogs = blogsRaw
         .filter((blog) => blog.clubId === clubId)
-        .map((blog) => ({
-          ...blog,
-          type: "blog"
-        }));
+        .map((blog) => ({ ...blog, type: "blog" }));
 
       const eventsRaw = Array.isArray(eventRes)
         ? eventRes
         : eventRes.data || [];
       const events = eventsRaw
         .filter((event) => event.clubId === clubId)
-        .map((event) => ({
-          ...event,
-          type: "event"
-        }));
+        .map((event) => ({ ...event, type: "event" }));
 
       const combined = [...blogs, ...events].sort((a, b) => {
         const dateA = new Date(a.date || a.createdAt);
@@ -216,6 +223,16 @@ export default function ClubGroup() {
                 }}
               >
                 {joined ? "✅ Đã tham gia CLB" : "❌ Chưa tham gia CLB"}
+              </Text>
+              <Text
+                style={{
+                  color: "#2563eb",
+                  fontWeight: "500",
+                  fontSize: 14,
+                  marginTop: 4
+                }}
+              >
+                👥 {memberCount} người đã tham gia CLB
               </Text>
             </View>
           )}
