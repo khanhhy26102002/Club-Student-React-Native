@@ -6,12 +6,17 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Image
+  Image,
+  Dimensions
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
+
+const { width } = Dimensions.get("window");
+const CARD_MARGIN = 8;
+const CARD_WIDTH = (width - 20 * 2 - CARD_MARGIN * 2) / 2; // padding container + margin
 
 const formatDate = (isoString) => {
   const date = new Date(isoString);
@@ -58,12 +63,12 @@ const Blog = ({ navigation }) => {
         <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
       )}
       <View style={styles.cardContent}>
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
         <Text style={styles.meta}>
           📝 <Text style={styles.author}>{item.authorName}</Text> •{" "}
           {formatDate(item.createdAt)}
         </Text>
-        <Text style={styles.description} numberOfLines={3}>
+        <Text style={styles.description} numberOfLines={2}>
           {item.content}
         </Text>
         <TouchableOpacity
@@ -88,21 +93,25 @@ const Blog = ({ navigation }) => {
       <Header />
       <View style={styles.container}>
         <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-          <Text>Quay về trang chủ</Text>
+          <Text style={styles.backText}>← Quay về trang chủ</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Bài viết Blog</Text>
+        <Text style={styles.headerTitle}>📰 Bài viết Blog</Text>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
+            <ActivityIndicator size="large" color="#2563eb" />
           </View>
         ) : (
           <FlatList
             data={data}
             renderItem={renderItem}
             keyExtractor={(item) => item.blogId.toString()}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={{ paddingBottom: 40 }}
             ListEmptyComponent={
               <Text style={styles.emptyText}>Không có dữ liệu blog.</Text>
             }
+            showsVerticalScrollIndicator={false}
           />
         )}
       </View>
@@ -115,67 +124,77 @@ export default Blog;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
-    padding: 20
+    backgroundColor: "#f3f4f6",
+    paddingHorizontal: 20,
+    paddingTop: 12
+  },
+  backText: {
+    fontSize: 15,
+    color: "#2563eb",
+    marginBottom: 12
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#111827",
+    fontWeight: "700",
+    color: "#1f2937",
     marginBottom: 20,
     textAlign: "center"
   },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: 16
+  },
   card: {
+    width: CARD_WIDTH,
     backgroundColor: "#ffffff",
     borderRadius: 16,
     overflow: "hidden",
-    marginBottom: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3
   },
   thumbnail: {
     width: "100%",
-    height: 180,
+    height: 120,
     resizeMode: "cover"
   },
   cardContent: {
-    padding: 16
+    padding: 12
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1f2937",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 6
   },
   meta: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#6b7280",
-    marginBottom: 10
+    marginBottom: 6
   },
   author: {
     fontWeight: "600",
     color: "#2563eb"
   },
   description: {
-    fontSize: 15,
+    fontSize: 13,
     color: "#374151",
-    lineHeight: 22,
-    marginBottom: 16
+    lineHeight: 18,
+    marginBottom: 10
   },
   button: {
     alignSelf: "flex-start",
     backgroundColor: "#2563eb",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 16
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12
   },
   buttonText: {
     color: "#ffffff",
     fontWeight: "600",
-    fontSize: 14
+    fontSize: 13
   },
   loadingContainer: {
     marginTop: 50,
