@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F4FA"
   },
   gridContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 40
+    paddingHorizontal: 5,
+    paddingBottom: -10
   },
   row: {
     justifyContent: "space-between",
-    marginBottom: 16
+    marginBottom: 60
   },
   header: {
     paddingHorizontal: 12,

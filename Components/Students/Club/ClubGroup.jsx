@@ -228,7 +228,7 @@ export default function ClubGroup() {
           <View
             style={{
               marginHorizontal: 1,
-              backgroundColor: "#16a34a",
+              // backgroundColor: "#16a34a",
               shadowColor: "#000",
               shadowOpacity: 0.05,
               shadowRadius: 4,

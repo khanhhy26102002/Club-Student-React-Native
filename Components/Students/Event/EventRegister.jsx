@@ -329,11 +329,11 @@ const EventRegister = () => {
             "🎭 Hình thức",
             format,
             setFormat,
-            "Chọn hình thức",
+            "Chọn hình thức tổ chức",
             [
               { label: "Offline", value: "OFFLINE" },
               { label: "Online", value: "ONLINE" },
-              { label: "Hình thức kết hợp", value: "MIX" }
+              { label: "Kết hợp giữa Online và Offline", value: "MIX" }
             ]
           )}
           {renderLabeledInput(
@@ -355,10 +355,10 @@ const EventRegister = () => {
             "numeric"
           )}
           {renderLabeledSelect(
-            "👁️‍🗨️ Mức độ công khai",
+            "👁️‍🗨️ Mức độ hiển thị",
             visibility,
             setVisibility,
-            "Chọn hình thức công khai",
+            "Chọn hình thức hiển thị",
             [
               { label: "Công Khai", value: "PUBLIC" },
               { label: "Nội bộ", value: "INTERNAL" }
