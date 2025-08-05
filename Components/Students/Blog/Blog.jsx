@@ -87,6 +87,9 @@ const Blog = ({ navigation }) => {
     <>
       <Header />
       <View style={styles.container}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <Text>Quay về trang chủ</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Bài viết Blog</Text>
         {loading ? (
           <View style={styles.loadingContainer}>

@@ -5,8 +5,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
-  FlatList,
-  ScrollView
+  FlatList
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -92,54 +91,18 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
       onPress={handlePress}
       activeOpacity={0.85}
       style={{
-        backgroundColor: "#fff",
-        marginVertical: 10,
         width: screenWidth,
-        borderRadius: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        elevation: 4,
-        overflow: "hidden",
-        marginLeft: -5
+        marginBottom: 12,
+        backgroundColor: "#f9fafb",
+        marginLeft: -15
       }}
     >
-      {/* Thumbnail */}
-      {data.thumbnailUrl && (
-        <Image
-          source={{ uri: data.thumbnailUrl }}
-          style={{ width: "100%", height: 190 }}
-          resizeMode="cover"
-        />
-      )}
-
-      {/* Scrollable list of images */}
-      {Array.isArray(data.imageUrls) && data.imageUrls.length > 0 && (
-        <FlatList
-          data={data.imageUrls}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(uri, index) => uri + index}
-          renderItem={({ item }) => (
-            <Image
-              source={{ uri: item }}
-              style={{
-                width: 120,
-                height: 80,
-                margin: 6,
-                borderRadius: 10
-              }}
-              resizeMode="cover"
-            />
-          )}
-        />
-      )}
-
-      <View style={{ padding: 14 }}>
+      {/* === Nội dung lên đầu === */}
+      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+        {/* Tag */}
         <View
           style={{
-            backgroundColor: isEvent ? "#e3f2fd" : "#fff3e0",
+            backgroundColor: isEvent ? "#e0f2fe" : "#fff7ed",
             alignSelf: "flex-start",
             paddingHorizontal: 10,
             paddingVertical: 4,
@@ -149,7 +112,7 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
         >
           <Text
             style={{
-              color: isEvent ? "#1e88e5" : "#ef6c00",
+              color: isEvent ? "#0284c7" : "#d97706",
               fontSize: 12,
               fontWeight: "600"
             }}
@@ -158,47 +121,45 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
           </Text>
         </View>
 
+        {/* Title */}
         <Text
           style={{
-            fontSize: 17,
+            fontSize: 18,
             fontWeight: "700",
             marginBottom: 6,
-            color: "#333"
+            color: "#111827"
           }}
           numberOfLines={2}
         >
           {data.title}
         </Text>
 
+        {/* Sub info */}
         {isEvent ? (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#555", marginRight: 4 }}>
+            <Text style={{ color: "#374151", marginRight: 6 }}>
               📍 {data.location}
             </Text>
-            <Icon
-              name="clock"
-              size={14}
-              color="#888"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={{ color: "#888" }}>
+            <Icon name="clock" size={14} color="#6b7280" />
+            <Text style={{ color: "#6b7280", marginLeft: 4 }}>
               {new Date(data.eventDate).toLocaleDateString()}
             </Text>
           </View>
         ) : (
-          <Text style={{ color: "#555", marginBottom: 6, fontSize: 14 }}>
-            ✍️ {data.authorName}{" "}
-            <Text style={{ color: "#888" }}>
-              · {new Date(data.createdAt).toLocaleDateString()}
+          <Text style={{ color: "#4b5563", marginBottom: 6, fontSize: 14 }}>
+            ✍️ {data.authorName} ·{" "}
+            <Text style={{ color: "#6b7280" }}>
+              {new Date(data.createdAt).toLocaleDateString()}
             </Text>
           </Text>
         )}
 
+        {/* Buttons */}
         {isEvent && (
           <>
             <TouchableOpacity
               style={{
-                marginTop: 10,
+                marginTop: 12,
                 alignSelf: "flex-start",
                 backgroundColor: "#1877f2",
                 paddingVertical: 8,
@@ -217,7 +178,7 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
               style={{
                 marginTop: 10,
                 alignSelf: "flex-start",
-                backgroundColor: "#43a047",
+                backgroundColor: "#10b981",
                 paddingVertical: 8,
                 paddingHorizontal: 16,
                 borderRadius: 20
@@ -230,6 +191,7 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
           </>
         )}
 
+        {/* Admin Buttons */}
         {isLeader && (
           <View
             style={{
@@ -266,6 +228,37 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
           </View>
         )}
       </View>
+
+      {/* === Hình ở cuối === */}
+      {data.thumbnailUrl && (
+        <Image
+          source={{ uri: data.thumbnailUrl }}
+          style={{ width: "100%", height: 220 }}
+          resizeMode="cover"
+        />
+      )}
+
+      {/* Danh sách ảnh nhỏ */}
+      {Array.isArray(data.imageUrls) && data.imageUrls.length > 0 && (
+        <FlatList
+          data={data.imageUrls}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(uri, index) => uri + index}
+          renderItem={({ item }) => (
+            <Image
+              source={{ uri: item }}
+              style={{
+                width: 450,
+                height: 180,
+                margin: 10,
+                marginLeft: -10
+              }}
+              resizeMode="cover"
+            />
+          )}
+        />
+      )}
     </TouchableOpacity>
   );
 }

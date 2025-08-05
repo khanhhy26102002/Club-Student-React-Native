@@ -20,6 +20,7 @@ const Homepage = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [event, setEvent] = React.useState([]);
   const [blog, setBlog] = React.useState([]);
+
   React.useEffect(() => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
@@ -38,12 +39,7 @@ const Homepage = ({ navigation }) => {
   React.useEffect(() => {
     const fetchClub = async () => {
       try {
-        const response = await fetchBaseResponse(`/api/clubs/public`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
+        const response = await fetchBaseResponse(`/api/clubs/public`);
         if (response.status === 200) {
           setData(response.data);
         } else {
@@ -56,15 +52,11 @@ const Homepage = ({ navigation }) => {
     };
     fetchClub();
   }, []);
+
   React.useEffect(() => {
-    const fetchClub = async () => {
+    const fetchEvents = async () => {
       try {
-        const response = await fetchBaseResponse(`/api/events/public`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
+        const response = await fetchBaseResponse(`/api/events/public`);
         if (response.status === 200) {
           setEvent(response.data);
         } else {
@@ -75,17 +67,13 @@ const Homepage = ({ navigation }) => {
         Alert.alert("Không fetch được data event public");
       }
     };
-    fetchClub();
+    fetchEvents();
   }, []);
+
   React.useEffect(() => {
-    const fetchClub = async () => {
+    const fetchBlogs = async () => {
       try {
-        const response = await fetchBaseResponse(`/api/blogs/public`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
+        const response = await fetchBaseResponse(`/api/blogs/public`);
         if (response.status === 200) {
           setBlog(response.data);
         } else {
@@ -93,206 +81,337 @@ const Homepage = ({ navigation }) => {
         }
       } catch (error) {
         console.error("Error:", error);
-        Alert.alert("Không fetch được data event public");
+        Alert.alert("Không fetch được data blog public");
       }
     };
-    fetchClub();
+    fetchBlogs();
   }, []);
+
+  const SectionHeader = ({ title, onPressAll }) => (
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginHorizontal: 16,
+        marginTop: 24,
+        marginBottom: 8
+      }}
+    >
+      <Text style={{ fontSize: 18, fontWeight: "700", color: "#1f2937" }}>
+        {title}
+      </Text>
+      <TouchableOpacity onPress={onPressAll}>
+        <Text style={{ fontSize: 14, color: "#2563EB", fontWeight: "500" }}>
+          XEM TẤT CẢ
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const HorizontalCardList = ({ data, onPressItem }) => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 4,
+        paddingBottom: 12,
+        gap: 16
+      }}
+    >
+      {data.map((item) => (
+        <TouchableOpacity
+          key={item.clubId}
+          onPress={() => onPressItem(item.clubId)}
+          activeOpacity={0.85}
+        >
+          <View
+            style={{
+              width: 240,
+              borderRadius: 12,
+              backgroundColor: "#fff",
+              overflow: "hidden",
+              shadowColor: "#000",
+              shadowOpacity: 0.06,
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 4,
+              elevation: 2
+            }}
+          >
+            <Image
+              source={{ uri: item.logoUrl }}
+              style={{ width: "100%", height: 120 }}
+              resizeMode="cover"
+            />
+            <View style={{ padding: 12 }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#111827",
+                  marginBottom: 4
+                }}
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+              <Text
+                style={{ fontSize: 13, color: "#6b7280" }}
+                numberOfLines={2}
+              >
+                {stripMarkdown(item.description)}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
+  const EventCardList = ({ eventData, onPressItem }) => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 4,
+        paddingBottom: 12,
+        gap: 16
+      }}
+    >
+      {eventData.map((item) => (
+        <TouchableOpacity
+          key={item.eventId}
+          activeOpacity={0.85}
+          onPress={() => onPressItem(item.eventId)}
+        >
+          <View
+            style={{
+              width: 260,
+              borderRadius: 12,
+              backgroundColor: "#fff",
+              overflow: "hidden",
+              shadowColor: "#000",
+              shadowOpacity: 0.08,
+              shadowOffset: { width: 0, height: 2 },
+              shadowRadius: 6,
+              elevation: 3,
+              padding: 12
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#111827",
+                marginBottom: 6
+              }}
+              numberOfLines={2}
+            >
+              {item.title}
+            </Text>
+            <Text
+              style={{ fontSize: 13, color: "#6b7280", marginBottom: 6 }}
+              numberOfLines={2}
+            >
+              {stripMarkdown(item.description)}
+            </Text>
+            <Text style={styles.eventInfoText}>
+              🕒 {new Date(item.eventDate).toLocaleString("vi-VN")}
+            </Text>
+            <Text style={styles.eventInfoText}>🧑‍💻 {item.format}</Text>
+            <Text style={styles.eventInfoText}>📍 {item.location}</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
+  const BlogCardList = ({ blogData, onPressItem }) => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingTop: 4,
+        paddingBottom: 16,
+        gap: 16
+      }}
+    >
+      {blogData.map((item) => (
+        <TouchableOpacity
+          key={item.blogId}
+          activeOpacity={0.85}
+          onPress={() => onPressItem(item.blogId)}
+          style={{
+            width: 280,
+            backgroundColor: "#fff",
+            borderRadius: 12,
+            overflow: "hidden",
+            shadowColor: "#000",
+            shadowOpacity: 0.08,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 6,
+            elevation: 3
+          }}
+        >
+          <Image
+            source={{ uri: item.thumbnailUrl }}
+            style={{
+              width: "100%",
+              height: 140,
+              resizeMode: "cover"
+            }}
+          />
+          <View style={{ padding: 12 }}>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#111827",
+                marginBottom: 6
+              }}
+              numberOfLines={2}
+            >
+              {item.title}
+            </Text>
+            <Text
+              style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}
+              numberOfLines={2}
+            >
+              {stripMarkdown(item.content)}
+            </Text>
+            <Text style={styles.blogInfoText}>📝 {item.authorName}</Text>
+            <Text style={styles.blogInfoText}>
+              🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
   return (
     <>
       <Header />
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Search */}
-        <View style={styles.searchContainer}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        {/* <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#f0f2f5",
+            marginHorizontal: 16,
+            marginTop: 16,
+            borderRadius: 30,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+            gap: 10
+          }}
+        >
           <Ionicons name="search" size={20} color="#94A3B8" />
-          <TextInput placeholder="Search Club..." style={styles.searchInput} />
+          <TextInput
+            placeholder="Tìm kiếm CLB..."
+            placeholderTextColor="#94A3B8"
+            style={{ flex: 1, fontSize: 16, color: "#000" }}
+          />
           <TouchableOpacity>
-            <Ionicons name="options-outline" size={20} color="#2563EB" />
+            <Ionicons name="options-outline" size={22} color="#2563EB" />
           </TouchableOpacity>
         </View>
 
-        {/* Banner */}
-        <View style={styles.banner}>
-          <Text style={styles.bannerTitle}>🔥 CLB Tuần Này</Text>
-          <Text style={styles.bannerDesc}>
+        <View
+          style={{
+            backgroundColor: "#fff",
+            marginTop: 20,
+            marginHorizontal: 16,
+            borderRadius: 12,
+            padding: 16,
+            shadowColor: "#000",
+            shadowOpacity: 0.06,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+            elevation: 2
+          }}
+        >
+          <Text style={{ fontSize: 20, fontWeight: "700", color: "#1d1f23" }}>
+            🔥 CLB Tuần Này
+          </Text>
+          <Text style={{ marginTop: 6, fontSize: 15, color: "#4b5563" }}>
             Xem ngay những CLB đang nổi bật trong tuần và xu hướng hoạt động.
           </Text>
-        </View>
-
-        {/* Categories */}
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Loại CLB</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.categoryList}>
+        </View> */}
+        {/* <SectionHeader title="Loại CLB" onPressAll={() => {}} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}
+        >
           {["Kỹ năng", "Học thuật", "Tình nguyện"].map((c, i) => (
-            <TouchableOpacity key={i} style={styles.categoryItem}>
-              <Text style={styles.categoryText}>{c}</Text>
+            <TouchableOpacity
+              key={i}
+              style={{
+                backgroundColor: "#e5e7eb",
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 20
+              }}
+            >
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: "#111827" }}
+              >
+                {c}
+              </Text>
             </TouchableOpacity>
           ))}
-        </View>
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>CLB nổi bật</Text>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Club", {
-                screen: "ClubNo"
-              })
-            }
-          >
-            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ gap: 16, marginTop: 8 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              gap: 16,
-              paddingLeft: 4,
-              paddingRight: 20,
-              marginTop: 8
-            }}
-          >
-            {data.map((item) => (
-              <TouchableOpacity
-                key={item.clubId}
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "ClubId",
-                    params: {
-                      clubId: item.clubId
-                    }
-                  })
-                }
-              >
-                <View key={item.clubId} style={styles.horizontalCard}>
-                  <Image
-                    source={{ uri: item.logoUrl }}
-                    style={styles.cardImage}
-                  />
-                  <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle}>{item.name}</Text>
-                    <Text style={styles.cardSub} numberOfLines={2}>
-                      {stripMarkdown(item.description)}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={[styles.sectionRow, { marginTop: 30 }]}>
-          <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Event", {
-                screen: "EventStack"
-              })
-            }
-          >
-            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ gap: 16, marginTop: 8 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              gap: 16,
-              paddingLeft: 4,
-              paddingRight: 20,
-              marginTop: 8
-            }}
-          >
-            {event.map((item) => (
-              <TouchableOpacity
-                key={item.eventId}
-                onPress={() =>
-                  navigation.navigate("Event", {
-                    screen: "EventId",
-                    params: {
-                      eventId: item.eventId
-                    }
-                  })
-                }
-              >
-                <View style={styles.eventCard}>
-                  <View style={styles.eventCardContent}>
-                    <Text style={styles.eventTitle}>{item.title}</Text>
-                    <Text style={styles.eventDescription} numberOfLines={2}>
-                      {stripMarkdown(item.description)}
-                    </Text>
-                    <Text style={styles.eventInfo}>
-                      🕒 {new Date(item.eventDate).toLocaleString()}
-                    </Text>
-                    <Text style={styles.eventInfo}>🧑‍💻 {item.format}</Text>
-                    <Text style={styles.eventInfo}>📍 {item.location}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={[styles.sectionRow, { marginTop: 30 }]}>
-          <Text style={styles.sectionTitle}>Bài viết nổi bật</Text>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Club", {
-                screen: "Blog"
-              })
-            }
-          >
-            <Text style={styles.seeAll}>XEM TẤT CẢ</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{ marginTop: 16 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              gap: 16
-            }}
-          >
-            {blog.map((item) => (
-              <TouchableOpacity
-                key={item.blogId}
-                activeOpacity={0.85}
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "BlogDetail",
-                    params: { blogId: item.blogId }
-                  })
-                }
-                style={styles.cardWrapper}
-              >
-                <View style={styles.blogCard}>
-                  <Image
-                    source={{ uri: item.thumbnailUrl }}
-                    style={styles.thumbnail}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.blogCardContent}>
-                    <Text style={styles.blogTitle}>{item.title}</Text>
-                    <Text style={styles.blogContentPreview}>
-                      {item.content}
-                    </Text>
-                    <Text style={styles.blogInfo}>📝 {item.authorName}</Text>
-                    <Text style={styles.blogInfo}>
-                      🕒 {new Date(item.createdAt).toLocaleString("vi-VN")}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        </ScrollView> */}
+
+        {/* Club List */}
+        <SectionHeader
+          title="CLB nổi bật"
+          onPressAll={() => navigation.navigate("Club", { screen: "ClubNo" })}
+        />
+        <HorizontalCardList
+          data={data}
+          onPressItem={(clubId) =>
+            navigation.navigate("Club", {
+              screen: "ClubId",
+              params: { clubId }
+            })
+          }
+        />
+
+        {/* Event List */}
+        <SectionHeader
+          title="Sự kiện nổi bật"
+          onPressAll={() =>
+            navigation.navigate("Event", { screen: "EventStack" })
+          }
+        />
+        <EventCardList
+          eventData={event}
+          onPressItem={(eventId) =>
+            navigation.navigate("Event", {
+              screen: "EventDetail",
+              params: { eventId }
+            })
+          }
+        />
+
+        {/* Blog List */}
+        <SectionHeader
+          title="Bài viết nổi bật"
+          onPressAll={() => navigation.navigate("Club", { screen: "Blog" })}
+        />
+        <BlogCardList
+          blogData={blog}
+          onPressItem={(blogId) =>
+            navigation.navigate("Club", {
+              screen: "BlogDetail",
+              params: { blogId }
+            })
+          }
+        />
       </ScrollView>
     </>
   );
@@ -302,7 +421,7 @@ export default Homepage;
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    width: 260, // hoặc 280 nếu bạn muốn rộng hơn
+    width: 260 // hoặc 280 nếu bạn muốn rộng hơn
   },
   blogCard: {
     backgroundColor: "#fff",

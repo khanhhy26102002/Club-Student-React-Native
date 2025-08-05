@@ -7,18 +7,20 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView
 } from "react-native";
 import TabsFilter from "./TabsFilter";
 import PostCard from "./PostCard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import Header from "../../../Header/Header";
 import { stripMarkdown } from "../../../stripmarkdown";
+import { LinearGradient } from "expo-linear-gradient";
+import Header from "../../../Header/Header";
 
 export default function ClubGroup() {
-  const [selectedTab, setSelectedTab] = React.useState("all");
+  const [selectedTab, setSelectedTab] = React.useState("event");
   const [allData, setAllData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [joined, setJoined] = React.useState(false);
@@ -30,6 +32,7 @@ export default function ClubGroup() {
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
+
   const fetchAll = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -39,7 +42,6 @@ export default function ClubGroup() {
     };
 
     try {
-      // Gọi club info và roles trước
       const [clubRes, roleRes] = await Promise.all([
         fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
         fetchBaseResponse(`/api/clubs/my-club-roles`, { headers })
@@ -71,20 +73,16 @@ export default function ClubGroup() {
         setIsEventCreator(canCreateEvent);
       }
 
-      // Gọi blog API tùy theo vai trò
       const blogUrl = isClubLeader
         ? `/api/blogs/leader-club`
         : `/api/blogs/my-clubs`;
       const blogRes = await fetchBaseResponse(blogUrl, { headers });
 
-      // Gọi event sau cùng
       const eventRes = await fetchBaseResponse(`/api/events/my-events`, {
         headers
       });
 
       const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
-
-      // Lọc blog theo clubId
       const blogs = blogsRaw
         .filter((blog) => blog.clubId === clubId)
         .map((blog) => ({
@@ -96,7 +94,7 @@ export default function ClubGroup() {
         ? eventRes
         : eventRes.data || [];
       const events = eventsRaw
-        .filter((event) => event.clubId === clubId) // Thêm điều kiện lọc nếu cần
+        .filter((event) => event.clubId === clubId)
         .map((event) => ({
           ...event,
           type: "event"
@@ -121,201 +119,233 @@ export default function ClubGroup() {
     if (clubId) fetchAll();
   }, [clubId]);
 
-  const filteredData = allData.filter((item) =>
-    selectedTab === "all" ? true : item.type === selectedTab
+  const filteredData = allData.filter((item) => item.type === selectedTab);
+  const canCreateEvent = selectedTab === "event" && joined && isEventCreator;
+
+  const HorizontalButton = ({ icon, label, onPress }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: "#f3f4f6",
+        borderRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 1 },
+        shadowRadius: 3,
+        elevation: 2,
+        marginLeft: -15
+      }}
+    >
+      <Text style={{ fontSize: 28, marginBottom: 6 }}>{icon}</Text>
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: "500",
+          textAlign: "center",
+          color: "#111827"
+        }}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
   );
 
-  const canCreateEvent = selectedTab === "event" && joined && isEventCreator;
   return (
-    <>
+    <LinearGradient colors={["#dbeafe", "#f0f4ff"]} style={{ flex: 1 }}>
       <Header />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f2f5" }}>
-        {clubInfo && (
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ marginBottom: 100 }}>
+          {clubInfo && (
+            <View style={{ alignItems: "center", marginBottom: 16 }}>
+              <Image
+                source={{
+                  uri:
+                    clubInfo.coverUrl ||
+                    "https://source.unsplash.com/random/400x200"
+                }}
+                style={{
+                  width: "100%",
+                  height: 180,
+                  backgroundColor: "#e5e7eb"
+                }}
+              />
+              <Image
+                source={{ uri: clubInfo.logoUrl }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  marginTop: -40,
+                  borderWidth: 3,
+                  borderColor: "#fff",
+                  backgroundColor: "#e5e7eb"
+                }}
+              />
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  color: "#111827"
+                }}
+              >
+                {clubInfo.name}
+              </Text>
+              <Text
+                style={{
+                  color: "#6b7280",
+                  fontSize: 14,
+                  paddingHorizontal: 20,
+                  textAlign: "center",
+                  marginTop: 4
+                }}
+              >
+                {stripMarkdown(clubInfo.description)}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 8,
+                  color: joined ? "#16a34a" : "#dc2626",
+                  fontWeight: "600",
+                  fontSize: 14
+                }}
+              >
+                {joined ? "✅ Đã tham gia CLB" : "❌ Chưa tham gia CLB"}
+              </Text>
+            </View>
+          )}
+
           <View
             style={{
-              padding: 16,
-              backgroundColor: "white",
-              borderBottomWidth: 1,
-              borderColor: "#ddd"
+              marginHorizontal: 1,
+              backgroundColor: "#16a34a",
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+              width: 450
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {clubInfo.logoUrl && (
-                <Image
-                  source={{ uri: clubInfo.logoUrl }}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 30,
-                    marginRight: 12
-                  }}
-                />
-              )}
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "bold", color: "#333" }}
-                >
-                  {clubInfo.name}
-                </Text>
-                <Text style={{ color: "#666", marginTop: 2 }}>
-                  {stripMarkdown(clubInfo.description)}
-                </Text>
-              </View>
+            <TabsFilter selected={selectedTab} onSelect={setSelectedTab} />
+          </View>
+
+          {(isLeader || canCreateEvent) && (
+            <View style={{ marginTop: 16 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingLeft: 16,
+                  paddingRight: 8,
+                  gap: 12
+                }}
+              >
+                {selectedTab === "blog" && isLeader && (
+                  <HorizontalButton
+                    icon="📝"
+                    label="Tạo blog"
+                    onPress={() =>
+                      navigation.navigate("Club", {
+                        screen: "FormBlog",
+                        params: { clubId: clubInfo.clubId }
+                      })
+                    }
+                  />
+                )}
+                {selectedTab === "event" && canCreateEvent && (
+                  <HorizontalButton
+                    icon="📅"
+                    label="Tạo sự kiện"
+                    onPress={() =>
+                      navigation.navigate("Event", {
+                        screen: "EventRegister",
+                        params: { clubId: clubInfo.clubId }
+                      })
+                    }
+                  />
+                )}
+                {isLeader && (
+                  <>
+                    <HorizontalButton
+                      icon="🧍‍♂️"
+                      label="Duyệt TV"
+                      onPress={() =>
+                        navigation.navigate("Club", {
+                          screen: "ClubMembership",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                    />
+                    <HorizontalButton
+                      icon="👥"
+                      label="Xem thành viên"
+                      onPress={() =>
+                        navigation.navigate("Club", {
+                          screen: "Membership",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                    />
+                    <HorizontalButton
+                      icon="🔁"
+                      label="Chuyển quyền"
+                      onPress={() =>
+                        navigation.navigate("Club", {
+                          screen: "Transfer",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                    />
+                  </>
+                )}
+              </ScrollView>
             </View>
+          )}
+
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#3b82f6"
+              style={{ marginTop: 40 }}
+            />
+          ) : filteredData.length === 0 ? (
             <Text
               style={{
-                marginTop: 8,
-                color: joined ? "#2e7d32" : "#d32f2f",
-                fontWeight: "bold"
+                textAlign: "center",
+                marginTop: 40,
+                fontSize: 16,
+                color: "#9ca3af"
               }}
             >
-              {joined ? "✅ Đã tham gia CLB" : "❌ Chưa tham gia CLB"}
+              Không có nội dung để hiển thị.
             </Text>
-          </View>
-        )}
-
-        <TabsFilter selected={selectedTab} onSelect={setSelectedTab} />
-
-        {(isLeader || canCreateEvent) && (
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 16,
-              marginBottom: 12,
-              gap: 10
-            }}
-          >
-            {selectedTab === "blog" && isLeader && (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("Club", {
-                    screen: "FormBlog",
-                    params: { clubId: clubInfo.clubId }
-                  })
-                }
-                style={{
-                  backgroundColor: "#4caf50",
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  alignItems: "center"
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
-                >
-                  ＋ Tạo blog
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {canCreateEvent && (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("Event", {
-                    screen: "EventRegister",
-                    params: { clubId: clubInfo.clubId }
-                  })
-                }
-                style={{
-                  backgroundColor: "#4caf50",
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  alignItems: "center"
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 16, fontWeight: "600" }}
-                >
-                  ＋ Tạo sự kiện
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {selectedTab === "all" && isLeader && (
-              <>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Club", {
-                      screen: "ClubMembership",
-                      params: {
-                        clubId: clubInfo.clubId
-                      }
-                    })
-                  }
-                  style={{
-                    backgroundColor: "#ff9800",
-                    paddingVertical: 10,
-                    borderRadius: 12,
-                    alignItems: "center"
-                  }}
-                >
-                  <Text
-                    style={{ color: "white", fontSize: 16, fontWeight: "600" }}
-                  >
-                    ✅ Duyệt thành viên
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Club", {
-                      screen: "Membership",
-                      params: {
-                        clubId: clubInfo.clubId
-                      }
-                    })
-                  }
-                  style={{
-                    backgroundColor: "#6366F1",
-                    paddingVertical: 10,
-                    borderRadius: 12,
-                    alignItems: "center"
-                  }}
-                >
-                  <Text
-                    style={{ color: "white", fontSize: 16, fontWeight: "600" }}
-                  >
-                    ✅ Thành viên trong câu lạc bộ
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        )}
-
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#1877f2"
-            style={{ marginTop: 20 }}
-          />
-        ) : (
-          <FlatList
-            data={filteredData}
-            keyExtractor={(item, index) =>
-              `${item.type}-${item.id || item.eventId || index}`
-            }
-            renderItem={({ item }) => (
-              <PostCard
-                data={item}
-                navigation={navigation}
-                isLeader={isLeader}
-                onDelete={() => fetchAll()}
-              />
-            )}
-            contentContainerStyle={{
-              paddingBottom: 20,
-              paddingHorizontal: 0
-            }}
-            ListEmptyComponent={
-              <Text
-                style={{ textAlign: "center", marginTop: 20, color: "#666" }}
-              >
-                Không có nội dung để hiển thị.
-              </Text>
-            }
-          />
-        )}
+          ) : (
+            <FlatList
+              data={filteredData}
+              keyExtractor={(item, index) =>
+                `${item.type}-${item.id || item.eventId || index}`
+              }
+              renderItem={({ item }) => (
+                <PostCard
+                  data={item}
+                  navigation={navigation}
+                  isLeader={isLeader}
+                  onDelete={() => fetchAll()}
+                />
+              )}
+              scrollEnabled={false}
+              contentContainerStyle={{
+                paddingTop: 16,
+                paddingHorizontal: 16
+              }}
+            />
+          )}
+        </ScrollView>
       </SafeAreaView>
-    </>
+    </LinearGradient>
   );
 }

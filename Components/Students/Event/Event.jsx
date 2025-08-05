@@ -1,13 +1,12 @@
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
+  FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
-  TextInput
+  Image
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
@@ -16,13 +15,13 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { stripMarkdown } from "../../../stripmarkdown";
+
 const DEFAULT_EVENT_IMAGE =
   "https://images.unsplash.com/photo-1505238680356-667803448bb6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80";
 
 const Event = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [searchTerm, setSearchTerm] = React.useState("");
   const [userId, setUserId] = React.useState(null);
 
   const fetchData = async () => {
@@ -31,8 +30,7 @@ const Event = ({ navigation }) => {
     const storedUserId = await AsyncStorage.getItem("userId");
     setUserId(storedUserId);
     try {
-      const endpoint = "/api/events/public";
-      const response = await fetchBaseResponse(endpoint, {
+      const response = await fetchBaseResponse("/api/events/public", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,128 +61,130 @@ const Event = ({ navigation }) => {
     };
   };
 
-  const filteredData = data.filter((event) =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const renderItem = ({ item }) => {
+    const { day, month } = formatDate(item.eventDate);
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() =>
+          navigation.navigate("EventId", {
+            eventId: item.eventId
+          })
+        }
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: item.imageUrl || DEFAULT_EVENT_IMAGE }}
+            style={styles.cardImage}
+          />
+          <View style={styles.dateBadge}>
+            <Text style={styles.dateDay}>{day}</Text>
+            <Text style={styles.dateMonth}>{month}</Text>
+          </View>
+        </View>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.cardDesc} numberOfLines={3}>
+            {stripMarkdown(item.description)}
+          </Text>
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardDetail}>📍 {item.location}</Text>
+            <Text style={styles.cardDetail}>💻 {item.format}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.wrapper}>
       <Header />
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header Section */}
-        <View style={styles.headingRow}>
-          <Text style={styles.heading}>🎉 Sự kiện nổi bật</Text>
-          <TouchableOpacity
-            style={styles.eventButton}
-            activeOpacity={0.9}
-            onPress={async () => {
-              const storedUserId = await AsyncStorage.getItem("userId");
-              if (!storedUserId) {
-                Alert.alert("Lỗi", "Không tìm thấy người dùng");
-                return;
-              }
-              navigation.navigate("History", {
-                userId: storedUserId
-              });
-            }}
-          >
-            <View style={styles.eventButtonContent}>
-              <Icon name="calendar-check" size={18} color="#fff" />
-              <Text style={styles.eventButtonText}>Đã đăng ký</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search */}
-        {/* <TextInput
-          placeholder="🔍 Tìm kiếm sự kiện..."
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          style={styles.searchInput}
-        /> */}
-
-        {/* Loading or Empty */}
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
-          </View>
-        ) : filteredData.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Image
-              source={{ uri: DEFAULT_EVENT_IMAGE }}
-              style={styles.emptyIcon}
-            />
-            <Text style={styles.noEventText}>Không tìm thấy sự kiện</Text>
-            <Text style={styles.noEventSubText}>
-              Hãy quay lại sau để cập nhật các sự kiện mới nhất!
-            </Text>
-          </View>
-        ) : (
-          filteredData.map((event) => {
-            const { day, month } = formatDate(event.eventDate);
-            return (
+      <FlatList
+        data={data}
+        numColumns={2}
+        keyExtractor={(item) => item.eventId.toString()}
+        contentContainerStyle={styles.gridContainer}
+        columnWrapperStyle={styles.row}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <View style={styles.headingRow}>
+              <Text style={styles.heading}>🎉 Sự kiện nổi bật</Text>
               <TouchableOpacity
-                key={event.eventId}
-                style={styles.card}
+                style={styles.eventButton}
                 activeOpacity={0.9}
-                onPress={() =>
-                  navigation.navigate("EventId", {
-                    eventId: event.eventId
-                  })
-                }
+                onPress={async () => {
+                  const storedUserId = await AsyncStorage.getItem("userId");
+                  if (!storedUserId) {
+                    Alert.alert("Lỗi", "Không tìm thấy người dùng");
+                    return;
+                  }
+                  navigation.navigate("History", {
+                    userId: storedUserId
+                  });
+                }}
               >
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: event.imageUrl || DEFAULT_EVENT_IMAGE }}
-                    style={styles.cardImage}
-                  />
-                  <View style={styles.dateBadge}>
-                    <Text style={styles.dateDay}>{day}</Text>
-                    <Text style={styles.dateMonth}>{month}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle} numberOfLines={2}>
-                    {event.title}
-                  </Text>
-                  <Text style={styles.cardDesc} numberOfLines={3}>
-                    {stripMarkdown(event.description)}
-                  </Text>
-                  <View style={styles.cardInfo}>
-                    <Text style={styles.cardDetail}>📍 {event.location}</Text>
-                    <Text style={styles.cardDetail}>💻 {event.format}</Text>
-                  </View>
+                <View style={styles.eventButtonContent}>
+                  <Icon name="calendar-check" size={18} color="#fff" />
+                  <Text style={styles.eventButtonText}>Đã đăng ký</Text>
                 </View>
               </TouchableOpacity>
-            );
-          })
-        )}
-      </ScrollView>
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Image
+                source={{ uri: DEFAULT_EVENT_IMAGE }}
+                style={styles.emptyIcon}
+              />
+              <Text style={styles.noEventText}>Không tìm thấy sự kiện</Text>
+              <Text style={styles.noEventSubText}>
+                Hãy quay lại sau để cập nhật các sự kiện mới nhất!
+              </Text>
+            </View>
+          )
+        }
+        renderItem={renderItem}
+      />
     </View>
   );
 };
 
 export default Event;
-
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: "#F0F4FA"
   },
-  container: {
-    padding: 16,
-    paddingBottom: -30
+  gridContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 40
+  },
+  row: {
+    justifyContent: "space-between",
+    marginBottom: 16
+  },
+  header: {
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 10
   },
   headingRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16
+    alignItems: "center"
   },
   heading: {
-    fontSize: 24,
-    fontWeight: "900",
+    fontSize: 22,
+    fontWeight: "800",
     color: "#1D4ED8"
   },
   eventButton: {
@@ -205,14 +205,64 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 6
   },
-  searchInput: {
+  card: {
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: 14,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+    width: "48%"
+  },
+  imageContainer: {
+    position: "relative"
+  },
+  cardImage: {
+    width: "100%",
+    height: 120
+  },
+  dateBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#1E3A8A",
+    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    alignItems: "center"
+  },
+  dateDay: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16
+  },
+  dateMonth: {
+    color: "#fff",
+    fontSize: 12
+  },
+  cardContent: {
+    padding: 10
+  },
+  cardTitle: {
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#CBD5E1"
+    fontWeight: "700",
+    color: "#1F2937",
+    marginBottom: 4
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: "#4B5563",
+    marginBottom: 8
+  },
+  cardInfo: {
+    flexDirection: "column",
+    gap: 2
+  },
+  cardDetail: {
+    fontSize: 12,
+    color: "#374151"
   },
   loadingContainer: {
     marginTop: 40,
@@ -237,64 +287,5 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     textAlign: "center",
     marginTop: 4
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginBottom: 20,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4
-  },
-  imageContainer: {
-    position: "relative"
-  },
-  cardImage: {
-    width: "100%",
-    height: 180
-  },
-  dateBadge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    backgroundColor: "#1E3A8A",
-    borderRadius: 10,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    alignItems: "center"
-  },
-  dateDay: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16
-  },
-  dateMonth: {
-    color: "#fff",
-    fontSize: 12
-  },
-  cardContent: {
-    padding: 14
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1F2937",
-    marginBottom: 6
-  },
-  cardDesc: {
-    fontSize: 14,
-    color: "#4B5563",
-    marginBottom: 10
-  },
-  cardInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  cardDetail: {
-    fontSize: 13,
-    color: "#374151"
   }
 });

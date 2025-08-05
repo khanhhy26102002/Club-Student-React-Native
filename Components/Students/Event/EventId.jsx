@@ -105,7 +105,7 @@ const EventId = ({ navigation }) => {
       <Header />
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("Home")}
       >
         <Ionicons name="arrow-back" size={20} color="#000" />
         <Text style={styles.backText}>Quay về</Text>

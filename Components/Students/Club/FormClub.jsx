@@ -344,7 +344,7 @@ const FormClub = () => {
                   color="#ff6600"
                   style={{ marginRight: 6 }}
                 />
-                <Text style={styles.label}>Giảng viên phụ trách *</Text>
+                <Text style={styles.label}>Người phụ trách *</Text>
               </View>
 
               <View style={{ marginBottom: 18 }}>
