@@ -214,7 +214,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 2,
-    width: "48%"
+    width: "48%",
+    marginBottom: -40
   },
   imageContainer: {
     position: "relative"
