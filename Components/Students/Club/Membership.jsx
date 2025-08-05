@@ -1,19 +1,20 @@
 import React from "react";
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
-  ActivityIndicator,
-  Alert,
+  TouchableOpacity,
+  SafeAreaView,
   StyleSheet,
-  TouchableOpacity
+  ActivityIndicator,
+  Alert
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Header from "../../../Header/Header";
 
-export default function Membership({ route, navigation }) {
+export default function ClubMembersScreen({ navigation, route }) {
   const { clubId } = route.params;
   const [members, setMembers] = React.useState([]);
   const [clubRoles, setClubRoles] = React.useState([]);
@@ -96,13 +97,14 @@ export default function Membership({ route, navigation }) {
     <>
       <Header />
       <SafeAreaView style={styles.container}>
-        <Text style={styles.header}>Thành viên câu lạc bộ</Text>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>← Quay lại</Text>
-        </TouchableOpacity>
+        <View style={styles.headerWrapper}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#050505" />
+            <Text style={styles.backText}>Quay lại</Text>
+          </TouchableOpacity>
+          <Text style={styles.header}>Thành viên câu lạc bộ</Text>
+        </View>
+
         <FlatList
           data={filteredMembers}
           keyExtractor={(item) => item.userId?.toString()}
@@ -121,31 +123,26 @@ export default function Membership({ route, navigation }) {
                   }
                 })
               }
+              activeOpacity={0.85}
             >
               <View style={styles.card}>
                 <View style={styles.row}>
-                  <View style={styles.avatar}>
+                  <View style={styles.avatarCircle}>
                     <Text style={styles.avatarText}>
                       {(item.fullName || "U").charAt(0).toUpperCase()}
                     </Text>
                   </View>
 
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.infoContainer}>
                     <Text style={styles.name}>{item.fullName}</Text>
-                    <Text style={styles.infoText}>
-                      📚 Mã SV: {item.studentCode}
-                    </Text>
+                    <Text style={styles.infoText}>📚 Mã SV: {item.studentCode}</Text>
                     {item.email && (
-                      <Text style={styles.infoText}>
-                        ✉️ Email: {item.email}
-                      </Text>
+                      <Text style={styles.infoText}>✉️ {item.email}</Text>
                     )}
                     <Text style={styles.infoText}>
                       🎓 Năm học: {formatAcademicYear(item.academicYear)}
                     </Text>
-                    <Text style={styles.infoText}>
-                      Tên ngành: {item.majorName}
-                    </Text>
+                    <Text style={styles.infoText}>🏫 Ngành: {item.majorName}</Text>
                   </View>
                 </View>
               </View>
@@ -158,83 +155,93 @@ export default function Membership({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    marginLeft: 16,
-    marginTop: 8,
-    marginBottom: 30
-  },
-  backText: {
-    fontSize: 16,
-    color: "#1a73e8",
-    fontWeight: "600"
-  },
-
   container: {
     flex: 1,
-    backgroundColor: "#f2f4f7"
+    backgroundColor: "#f0f2f5",
+    paddingHorizontal: 12
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
+  headerWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 12
   },
-  loadingText: {
-    marginTop: 10,
-    color: "#888"
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10
   },
   header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 16,
-    color: "#1c1c1e"
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#050505"
+  },
+  backText: {
+    color: "#1877f2",
+    fontWeight: "600",
+    fontSize: 16,
+    marginLeft: 6
   },
   listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 24
+    paddingBottom: 20
   },
   emptyText: {
     textAlign: "center",
     marginTop: 20,
-    color: "#999"
+    color: "#65676b",
+    fontSize: 16
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     shadowColor: "#000",
-    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 3
+    elevation: 4
   },
   row: {
     flexDirection: "row",
     alignItems: "center"
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#d0e2ff",
+  avatarCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#dfe3ee",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12
+    marginRight: 16
   },
   avatarText: {
-    color: "#1a73e8",
-    fontWeight: "bold",
-    fontSize: 18
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1c1e21"
+  },
+  infoContainer: {
+    flex: 1
   },
   name: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333"
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#050505",
+    marginBottom: 4
   },
   infoText: {
-    color: "#555",
-    fontSize: 13,
-    marginTop: 2
+    color: "#65676b",
+    fontSize: 14
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff"
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#1877f2"
   }
 });

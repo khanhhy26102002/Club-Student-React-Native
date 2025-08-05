@@ -163,7 +163,7 @@ const ClubId = ({ navigation }) => {
       <Header />
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("Home")}
       >
         <Ionicons name="arrow-back" size={20} color="#000" />
         <Text style={styles.backText}>Quay về</Text>
@@ -223,7 +223,7 @@ const ClubId = ({ navigation }) => {
                       })
                     }
                   >
-                    <Text style={styles.buttonText}>👥 Xem nhóm trong CLB</Text>
+                    <Text style={styles.buttonText}>👥 Tham gia nhóm CLB</Text>
                   </TouchableOpacity>
                 ) : hasApplied && !isApproved ? (
                   <TouchableOpacity

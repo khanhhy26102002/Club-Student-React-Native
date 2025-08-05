@@ -333,7 +333,7 @@ const EventRegister = () => {
             [
               { label: "Offline", value: "OFFLINE" },
               { label: "Online", value: "ONLINE" },
-              { label: "Chung", value: "MIX" }
+              { label: "Hình thức kết hợp", value: "MIX" }
             ]
           )}
           {renderLabeledInput(

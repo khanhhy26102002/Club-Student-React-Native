@@ -10,9 +10,10 @@ import {
   Platform
 } from "react-native";
 import { useTranslation } from "react-i18next";
+import LinearGradient from "react-native-linear-gradient";
 
 const { width } = Dimensions.get("window");
-const CARD_MARGIN = 0;
+const CARD_MARGIN = 8;
 const CARD_WIDTH = (width - 21 * 2 - CARD_MARGIN * 1) / 2;
 
 const ClubCard = ({ item, onPress }) => {
@@ -54,7 +55,10 @@ const ClubCard = ({ item, onPress }) => {
         style={styles.card}
       >
         <Image source={{ uri: item.image }} style={styles.image} />
-        <View style={styles.overlay} />
+        <LinearGradient
+          colors={["rgba(0,0,0,0.05)", "rgba(0,0,0,0.6)"]}
+          style={styles.overlay}
+        />
 
         <View style={styles.content}>
           {item.members && (
@@ -74,9 +78,14 @@ const ClubCard = ({ item, onPress }) => {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.moreBtn} onPress={onPress}>
+          <LinearGradient
+            colors={["#2563EB", "#1D4ED8"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.moreBtn}
+          >
             <Text style={styles.moreText}>{t("seeMore") || "Xem thêm"}</Text>
-          </TouchableOpacity>
+          </LinearGradient>
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -88,15 +97,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: "hidden",
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#111",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 6,
-    height: 240,
+    height: 250,
     justifyContent: "flex-end"
   },
   image: {
@@ -107,23 +116,22 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.3)"
+    borderRadius: 20
   },
   content: {
-    padding: 16,
+    padding: 14,
     position: "relative"
   },
   membersBadge: {
     position: "absolute",
     top: -18,
     right: 14,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderWidth: 0.5,
     borderColor: "rgba(255,255,255,0.3)",
-    backdropFilter: "blur(6px)"
   },
   membersText: {
     fontSize: 12,
@@ -135,9 +143,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
     marginBottom: 10,
-    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3
+    textShadowRadius: 4
   },
   tags: {
     flexDirection: "row",
@@ -146,19 +154,18 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   tag: {
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12
   },
   tagText: {
-    color: "#e0e0e0",
+    color: "#f0f0f0",
     fontSize: 12,
     fontWeight: "500"
   },
   moreBtn: {
     alignSelf: "flex-start",
-    backgroundColor: "#ffffff20",
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 10

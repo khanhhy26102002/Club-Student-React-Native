@@ -6,13 +6,14 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import React from "react";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
 import { stripMarkdown } from "../../../stripmarkdown";
+
 const ClubRegisters = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -25,8 +26,8 @@ const ClubRegisters = ({ navigation }) => {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
       if (response.status === 200) {
         setData(response.data);
@@ -49,17 +50,14 @@ const ClubRegisters = ({ navigation }) => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.sectionTitleContainer}>
-          <Text style={styles.sectionTitle}>🎓 Câu lạc bộ bạn đã tham gia</Text>
-          <View style={styles.sectionUnderline} />
-        </View>
+        <Text style={styles.heading}>🎓 Câu lạc bộ đã tham gia</Text>
 
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#2563EB" />
           </View>
         ) : data.length === 0 ? (
-          <Text style={{ textAlign: "center", color: "#6B7280" }}>
+          <Text style={styles.emptyText}>
             Bạn chưa tham gia câu lạc bộ nào.
           </Text>
         ) : (
@@ -70,25 +68,25 @@ const ClubRegisters = ({ navigation }) => {
                 navigation.navigate("Club", {
                   screen: "ClubGroup",
                   params: {
-                    clubId: club.clubId
-                  }
+                    clubId: club.clubId,
+                  },
                 })
               }
+              activeOpacity={0.85}
               style={styles.card}
             >
-              <View style={styles.cardTop}>
-                <Image
-                  source={{
-                    uri: club.logoUrl || "https://via.placeholder.com/80"
-                  }}
-                  style={styles.clubImage}
-                />
-                <View style={styles.clubInfo}>
-                  <Text style={styles.clubName}>{club.name}</Text>
-                  <Text style={styles.description}>
-                    {stripMarkdown(club.description)}
-                  </Text>
-                </View>
+              <Image
+                source={{
+                  uri: club.logoUrl || "https://via.placeholder.com/80",
+                }}
+                style={styles.avatar}
+              />
+
+              <View style={styles.info}>
+                <Text style={styles.name}>{club.name}</Text>
+                <Text style={styles.desc}>
+                  {stripMarkdown(club.description)}
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -103,86 +101,62 @@ export default ClubRegisters;
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    paddingBottom: 32
+    paddingBottom: 32,
+    backgroundColor: "#F3F4F6",
   },
-  sectionTitleContainer: {
-    marginBottom: 16,
-    textAlign: "center"
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    textAlign: "center"
-  },
-  sectionUnderline: {
-    height: 5,
-    width: "40%",
-    backgroundColor: "#2563EB",
-    marginTop: 6,
-    alignSelf: "center",
-    borderRadius: 2
+  heading: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1D4ED8",
+    textAlign: "center",
+    marginBottom: 24,
   },
   loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
+    marginTop: 32,
     alignItems: "center",
-    marginTop: 32
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#6B7280",
+    fontSize: 16,
+    marginTop: 32,
   },
   card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 14,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2
-  },
-  cardTop: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    borderLeftWidth: 6,
+    borderLeftColor: "#60A5FA",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  clubImage: {
+  avatar: {
     width: 64,
     height: 64,
-    borderRadius: 12,
+    borderRadius: 32,
+    backgroundColor: "#E5E7EB",
     marginRight: 16,
-    backgroundColor: "#F3F4F6"
+    borderWidth: 2,
+    borderColor: "#3B82F6",
   },
-  clubInfo: {
+  info: {
     flex: 1,
-    justifyContent: "center"
+    justifyContent: "center",
   },
-  clubName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#111827",
-    marginBottom: 4
+  name: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1E40AF",
+    marginBottom: 4,
   },
-  description: {
+  desc: {
     fontSize: 14,
-    color: "#6B7280"
+    color: "#6D6D80",
   },
-  statusContainer: {
-    alignItems: "flex-end",
-    marginTop: -24,
-    flexDirection: "row",
-    justifyContent: "flex-end"
-  },
-  statusBadge: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    alignSelf: "flex-start"
-  },
-  statusText: {
-    fontWeight: "600",
-    fontSize: 14,
-    color: "#fff"
-  },
-  approved: {
-    backgroundColor: "#10B981"
-  }
 });

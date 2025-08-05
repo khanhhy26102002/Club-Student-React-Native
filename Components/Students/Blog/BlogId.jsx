@@ -83,7 +83,7 @@ const BlogId = ({ navigation }) => {
       <Header />
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("Home")}
       >
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Quay về</Text>
@@ -128,17 +128,18 @@ export default BlogId;
 
 const styles = StyleSheet.create({
   backButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingVertical: 10,
-  backgroundColor: "#f2f2f2",
-},
-backText: {
-  marginLeft: 8,
-  fontSize: 16,
-  color: "#333",
-},
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#f2f2f2",
+    paddingTop: 30
+  },
+  backText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: "#333"
+  },
   container: {
     backgroundColor: "#f2f4f8",
     paddingBottom: 40
@@ -168,7 +169,7 @@ backText: {
   card: {
     backgroundColor: "#fff",
     marginHorizontal: 20,
-    marginTop: -20,
+    marginTop: 20,
     padding: 24,
     borderRadius: 20,
     shadowColor: "#000",

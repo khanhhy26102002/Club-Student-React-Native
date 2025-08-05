@@ -28,6 +28,7 @@ const RegisterPage = ({ navigation }) => {
   const [majors, setMajors] = React.useState([]);
   const [showOtpModal, setShowOtpModal] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
@@ -49,17 +50,18 @@ const RegisterPage = ({ navigation }) => {
     fetchData();
   });
   const handleRegister = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Lỗi", "Email không hợp lệ");
-      return;
-    }
-
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
     if (password !== confirmPassword) {
       Alert.alert("Lỗi", "Bạn nhập lại mật khẩu để nó khớp mật khẩu trên");
       return;
     }
-
+    if (!specialCharRegex.test(password)) {
+      Alert.alert(
+        "Lỗi",
+        "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$...)"
+      );
+      return;
+    }
     try {
       const response = await fetchBaseResponse("/api/register", {
         method: "POST",
@@ -72,17 +74,22 @@ const RegisterPage = ({ navigation }) => {
           password,
           fullName,
           academicYear,
-          major: major
+          major
         }
       });
+
       console.log("RESPONSE", response);
+
       if (response.message === "Registration successful") {
         setShowOtpModal(true);
       } else {
+        // ❗ Nếu API trả về lỗi dạng { message: "..." }
         Alert.alert("Lỗi", response.message || "Không đăng ký được");
       }
     } catch (error) {
       console.error("FULL ERROR:", error);
+
+      // 🛠 Nếu API trả về lỗi dạng { response: { data: { message: "..." } } }
       if (error.response?.data?.message) {
         Alert.alert("Lỗi đăng ký", error.response.data.message);
       } else {
@@ -90,6 +97,7 @@ const RegisterPage = ({ navigation }) => {
       }
     }
   };
+
   const handleVerifyOtp = async (otp) => {
     try {
       const response = await fetchBaseResponse("/api/verify-otp", {
@@ -103,7 +111,19 @@ const RegisterPage = ({ navigation }) => {
       if (response.message === "Email verified successfully") {
         Alert.alert("✅ Thành công", "Tài khoản của bạn đã được xác minh!");
         setShowOtpModal(false);
-        navigation.navigate("Login");
+        Alert.alert(
+          "🎉 Tạo tài khoản thành công",
+          "Bây giờ bạn có thể đăng nhập vào ứng dụng!",
+          [
+            {
+              text: "Đăng nhập ngay",
+              onPress: () => {
+                setShowOtpModal(false);
+                navigation.navigate("Login");
+              }
+            }
+          ]
+        );
       } else {
         Alert.alert("❌ Lỗi", response.message || "Sai mã OTP");
       }
