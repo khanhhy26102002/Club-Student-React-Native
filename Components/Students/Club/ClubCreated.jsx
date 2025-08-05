@@ -12,10 +12,12 @@ import React from "react";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
+import { useNavigation } from "@react-navigation/native";
 
 const ClubCreated = () => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const navigation = useNavigation();
   React.useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -75,10 +77,12 @@ const ClubCreated = () => {
                   <TouchableOpacity
                     style={styles.manageButton}
                     onPress={() =>
-                      Alert.alert(
-                        "Lỗi",
-                        "Mọi thông tin sẽ được xử lý trên phiên bản web."
-                      )
+                      navigation.navigate("Club", {
+                        screen: "ClubGroup",
+                        params: {
+                          clubId: club.clubId
+                        }
+                      })
                     }
                   >
                     <Text style={styles.manageButtonText}>Quản lý CLB</Text>
