@@ -13,6 +13,7 @@ import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 const CARD_MARGIN = 8;
@@ -63,7 +64,9 @@ const Blog = ({ navigation }) => {
         <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnail} />
       )}
       <View style={styles.cardContent}>
-        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {item.title}
+        </Text>
         <Text style={styles.meta}>
           📝 <Text style={styles.author}>{item.authorName}</Text> •{" "}
           {formatDate(item.createdAt)}
@@ -92,9 +95,17 @@ const Blog = ({ navigation }) => {
     <>
       <Header />
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-          <Text style={styles.backText}>← Quay về trang chủ</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Home")}
+          style={styles.backButton}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-back" size={20} color="#333" />
+          <Text style={[styles.backText, { marginLeft: 25, marginTop: -20 }]}>
+            Quay về trang chủ
+          </Text>
         </TouchableOpacity>
+
         <Text style={styles.headerTitle}>📰 Bài viết Blog</Text>
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -126,7 +137,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f3f4f6",
     paddingHorizontal: 20,
-    paddingTop: 12
+    paddingTop: -12
   },
   backText: {
     fontSize: 15,
@@ -206,5 +217,24 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     fontSize: 16,
     marginTop: 20
+  },
+  backButton: {
+    backgroundColor: "#f0f0f0", // hoặc màu theo chủ đề
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    alignSelf: "flex-start", // để nó không chiếm toàn bộ chiều ngang
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+    marginBottom: 20
+  },
+  backText: {
+    color: "#333",
+    fontSize: 16,
+    fontWeight: "500"
   }
 });

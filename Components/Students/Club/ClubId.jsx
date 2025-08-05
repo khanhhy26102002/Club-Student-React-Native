@@ -20,13 +20,14 @@ const ClubId = ({ navigation }) => {
   const route = useRoute();
   const { clubId } = route.params;
   const clubIdParam = Number(clubId);
-  console.log("clubId param:", clubIdParam);
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [fetchingRoles, setFetchingRoles] = React.useState(true);
   const [clubRole, setClubRole] = React.useState(null);
   const [hasApplied, setHasApplied] = React.useState(false);
   const [isApproved, setIsApproved] = React.useState(false);
+  const [isPending, setIsPending] = React.useState(false); // ✅ Thêm state này
+
   const fetchClubData = async () => {
     setLoading(true);
     try {
@@ -47,25 +48,7 @@ const ClubId = ({ navigation }) => {
       setLoading(false);
     }
   };
-  React.useEffect(() => {
-    const fetchDataAsync = async () => {
-      const token = await AsyncStorage.getItem("jwt");
-      try {
-        const response = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const currentRole = response.data.find(
-          (item) => item.clubId === clubIdParam
-        );
-        setClubRole(currentRole || {});
-      } catch (error) {}
-    };
-    fetchDataAsync();
-  }, [clubId]);
+
   const fetchMembershipStatus = async () => {
     try {
       const token = await AsyncStorage.getItem("jwt");
@@ -80,14 +63,14 @@ const ClubId = ({ navigation }) => {
         }
       );
       const membershipStatus = res.data;
-      console.log("Membership", membershipStatus);
       if (membershipStatus) {
         setHasApplied(true);
         setIsApproved(membershipStatus === "APPROVED");
-        console.log("✅ membership status:", membershipStatus);
+        setIsPending(membershipStatus === "PENDING"); // ✅ Set pending
       } else {
         setHasApplied(false);
         setIsApproved(false);
+        setIsPending(false);
       }
     } catch (error) {
       Alert.alert("Lỗi trạng thái thành viên", error.message || "Unknown");
@@ -119,19 +102,13 @@ const ClubId = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchClubData(); // Public - gọi luôn
+      fetchClubData();
       fetchClubRole();
       const fetchProtectedData = async () => {
         const token = await AsyncStorage.getItem("jwt");
-
-        if (!token) {
-          console.log("🔒 Chưa đăng nhập, bỏ qua gọi API cần token");
-          return;
-        }
+        if (!token) return;
 
         fetchMembershipStatus();
-
-        fetchEvents();
       };
 
       fetchProtectedData();
@@ -140,7 +117,6 @@ const ClubId = ({ navigation }) => {
 
   const handleJoin = async () => {
     const token = await AsyncStorage.getItem("jwt");
-    console.log("🔐 Token hiện tại:", token);
 
     if (!token) {
       Alert.alert("Yêu cầu đăng nhập", "Bạn cần đăng nhập để tham gia CLB.", [
@@ -150,8 +126,6 @@ const ClubId = ({ navigation }) => {
       return;
     }
 
-    // Chỉ điều hướng nếu có token thật
-    console.log("✅ Điều hướng đến FormRegister");
     navigation.navigate("Club", {
       screen: "FormRegister",
       params: { clubId }
@@ -209,9 +183,15 @@ const ClubId = ({ navigation }) => {
                       ⏳ Đang tải quyền...
                     </Text>
                   </TouchableOpacity>
+                ) : isPending ? (
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: "#facc15" }]}
+                  >
+                    <Text style={{ color: "#000" }}>⏳ Đang chờ duyệt</Text>
+                  </TouchableOpacity>
                 ) : clubRole?.role === "CLUBLEADER" ||
                   clubRole?.role === "MEMBER" ||
-                  (hasApplied && isApproved) ? (
+                  isApproved ? (
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: "#3b82f6" }]}
                     onPress={() =>
@@ -224,18 +204,6 @@ const ClubId = ({ navigation }) => {
                     }
                   >
                     <Text style={styles.buttonText}>👥 Tham gia nhóm CLB</Text>
-                  </TouchableOpacity>
-                ) : hasApplied && !isApproved ? (
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: "#facc15" }]}
-                  >
-                    <Text style={{ color: "#000" }}>⏳ Đang chờ duyệt</Text>
-                  </TouchableOpacity>
-                ) : hasApplied && isApproved ? (
-                  <TouchableOpacity
-                    style={[styles.button, { backgroundColor: "#22c55e" }]}
-                  >
-                    <Text style={styles.buttonText}>✅ Đã tham gia</Text>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
@@ -256,17 +224,17 @@ const ClubId = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   backButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 12,
-  backgroundColor: "#e0f2fe",
-},
-backText: {
-  marginLeft: 6,
-  fontSize: 16,
-  color: "#000",
-  fontWeight: "500"
-},
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    backgroundColor: "#e0f2fe"
+  },
+  backText: {
+    marginLeft: 6,
+    fontSize: 16,
+    color: "#000",
+    fontWeight: "500"
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
