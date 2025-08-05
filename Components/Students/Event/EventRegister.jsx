@@ -223,7 +223,6 @@ const EventRegister = ({ navigation }) => {
           onValueChange={(itemValue) => setValue(itemValue)}
           style={{ height: 55 }}
         >
-          <Picker.Item label={placeholder} value="" />
           {options.map((option) => (
             <Picker.Item
               label={option.label}
@@ -382,14 +381,23 @@ const EventRegister = ({ navigation }) => {
               trackColor={{ false: "#aaa", true: "#007AFF" }}
               thumbColor={useLab ? "#fff" : "#f4f3f4"}
             />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 18
+            }}
+          >
+            <Text style={styles.label}>Chọn file document</Text>
             <TouchableOpacity
               onPress={pickDocument}
-              style={styles.uploadButton}
+              style={[styles.uploadButton, { marginLeft: 10, marginTop: -5 }]}
             >
               <Text style={styles.uploadText}>📎 Chọn file đính kèm</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ marginBottom: 18 }}>
+          {/* <View style={{ marginBottom: 18 }}>
             <Text style={styles.label}>🏷️ Tên câu lạc bộ</Text>
             <TextInput
               style={[styles.input, { backgroundColor: "#f0f0f0" }]}
@@ -399,7 +407,7 @@ const EventRegister = ({ navigation }) => {
               placeholder="Tên câu lạc bộ"
               placeholderTextColor="#aaa"
             />
-          </View>
+          </View> */}
 
           <TouchableOpacity
             onPress={handleSubmit}

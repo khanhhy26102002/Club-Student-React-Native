@@ -21,13 +21,19 @@ const Navigation = () => {
           return <Ionicons name={iconName} size={iconSize} color={color} />;
         },
         tabBarStyle: {
-          backgroundColor: "black",
+          backgroundColor: "#f97316",
           height: 70,
           borderTopWidth: 0,
-          elevation: 5
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4
         },
-        tabBarActiveTintColor: "#42f44b",
-        tabBarInactiveTintColor: "gray",
+
+        tabBarActiveTintColor: "#fff",
+        tabBarInactiveTintColor: "#ffe0b2",
+
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "bold",

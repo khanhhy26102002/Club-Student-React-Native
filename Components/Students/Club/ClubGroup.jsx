@@ -18,6 +18,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { stripMarkdown } from "../../../stripmarkdown";
 import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../../Header/Header";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function ClubGroup() {
   const [selectedTab, setSelectedTab] = React.useState("event");
@@ -29,7 +30,7 @@ export default function ClubGroup() {
   const [isLeader, setIsLeader] = React.useState(false);
   const [isEventCreator, setIsEventCreator] = React.useState(false);
   const [memberCount, setMemberCount] = React.useState(0); // ✅
-
+  const [isMemberOnly, setIsMemberOnly] = React.useState(false);
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
@@ -60,7 +61,12 @@ export default function ClubGroup() {
       if (roleRes.status === 200) {
         roles = roleRes.data || [];
         setRoleList(roles);
-
+        const isMemberOnly = roles.some(
+          (role) =>
+            (role.clubId == clubId && role.role === "MEMBER") ||
+            role.role === "CLUBLEADER"
+        );
+        setIsMemberOnly(isMemberOnly);
         isClubLeader = roles.some(
           (role) => role.clubId == clubId && role.role === "CLUBLEADER"
         );
@@ -167,6 +173,26 @@ export default function ClubGroup() {
       colors={["#dbeafe", "#f0f4ff"]}
       style={{ flex: 1, alignSelf: "flex-start" }}
     >
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Home")}
+        style={{
+          position: "absolute",
+          left: 16,
+          top: 10,
+          zIndex: 10,
+          backgroundColor: "#fff",
+          padding: 8,
+          borderRadius: 999,
+          shadowColor: "#000",
+          shadowOpacity: 0.1,
+          shadowOffset: { width: 0, height: 1 },
+          shadowRadius: 3,
+          elevation: 4,
+          marginTop: 100
+        }}
+      >
+        <Ionicons name="arrow-back" size={22} color="#1e3a8a" />
+      </TouchableOpacity>
       <Header />
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ marginBottom: 100 }}>
@@ -261,18 +287,79 @@ export default function ClubGroup() {
                     }
                   />
                 )}
-                {selectedTab === "event" && canCreateEvent && (
-                  <HorizontalButton
-                    icon="📅"
-                    label="Tạo sự kiện"
-                    onPress={() =>
-                      navigation.navigate("Event", {
-                        screen: "EventRegister",
-                        params: { clubId: clubInfo.clubId }
-                      })
-                    }
-                  />
-                )}
+                {selectedTab === "event" &&
+                  joined &&
+                  isMemberOnly &&
+                  !isLeader && (
+                    // 👉 Nếu chỉ là MEMBER, hiển thị nút styled đẹp
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("Event", {
+                          screen: "EventRegister",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                      style={{
+                        width: 400,
+                        height: 120,
+                        backgroundColor: "#1d4ed8",
+                        borderRadius: 20,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginRight: 12,
+                        shadowColor: "#000",
+                        shadowOpacity: 0.1,
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowRadius: 4,
+                        elevation: 4,
+                        marginLeft: -10
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 24,
+                          backgroundColor: "#fff",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          marginBottom: 8
+                        }}
+                      >
+                        <Text style={{ fontSize: 26, color: "#1d4ed8" }}>
+                          ➕
+                        </Text>
+                      </View>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: "600",
+                          textAlign: "center",
+                          color: "#fff"
+                        }}
+                      >
+                        Tạo sự kiện
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+
+                {selectedTab === "event" &&
+                  joined &&
+                  isEventCreator &&
+                  isLeader && (
+                    // 👉 Nếu là CLUBLEADER, giữ nguyên nút mặc định
+                    <HorizontalButton
+                      icon="📅"
+                      label="Tạo sự kiện"
+                      onPress={() =>
+                        navigation.navigate("Event", {
+                          screen: "EventRegister",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                    />
+                  )}
+
                 {isLeader && (
                   <>
                     <HorizontalButton

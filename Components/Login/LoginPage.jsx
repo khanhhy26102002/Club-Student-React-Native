@@ -32,20 +32,29 @@ const LoginPage = ({ navigation }) => {
         data: { email, password }
       });
 
+      if (
+        response?.status !== 200 ||
+        response?.message !== "Login successful"
+      ) {
+        Alert.alert("Lỗi đăng nhập", "Email hoặc mật khẩu không đúng");
+        return;
+      }
+
       if (response.message === "Login successful") {
         Alert.alert("Đăng nhập thành công", "Chào mừng bạn!");
         const token = response.data.token;
         const roles = response.data.roles || [];
-        const roleName = roles?.[0] || "GUEST"; // ✅ sửa ở đây
+        const roleName = roles?.[0] || "GUEST";
         const decoded = jwtDecode(token);
         const userId = decoded.sub;
-        console.log("UserId:", userId);
+
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("userId", userId);
 
         setRoleName(roleName);
+
         if (eventId) {
           const role = await checkEventRole(eventId);
           if (role === "CHECKIN") {
@@ -53,11 +62,13 @@ const LoginPage = ({ navigation }) => {
             return;
           }
         }
-        navigation.replace("Main");
+
         if (roleName === "MEMBER") {
-          navigation.navigate("Main");
+          navigation.replace("Main");
         } else if (roleName === "ORGANIZERS") {
-          navigation.navigate("Organizer");
+          navigation.replace("Organizer");
+        } else {
+          navigation.replace("Main");
         }
       }
     } catch (err) {
