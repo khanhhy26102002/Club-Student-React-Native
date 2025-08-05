@@ -163,16 +163,20 @@ export default function ClubGroup() {
   );
 
   return (
-    <LinearGradient colors={["#dbeafe", "#f0f4ff"]} style={{ flex: 1 }}>
+    <LinearGradient
+      colors={["#dbeafe", "#f0f4ff"]}
+      style={{ flex: 1, alignSelf: "flex-start" }}
+    >
       <Header />
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ marginBottom: 100 }}>
           {clubInfo && (
-            <View style={{ alignItems: "center", marginBottom: 16 }}>
+            <View style={{ marginBottom: 16 }}>
+              {/* Banner */}
               <Image
                 source={{
                   uri:
-                    clubInfo.coverUrl ||
+                    clubInfo.logoUrl ||
                     "https://source.unsplash.com/random/400x200"
                 }}
                 style={{
@@ -181,59 +185,43 @@ export default function ClubGroup() {
                   backgroundColor: "#e5e7eb"
                 }}
               />
-              <Image
-                source={{ uri: clubInfo.logoUrl }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  marginTop: -40,
-                  borderWidth: 3,
-                  borderColor: "#fff",
-                  backgroundColor: "#e5e7eb"
-                }}
-              />
-              <Text
-                style={{
-                  marginTop: 8,
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  color: "#111827"
-                }}
-              >
-                {clubInfo.name}
-              </Text>
-              <Text
-                style={{
-                  color: "#6b7280",
-                  fontSize: 14,
-                  paddingHorizontal: 20,
-                  textAlign: "center",
-                  marginTop: 4
-                }}
-              >
-                {stripMarkdown(clubInfo.description)}
-              </Text>
-              <Text
-                style={{
-                  marginTop: 8,
-                  color: joined ? "#16a34a" : "#dc2626",
-                  fontWeight: "600",
-                  fontSize: 14
-                }}
-              >
-                {joined ? "✅ Đã tham gia CLB" : "❌ Chưa tham gia CLB"}
-              </Text>
-              <Text
-                style={{
-                  color: "#2563eb",
-                  fontWeight: "500",
-                  fontSize: 14,
-                  marginTop: 4
-                }}
-              >
-                👥 {memberCount} người đã tham gia CLB
-              </Text>
+
+              {/* Info Block dưới banner */}
+              <View style={{ marginTop: 12, paddingHorizontal: 20 }}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "bold",
+                    color: "#111827",
+                    textAlign: "left"
+                  }}
+                >
+                  {clubInfo.name}
+                </Text>
+                <Text
+                  style={{
+                    color: "#6b7280",
+                    fontSize: 14,
+                    marginTop: 4,
+                    textAlign: "left",
+                    lineHeight: 20
+                  }}
+                  numberOfLines={3}
+                >
+                  {stripMarkdown(clubInfo.description)}
+                </Text>
+                <Text
+                  style={{
+                    color: "#2563eb",
+                    fontWeight: "500",
+                    fontSize: 14,
+                    marginTop: 4,
+                    textAlign: "left"
+                  }}
+                >
+                  👥 {memberCount} người đã tham gia CLB
+                </Text>
+              </View>
             </View>
           )}
 
