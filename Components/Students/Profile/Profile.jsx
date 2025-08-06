@@ -188,6 +188,24 @@ const Profile = () => {
               onPress={handleLogout}
               color="#f44336"
             />
+            <ActionItem
+              icon="ticket-outline"
+              label="Sự kiện của tôi"
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  screen: "EventBuy"
+                })
+              }
+            />
+            <ActionItem
+              icon="cube-outline"
+              label="Đơn hàng của tôi"
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  screen: "MyOrder"
+                })
+              }
+            />
             {/* <ActionItem
               icon="clipboard-outline"
               label="Tạo task sự kiện của bạn"
