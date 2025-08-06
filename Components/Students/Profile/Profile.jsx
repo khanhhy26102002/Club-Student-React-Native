@@ -208,10 +208,10 @@ const Profile = () => {
             />
             <ActionItem
               icon="create-outline"
-              label="Sửa hồ sơ"
+              label="Xem hồ sơ"
               onPress={() =>
                 navigation.navigate("Profile", {
-                  screen: "EditProfile"
+                  screen: "ProfileView"
                 })
               }
             />
