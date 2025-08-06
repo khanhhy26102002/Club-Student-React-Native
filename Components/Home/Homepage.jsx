@@ -213,7 +213,7 @@ const Homepage = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#E0E7FF" }}>
+    <View style={{ flex: 1, backgroundColor: "#E0E7FF", marginBottom: -20 }}>
       <Header />
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         <SectionHeader
