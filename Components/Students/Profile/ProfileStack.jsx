@@ -6,6 +6,7 @@ import Feedback from "../Feedback/Feedback";
 import ImageController from "../ImageController";
 import EventBuy from "../Event/EventBuy";
 import Order from "../Order/Order";
+import EditProfile from "./EditProfile";
 const Stack = createNativeStackNavigator();
 const ProfileStack = () => {
   return (
@@ -39,6 +40,11 @@ const ProfileStack = () => {
       <Stack.Screen
         name="MyOrder"
         component={Order}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfile}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
