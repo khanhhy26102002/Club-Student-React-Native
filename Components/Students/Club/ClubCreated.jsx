@@ -57,42 +57,43 @@ const ClubCreated = () => {
           <Text style={styles.heading}>🎓 Câu lạc bộ của bạn đang quản lý</Text>
           {data.length > 0 ? (
             data.map((club) => (
-              <View key={club.clubId} style={styles.card}>
-                <View style={styles.logoWrapper}>
-                  {club.logoUrl ? (
-                    <Image source={{ uri: club.logoUrl }} style={styles.logo} />
-                  ) : (
-                    <View style={styles.logoFallback}>
-                      <Text style={styles.logoFallbackText}>No Logo</Text>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.info}>
-                  <Text style={styles.clubName}>{club.clubName}</Text>
-                  <Text style={styles.role}>
-                    Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
-                  </Text>
-
-                  <TouchableOpacity
-                    style={styles.manageButton}
-                    onPress={() =>
-                      navigation.navigate("Club", {
-                        screen: "ClubGroup",
-                        params: {
-                          clubId: club.clubId
-                        }
-                      })
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubGroup",
+                    params: {
+                      clubId: club.clubId
                     }
-                  >
-                    <Text style={styles.manageButtonText}>Quản lý CLB</Text>
-                  </TouchableOpacity>
+                  })
+                }
+              >
+                <View key={club.clubId} style={styles.card}>
+                  <View style={styles.logoWrapper}>
+                    {club.logoUrl ? (
+                      <Image
+                        source={{ uri: club.logoUrl }}
+                        style={styles.logo}
+                      />
+                    ) : (
+                      <View style={styles.logoFallback}>
+                        <Text style={styles.logoFallbackText}>No Logo</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.info}>
+                    <Text style={styles.clubName}>{club.clubName}</Text>
+                    <Text style={styles.role}>
+                      Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           ) : (
             <Text style={styles.emptyText}>
-              Bạn chưa quản lý câu lạc bộ nào.
+              Bạn chưa quản lý câu lạc bộ nào. Hãy bắt đầu bằng cách tạo một CLB
+              mới!
             </Text>
           )}
         </ScrollView>
