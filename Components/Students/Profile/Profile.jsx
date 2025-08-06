@@ -146,6 +146,15 @@ const Profile = () => {
                 })
               }
             />
+            <ActionItem
+              icon="briefcase-outline"
+              label="Tham gia câu lạc bộ của tôi"
+              onPress={() =>
+                navigation.navigate("Club", {
+                  screen: "ClubRegister"
+                })
+              }
+            />
             {/* <ActionItem
               icon="ticket-outline"
               label="Đăng kí sự kiện"
@@ -182,12 +191,7 @@ const Profile = () => {
               onPress={() => navigation.navigate("Contact")}
               color="#f44336"
             />
-            <ActionItem
-              icon="log-out-outline"
-              label="Đăng xuất"
-              onPress={handleLogout}
-              color="#f44336"
-            />
+
             <ActionItem
               icon="ticket-outline"
               label="Sự kiện của tôi"
@@ -214,6 +218,12 @@ const Profile = () => {
                   screen: "ProfileView"
                 })
               }
+            />
+            <ActionItem
+              icon="log-out-outline"
+              label="Đăng xuất"
+              onPress={handleLogout}
+              color="#f44336"
             />
             {/* <ActionItem
               icon="clipboard-outline"

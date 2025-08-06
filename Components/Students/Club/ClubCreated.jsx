@@ -31,7 +31,7 @@ const ClubCreated = () => {
           }
         });
         if (response.status === 200) {
-          setData(response.data.filter((c) => c.role === "CLUBLEADER"));
+          setData(response.data.filter((c) => c.myRole === "CLUBLEADER"));
         } else {
           throw new Error(`HTTP Status: ${response.status}`);
         }
@@ -58,6 +58,7 @@ const ClubCreated = () => {
           {data.length > 0 ? (
             data.map((club) => (
               <TouchableOpacity
+                key={club.clubId}
                 onPress={() =>
                   navigation.navigate("Club", {
                     screen: "ClubGroup",
@@ -84,7 +85,7 @@ const ClubCreated = () => {
                   <View style={styles.info}>
                     <Text style={styles.clubName}>{club.clubName}</Text>
                     <Text style={styles.role}>
-                      Vai trò: <Text style={styles.roleValue}>{club.role}</Text>
+                      Vai trò: <Text style={styles.roleValue}>{club.myRole}</Text>
                     </Text>
                   </View>
                 </View>

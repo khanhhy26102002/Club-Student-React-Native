@@ -70,7 +70,8 @@ const Homepage = ({ navigation }) => {
 
         if (clubRes.status === 200) setData(clubRes.data);
         if (eventRes.status === 200) setEvent(eventRes.data);
-        if (blogRes.status === 200) setBlog(blogRes.data);
+        if (blogRes.status === 200)
+          setBlog(blogRes.data.sort((a, b) => b.createdAt - a.createdAt));
       } catch (e) {
         console.error("Error fetching data", e);
         Alert.alert("Lỗi", "Không thể tải dữ liệu");
@@ -81,7 +82,7 @@ const Homepage = ({ navigation }) => {
 
   const GridClubList = ({ data, onPressItem }) => (
     <FlatList
-      data={data}
+      data={data.slice(0, 6)} // 👉 Hiển thị đúng 6 item đầu tiên
       renderItem={({ item }) => (
         <TouchableOpacity
           onPress={() => onPressItem(item.clubId)}
@@ -98,7 +99,7 @@ const Homepage = ({ navigation }) => {
               <Text style={styles.cardTitle} numberOfLines={1}>
                 {item.name}
               </Text>
-              <Text style={styles.cardDesc} numberOfLines={3}>
+              <Text style={styles.cardDesc} numberOfLines={2}>
                 {stripMarkdown(item.description)}
               </Text>
             </View>
@@ -120,9 +121,35 @@ const Homepage = ({ navigation }) => {
   };
 
   const EventCardList = ({ eventData, onPressItem }) => {
-    const rows = chunkArray(eventData, 2);
+    // 1. Lấy ngày hiện tại
+    const now = new Date();
+
+    // 2. Lọc những event trong tương lai
+    const futureEvents = eventData.filter((e) => new Date(e.eventDate) >= now);
+
+    // 3. Sắp xếp theo ngày tăng dần (gần nhất → xa nhất)
+    const sortedData = [...futureEvents].sort(
+      (a, b) => new Date(a.eventDate) - new Date(b.eventDate)
+    );
+
+    // 4. Cắt 6 item đầu
+    const rows = chunkArray(sortedData.slice(0, 6), 2);
+
+    // 5. Xác định ngày gần nhất và xa nhất (nếu cần dùng)
+    const nearestDate = sortedData[0]?.eventDate;
+    const furthestDate = sortedData[sortedData.length - 1]?.eventDate;
+
     return (
       <View style={styles.cardGrid}>
+        {sortedData.length > 0 && (
+          <View style={{ marginBottom: 12 }}>
+            <Text style={styles.rangeText}>
+              📆 Từ ngày {new Date(nearestDate).toLocaleDateString("vi-VN")} đến{" "}
+              {new Date(furthestDate).toLocaleDateString("vi-VN")}
+            </Text>
+          </View>
+        )}
+
         {rows.map((row, i) => (
           <View key={i} style={styles.row}>
             {row.map((item) => (
@@ -136,9 +163,15 @@ const Homepage = ({ navigation }) => {
                   {item.title}
                 </Text>
                 <Text style={styles.cardInfo}>
-                  🕒 {new Date(item.eventDate).toLocaleString("vi-VN")}
+                  🕒{" "}
+                  {new Date(item.eventDate).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                  })}
                 </Text>
-                <Text style={styles.cardInfo}>📍 {item.location}</Text>
               </TouchableOpacity>
             ))}
             {row.length < 2 && <View style={{ width: "48%" }} />}
@@ -147,9 +180,8 @@ const Homepage = ({ navigation }) => {
       </View>
     );
   };
-
   const BlogCardList = ({ blogData, onPressItem }) => {
-    const rows = chunkArray(blogData, 2);
+    const rows = chunkArray(blogData.slice(0, 6), 2);
     return (
       <View style={styles.cardGrid}>
         {rows.map((row, i) => (
@@ -213,7 +245,7 @@ const Homepage = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#E0E7FF", marginBottom: -20 }}>
+    <View style={{ flex: 1, backgroundColor: "#fcf4eb", marginBottom: -20 }}>
       <Header />
       <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
         <SectionHeader
@@ -232,7 +264,7 @@ const Homepage = ({ navigation }) => {
           eventData={event}
           onPressItem={(eventId) =>
             navigation.navigate("Event", {
-              screen: "EventDetail",
+              screen: "EventId",
               params: { eventId }
             })
           }
@@ -335,21 +367,28 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   cardBlog: {
-    width: "48%",
-    borderRadius: 12,
+    flexDirection: "row", // chuyển sang bố cục ngang
+    flex: 0.48,
+    height: 140,
     backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 2,
-    overflow: "hidden"
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3
   },
   blogImage: {
+    flex: 3, // 3 phần ảnh (3/5)
+    height: "100%",
     width: "100%",
-    height: 90,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12
+    backgroundColor: "#E5E7EB"
+  },
+  cardContent: {
+    flex: 2, // 2 phần chữ (2/5)
+    padding: 10,
+    justifyContent: "center"
   }
 });
 

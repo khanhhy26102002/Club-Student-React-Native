@@ -11,42 +11,34 @@ import {
 import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Club = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [clubRoles, setClubRoles] = React.useState([]);
 
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchMyClubs = async () => {
       try {
-        // Fetch public club list
-        const response = await fetchBaseResponse("/api/clubs/public", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" }
-        });
-        if (!response || response.length === 0) {
-          Alert.alert("Không hiển thị được data club");
-          setData([]);
-        } else {
-          setData(response.data);
+        const token = await AsyncStorage.getItem("jwt");
+        if (!token) {
+          Alert.alert("Thông báo", "Vui lòng đăng nhập để xem câu lạc bộ");
+          return;
         }
 
-        // Fetch user's club roles
-        const token = await AsyncStorage.getItem("jwt");
-        if (token) {
-          const roleRes = await fetchBaseResponse("/api/clubs/my-club-roles", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`
-            }
-          });
-          if (roleRes?.data) {
-            setClubRoles(roleRes.data);
+        const response = await fetchBaseResponse("/api/clubs/my-clubs", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
           }
+        });
+
+        if (response?.status === 200 && response?.data?.length > 0) {
+          setData(response.data);
+        } else {
+          setData([]);
+          Alert.alert("Không tìm thấy câu lạc bộ đã tham gia");
         }
       } catch (error) {
         Alert.alert("Lỗi khi tải dữ liệu", error?.message || "Unknown error");
@@ -55,57 +47,14 @@ const Club = ({ navigation }) => {
       }
     };
 
-    fetchData();
+    fetchMyClubs();
   }, []);
 
-  const handleClubPress = async (clubId) => {
-    try {
-      const token = await AsyncStorage.getItem("jwt");
-      if (!token) {
-        // Chưa login → vào ClubId
-        navigation.navigate("Club", {
-          screen: "ClubId",
-          params: { clubId }
-        });
-        return;
-      }
-
-      // 1. Kiểm tra role
-      const matchedRole = clubRoles.find((r) => r.clubId === clubId)?.role;
-
-      // 2. Lấy membership status
-      const statusRes = await fetchBaseResponse(
-        `/api/memberships/status?clubId=${clubId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      const status = statusRes?.data;
-
-      // 3. Điều hướng
-      if (
-        status === "APPROVED" ||
-        ["CLUBLEADER", "MEMBER"].includes(matchedRole)
-      ) {
-        navigation.navigate("Club", {
-          screen: "ClubGroup",
-          params: { clubId }
-        });
-      } else {
-        navigation.navigate("Club", {
-          screen: "ClubId",
-          params: { clubId }
-        });
-      }
-    } catch (err) {
-      console.error("Error checking club status:", err);
-      Alert.alert("Lỗi", "Không thể kiểm tra trạng thái câu lạc bộ.");
-    }
+  const handleClubPress = (clubId) => {
+    navigation.navigate("Club", {
+      screen: "ClubGroup",
+      params: { clubId }
+    });
   };
 
   const renderClubCard = ({ item }) => (
@@ -145,45 +94,11 @@ const Club = ({ navigation }) => {
           contentContainerStyle={styles.container}
           ListHeaderComponent={
             <View style={styles.header}>
-              <Text style={styles.title}>🎓 Khám phá Câu lạc bộ</Text>
+              <Text style={styles.title}>Câu lạc bộ của bạn</Text>
               <Text style={styles.subtitle}>
-                Nơi kết nối đam mê, rèn luyện kỹ năng và phát triển bản thân
-                trong môi trường năng động.
+                Đây là danh sách các câu lạc bộ bạn đã đăng ký và đang tham gia.
               </Text>
-
-              <TouchableOpacity
-                style={styles.clubButton}
-                onPress={async () => {
-                  try {
-                    const token = await AsyncStorage.getItem("jwt");
-                    if (!token) {
-                      Alert.alert(
-                        "Thông báo",
-                        "Vui lòng đăng nhập để xem câu lạc bộ đã đăng ký"
-                      );
-                      return;
-                    }
-
-                    navigation.navigate("Club", {
-                      screen: "ClubList"
-                    });
-                  } catch (err) {
-                    Alert.alert(
-                      "Lỗi",
-                      "Không thể kiểm tra trạng thái đăng nhập."
-                    );
-                  }
-                }}
-              >
-                <View style={styles.clubButtonContent}>
-                  <Icon name="account-group" size={20} color="#1E40AF" />
-                  <Text style={styles.clubButtonText}>
-                    Câu lạc bộ đã đăng kí
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              <Text style={styles.subHeading}>📚 Danh sách các Câu lạc bộ</Text>
+              <Text style={styles.subHeading}>Danh sách Câu lạc bộ đã tham gia</Text>
             </View>
           }
           renderItem={renderClubCard}
@@ -194,8 +109,6 @@ const Club = ({ navigation }) => {
 };
 
 export default Club;
-
-// --- STYLES ---
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
@@ -215,7 +128,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#1D4ED8",
+    color: "#1E40AF",
     textAlign: "center",
     marginBottom: 8
   },
@@ -225,24 +138,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 12,
     marginBottom: 16
-  },
-  clubButton: {
-    backgroundColor: "#E0E7FF",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignSelf: "center",
-    marginBottom: 20
-  },
-  clubButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6
-  },
-  clubButtonText: {
-    fontSize: 14,
-    color: "#1E3A8A",
-    fontWeight: "600"
   },
   subHeading: {
     fontSize: 16,
