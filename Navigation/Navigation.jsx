@@ -21,7 +21,7 @@ const Navigation = () => {
           return <Ionicons name={iconName} size={iconSize} color={color} />;
         },
         tabBarStyle: {
-          backgroundColor: "#f97316",
+          backgroundColor: "#fe8a3cff",
           height: 70,
           borderTopWidth: 0,
           elevation: 8,

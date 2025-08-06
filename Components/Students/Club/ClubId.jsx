@@ -189,8 +189,8 @@ const ClubId = ({ navigation }) => {
                   >
                     <Text style={{ color: "#000" }}>⏳ Đang chờ duyệt</Text>
                   </TouchableOpacity>
-                ) : clubRole?.role === "CLUBLEADER" ||
-                  clubRole?.role === "MEMBER" ||
+                ) : clubRole?.myRole === "CLUBLEADER" ||
+                  clubRole?.myRole === "MEMBER" ||
                   isApproved ? (
                   <TouchableOpacity
                     style={[styles.button, { backgroundColor: "#3b82f6" }]}

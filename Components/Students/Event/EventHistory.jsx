@@ -115,7 +115,7 @@ const EventHistory = () => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>📜 Lịch sử sự kiện</Text>
+        <Text style={styles.title}>Lịch sử sự kiện</Text>
 
         <View style={styles.filterGroup}>
           {["COMPLETED", "PENDING", "FAILED"].map((status) => (
@@ -137,10 +137,10 @@ const EventHistory = () => {
                 ]}
               >
                 {status === "COMPLETED"
-                  ? "✅ Đã tham gia"
+                  ? " Đã tham gia"
                   : status === "PENDING"
-                  ? "⏳ Đang chờ"
-                  : "❌ Thất bại"}
+                  ? " Đang chờ"
+                  : " Thất bại"}
               </Text>
             </TouchableOpacity>
           ))}

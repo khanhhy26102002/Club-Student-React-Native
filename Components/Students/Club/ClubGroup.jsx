@@ -62,23 +62,28 @@ export default function ClubGroup() {
       if (roleRes.status === 200) {
         roles = roleRes.data || [];
         setRoleList(roles);
-
+        const currentClubRole = roles.find(
+          (role) => Number(role.clubId) === Number(clubId)
+        );
+        if (currentClubRole?.memberCount !== undefined) {
+          setMemberCount(currentClubRole.memberCount);
+        }
         const isMemberOnly = roles.some(
           (role) =>
             (Number(role.clubId) === Number(clubId) &&
-              role.role === "MEMBER") ||
-            role.role === "CLUBLEADER"
+              role.myRole === "MEMBER") ||
+            role.myRole === "CLUBLEADER"
         );
         setIsMemberOnly(isMemberOnly);
 
         isClubLeader = roles.some(
           (role) =>
-            Number(role.clubId) === Number(clubId) && role.role === "CLUBLEADER"
+            Number(role.clubId) === Number(clubId) && role.myRole === "CLUBLEADER"
         );
         canCreateEvent = roles.some(
           (role) =>
             Number(role.clubId) === Number(clubId) &&
-            (role.role === "CLUBLEADER" || role.role === "MEMBER")
+            (role.myRole === "CLUBLEADER" || role.myRole === "MEMBER")
         );
 
         setIsLeader(isClubLeader);
@@ -96,7 +101,6 @@ export default function ClubGroup() {
         const approved = (memberRes.data || []).filter(
           (m) => m.status === "APPROVED"
         );
-        setMemberCount(approved.length);
       }
 
       // Fetch blogs (different API for leader vs member)
@@ -367,7 +371,13 @@ export default function ClubGroup() {
                   isLeader && (
                     // 👉 Nếu là CLUBLEADER, giữ nguyên nút mặc định
                     <HorizontalButton
-                      icon={<FontAwesome5 name="calendar-plus" size={20} color="#ff6600" />}
+                      icon={
+                        <FontAwesome5
+                          name="calendar-plus"
+                          size={20}
+                          color="#ff6600"
+                        />
+                      }
                       label="Tạo sự kiện"
                       onPress={() =>
                         navigation.navigate("Event", {

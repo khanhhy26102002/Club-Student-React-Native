@@ -94,7 +94,7 @@ export default Header;
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: "#FF6600",
+    backgroundColor: "#fe8a3cff",
     paddingTop: 12,
     paddingBottom: 14,
     paddingHorizontal: 20,
