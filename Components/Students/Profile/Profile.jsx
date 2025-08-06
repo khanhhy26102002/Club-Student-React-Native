@@ -206,6 +206,15 @@ const Profile = () => {
                 })
               }
             />
+            <ActionItem
+              icon="create-outline"
+              label="Sửa hồ sơ"
+              onPress={() =>
+                navigation.navigate("Profile", {
+                  screen: "EditProfile"
+                })
+              }
+            />
             {/* <ActionItem
               icon="clipboard-outline"
               label="Tạo task sự kiện của bạn"
