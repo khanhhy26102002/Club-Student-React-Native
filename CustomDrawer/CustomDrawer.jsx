@@ -4,65 +4,81 @@ import { useTranslation } from "react-i18next";
 import React from "react";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { fetchBaseResponse } from "../utils/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const CustomDrawer = (props) => {
   const navigation = props.navigation;
   const { t } = useTranslation();
-  const [major, setMajor] = React.useState(null);
+  const [userInfo, setUserInfo] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-
+  const yearStatus = (year) => {
+    switch (year) {
+      case "YEAR_ONE":
+        return "Năm nhất";
+      case "YEAR_TWO":
+        return "Năm hai";
+      case "YEAR_THREE":
+        return "Năm ba";
+      case "YEAR_FOUR":
+        return "Năm tư";
+      default:
+        return "Không có năm học";
+    }
+  };
   React.useEffect(() => {
-    const fetchMajor = async () => {
+    const fetchUserInfo = async () => {
+      const token = await AsyncStorage.getItem("jwt");
       try {
-        const res = await fetchBaseResponse(`/api/majors`, {
+        const res = await fetchBaseResponse(`/api/users/getInfo`, {
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
-          },
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
         });
 
         if (res.status === 200) {
-          const found = res.data.find((item) => item.majorId === 1); // 🎯 Lấy ngành IT
-          if (found) setMajor(found);
+          setUserInfo(res.data);
         } else {
           throw new Error(`Status: ${res.status}`);
         }
       } catch (err) {
-        console.error("Lỗi khi fetch majors:", err);
+        console.error("Lỗi khi fetch user info:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMajor();
+    fetchUserInfo();
   }, []);
 
   if (loading) {
     return (
       <DrawerContentScrollView>
-        <View style={{ padding: 20, alignItems: "center" }}>
+        <View style={styles.centerBox}>
           <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={{ marginTop: 10, fontSize: 16, color: "#6b7280" }}>
-            Đang tải thông tin chuyên ngành...
+          <Text style={styles.loadingText}>
+            Đang tải thông tin người dùng...
           </Text>
         </View>
       </DrawerContentScrollView>
     );
   }
 
-  if (!major) {
+  if (!userInfo) {
     return (
       <DrawerContentScrollView>
-        <View style={{ padding: 20, alignItems: "center" }}>
-          <Text style={{ fontSize: 16, color: "#6b7280" }}>
-            Không tìm thấy chuyên ngành.
+        <View style={styles.centerBox}>
+          <Text style={styles.errorText}>
+            Không tìm thấy thông tin người dùng.
           </Text>
         </View>
       </DrawerContentScrollView>
@@ -72,23 +88,45 @@ export const CustomDrawer = (props) => {
   return (
     <DrawerContentScrollView>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.infoBox}>
-          <Text style={styles.labelTitle}>🎓 Tên chuyên ngành:</Text>
-          <Text style={styles.labelValue}>{major.majorName}</Text>
+        <View style={styles.profileBox}>
+          <View style={styles.avatarBorder}>
+            <Image source={{ uri: userInfo.avatarUrl }} style={styles.avatar} />
+          </View>
+          <Text style={styles.fullName}>{userInfo.fullName}</Text>
+          <Text style={styles.studentCode}>🎓 {userInfo.studentCode}</Text>
+        </View>
 
-          <Text style={styles.labelTitle}>🏫 Khoa:</Text>
-          <Text style={styles.labelValue}>{major.department || "Không rõ"}</Text>
+        <View style={styles.infoBox}>
+          <InfoRow
+            label="Chuyên ngành"
+            value={userInfo.majorName}
+            icon="laptop-outline"
+          />
+          <InfoRow
+            label="Niên khóa"
+            value={yearStatus(userInfo.academicYear)}
+            icon="calendar-outline"
+          />
+          <InfoRow label="Email" value={userInfo.email} icon="mail-outline" />
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() =>
+              navigation.navigate("Navigation", {
+                screen: "Profile",
+                params: { screen: "Project" }
+              })
+            }
+          >
             <Ionicons
-              name="person-circle-outline"
-              size={22}
-              color="#fff"
+              name="folder-outline"
+              size={20}
+              color="#3b82f6"
               style={styles.icon}
             />
-            <Text style={styles.actionText}>{t("title87")}</Text>
+            <Text style={styles.actionText}>Xem danh sách dự án</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -97,34 +135,78 @@ export const CustomDrawer = (props) => {
           >
             <Ionicons
               name="log-out-outline"
-              size={22}
-              color="#fff"
+              size={20}
+              color="#ef4444"
               style={styles.icon}
             />
-            <Text style={styles.logoutText}>{t("title88")}</Text>
+            <Text style={[styles.actionText, { color: "#ef4444" }]}>
+              {t("title88") || "Đăng xuất"}
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("Navigation", {
-              screen: "Profile",
-              params: { screen: "Project" },
-            })
-          }
-          style={styles.projectButton}
-        >
-          <Text style={styles.projectButtonText}>📂 Xem danh sách dự án</Text>
-        </TouchableOpacity>
       </ScrollView>
     </DrawerContentScrollView>
   );
 };
 
+const InfoRow = ({ label, value, icon }) => (
+  <View style={styles.infoRow}>
+    <Ionicons
+      name={icon}
+      size={18}
+      color="#6b7280"
+      style={{ marginRight: 8 }}
+    />
+    <Text style={styles.label}>{label}:</Text>
+    <Text style={styles.value}>{value}</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
   container: {
+    padding: 20
+  },
+  centerBox: {
     padding: 20,
-    backgroundColor: "#f9fafb",
+    alignItems: "center"
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#6b7280"
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#ef4444"
+  },
+  profileBox: {
+    alignItems: "center",
+    marginBottom: 20
+  },
+  avatarBorder: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    padding: 3,
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40
+  },
+  fullName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1f2937",
+    marginTop: 10
+  },
+  studentCode: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginTop: 4
   },
   infoBox: {
     backgroundColor: "#fff",
@@ -135,63 +217,53 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 2
   },
-  labelTitle: {
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  label: {
     fontWeight: "600",
     fontSize: 14,
     color: "#374151",
-    marginTop: 10,
+    marginRight: 4
   },
-  labelValue: {
-    fontSize: 15,
-    color: "#6b7280",
-    marginBottom: 6,
+  value: {
+    fontSize: 14,
+    color: "#6b7280"
   },
   actions: {
-    marginTop: 10,
+    borderTopWidth: 1,
+    borderColor: "#e5e7eb",
+    paddingTop: 20
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#3b82f6",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRadius: 10,
     marginBottom: 12,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1
   },
   logoutButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ef4444"
   },
   icon: {
-    marginRight: 10,
+    marginRight: 10
   },
   actionText: {
-    color: "#fff",
     fontSize: 15,
     fontWeight: "500",
-  },
-  logoutText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  projectButton: {
-    backgroundColor: "#10b981",
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  projectButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+    color: "#3b82f6"
+  }
 });
