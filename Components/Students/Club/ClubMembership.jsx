@@ -11,8 +11,9 @@ import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import { Ionicons } from "@expo/vector-icons";
 
-const ClubMembership = () => {
+const ClubMembership = ({ navigation }) => {
   const [data, setData] = React.useState([]);
   const [approvingId, setApprovingId] = React.useState(null);
   const [rejectId, setRejectId] = React.useState(null);
@@ -121,6 +122,17 @@ const ClubMembership = () => {
   return (
     <>
       <Header />
+      <View style={{ flexDirection: "row", alignItems: "center", padding: 12 }}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1877f2" />
+          <Text style={{ marginLeft: 6, color: "#1877f2", fontWeight: "bold" }}>
+            Quay lại
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.container}>
         <Text style={styles.title}>Danh sách thành viên chờ duyệt</Text>
         {loading ? (

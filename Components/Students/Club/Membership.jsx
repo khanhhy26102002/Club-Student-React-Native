@@ -98,7 +98,10 @@ export default function ClubMembersScreen({ navigation, route }) {
       <Header />
       <SafeAreaView style={styles.container}>
         <View style={styles.headerWrapper}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color="#050505" />
             <Text style={styles.backText}>Quay lại</Text>
           </TouchableOpacity>
@@ -114,6 +117,7 @@ export default function ClubMembersScreen({ navigation, route }) {
           }
           renderItem={({ item }) => (
             <TouchableOpacity
+              key={item.clubId}
               onPress={() =>
                 navigation.navigate("Club", {
                   screen: "ClubGroupId",
@@ -135,14 +139,18 @@ export default function ClubMembersScreen({ navigation, route }) {
 
                   <View style={styles.infoContainer}>
                     <Text style={styles.name}>{item.fullName}</Text>
-                    <Text style={styles.infoText}>📚 Mã SV: {item.studentCode}</Text>
+                    <Text style={styles.infoText}>
+                      📚 Mã SV: {item.studentCode}
+                    </Text>
                     {item.email && (
                       <Text style={styles.infoText}>✉️ {item.email}</Text>
                     )}
                     <Text style={styles.infoText}>
                       🎓 Năm học: {formatAcademicYear(item.academicYear)}
                     </Text>
-                    <Text style={styles.infoText}>🏫 Ngành: {item.majorName}</Text>
+                    <Text style={styles.infoText}>
+                      🏫 Ngành: {item.majorName}
+                    </Text>
                   </View>
                 </View>
               </View>

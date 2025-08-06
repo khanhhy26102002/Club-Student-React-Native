@@ -18,7 +18,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { stripMarkdown } from "../../../stripmarkdown";
 import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../../Header/Header";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 
 export default function ClubGroup() {
   const [selectedTab, setSelectedTab] = React.useState("event");
@@ -38,6 +38,7 @@ export default function ClubGroup() {
   const fetchAll = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
+
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
@@ -61,18 +62,22 @@ export default function ClubGroup() {
       if (roleRes.status === 200) {
         roles = roleRes.data || [];
         setRoleList(roles);
+
         const isMemberOnly = roles.some(
           (role) =>
-            (role.clubId == clubId && role.role === "MEMBER") ||
+            (Number(role.clubId) === Number(clubId) &&
+              role.role === "MEMBER") ||
             role.role === "CLUBLEADER"
         );
         setIsMemberOnly(isMemberOnly);
+
         isClubLeader = roles.some(
-          (role) => role.clubId == clubId && role.role === "CLUBLEADER"
+          (role) =>
+            Number(role.clubId) === Number(clubId) && role.role === "CLUBLEADER"
         );
         canCreateEvent = roles.some(
           (role) =>
-            role.clubId == clubId &&
+            Number(role.clubId) === Number(clubId) &&
             (role.role === "CLUBLEADER" || role.role === "MEMBER")
         );
 
@@ -80,10 +85,12 @@ export default function ClubGroup() {
         setIsEventCreator(canCreateEvent);
       }
 
-      // ✅ Fetch members and count APPROVED ones
+      // Fetch approved members count
       const memberRes = await fetchBaseResponse(
         `/api/clubs/${clubId}/members`,
-        { headers }
+        {
+          headers
+        }
       );
       if (memberRes.status === 200) {
         const approved = (memberRes.data || []).filter(
@@ -92,27 +99,38 @@ export default function ClubGroup() {
         setMemberCount(approved.length);
       }
 
+      // Fetch blogs (different API for leader vs member)
       const blogUrl = isClubLeader
         ? `/api/blogs/leader-club`
         : `/api/blogs/my-clubs`;
-      const blogRes = await fetchBaseResponse(blogUrl, { headers });
 
+      const blogRes = await fetchBaseResponse(blogUrl, { headers });
+      const blogsRaw = Array.isArray(blogRes?.data) ? blogRes.data : [];
+
+      const blogs = blogsRaw
+        .filter((blog) => Number(blog.clubId) === Number(clubId))
+        .map((blog) => ({ ...blog, type: "blog" }));
+
+      // Fetch events
       const eventRes = await fetchBaseResponse(`/api/events/my-events`, {
         headers
       });
 
-      const blogsRaw = Array.isArray(blogRes) ? blogRes : blogRes.data || [];
-      const blogs = blogsRaw
-        .filter((blog) => blog.clubId === clubId)
-        .map((blog) => ({ ...blog, type: "blog" }));
+      let eventsRaw = [];
+      if (eventRes.status === 200 && Array.isArray(eventRes.data)) {
+        eventsRaw = eventRes.data;
+      } else {
+        console.log(
+          "⚠️ Không có sự kiện hoặc lỗi định dạng eventRes:",
+          eventRes
+        );
+      }
 
-      const eventsRaw = Array.isArray(eventRes)
-        ? eventRes
-        : eventRes.data || [];
-      const events = eventsRaw
-        .filter((event) => event.clubId === clubId)
-        .map((event) => ({ ...event, type: "event" }));
+      const events = eventsRaw.map((event) => ({ ...event, type: "event" }));
+      console.log("📦 eventsRaw:", eventsRaw);
+      console.log("🔎 clubId hiện tại:", clubId);
 
+      // Gộp blogs và events
       const combined = [...blogs, ...events].sort((a, b) => {
         const dateA = new Date(a.date || a.createdAt);
         const dateB = new Date(b.date || b.createdAt);
@@ -121,7 +139,7 @@ export default function ClubGroup() {
 
       setAllData(combined);
     } catch (err) {
-      console.error("Lỗi khi tải dữ liệu:", err);
+      console.error("❌ Lỗi khi tải dữ liệu:", err);
       Alert.alert("Lỗi", "Không thể tải dữ liệu câu lạc bộ.");
     } finally {
       setLoading(false);
@@ -349,7 +367,7 @@ export default function ClubGroup() {
                   isLeader && (
                     // 👉 Nếu là CLUBLEADER, giữ nguyên nút mặc định
                     <HorizontalButton
-                      icon="📅"
+                      icon={<FontAwesome5 name="calendar-plus" size={20} color="#ff6600" />}
                       label="Tạo sự kiện"
                       onPress={() =>
                         navigation.navigate("Event", {
