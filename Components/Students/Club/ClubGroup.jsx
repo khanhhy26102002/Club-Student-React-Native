@@ -196,7 +196,7 @@ export default function ClubGroup() {
       style={{ flex: 1, alignSelf: "flex-start" }}
     >
       <TouchableOpacity
-        onPress={() => navigation.navigate("Home")}
+        onPress={() => navigation.goBack()}
         style={{
           position: "absolute",
           left: 16,

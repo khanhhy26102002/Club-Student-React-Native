@@ -20,6 +20,11 @@ const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="ClubRegister"
+        component={Club}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="ClubNo" component={ClubPublic} />
       <Stack.Screen name="ClubId" component={ClubId} />
       <Stack.Screen
@@ -90,11 +95,6 @@ const ClubStack = () => {
       <Stack.Screen
         name="Transfer"
         component={TransferLeadership}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ClubRegister"
-        component={Club}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

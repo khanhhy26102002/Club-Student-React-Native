@@ -1,36 +1,141 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Image,
-  Alert,
-  FlatList
+  StyleSheet,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  Dimensions,
+  Platform
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../utils/api";
+import { useNavigation } from "@react-navigation/native";
 import { stripMarkdown } from "../../stripmarkdown";
-
-// Section header
-const SectionHeader = ({ title, onPressAll }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <TouchableOpacity onPress={onPressAll}>
-      <Text style={styles.seeAll}>Xem tất cả</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-const Homepage = ({ navigation }) => {
+import dayjs from "dayjs";
+const ACCENT = "#2E3A59";
+const indicators = [
+  {
+    id: "i1",
+    label: "Đang tham gia",
+    count: 2,
+    icon: "https://img.icons8.com/color/48/000000/combo-chart--v2.png",
+    bg: "#e0feee"
+  },
+  {
+    id: "i2",
+    label: "Sự kiện tuần này",
+    count: 4,
+    icon: "https://img.icons8.com/color/48/000000/appointment-reminders.png",
+    bg: "#ffeadb"
+  },
+  {
+    id: "i3",
+    label: "Điểm CLB",
+    count: 68,
+    icon: "https://img.icons8.com/color/48/000000/prize.png",
+    bg: "#f5f2ff"
+  }
+];
+export default function Homepage() {
+  const navigation = useNavigation();
+  const [bannerData, setBannerData] = useState([]);
+  const [bannerIdx, setBannerIdx] = useState(0);
+  const intervalRef = React.useRef(null);
   const [user, setUser] = React.useState(null);
   const [data, setData] = React.useState([]);
   const [event, setEvent] = React.useState([]);
   const [blog, setBlog] = React.useState([]);
-  const [myClubRoles, setMyClubRoles] = React.useState([]);
+  const [nearestEvent, setNearestEvent] = useState(null);
+  const [furthestEvent, setFurthestEvent] = useState(null);
+  const [dataprofile, setDataProfile] = useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [clubRoles, setClubRoles] = useState({});
+  const [membershipStatuses, setMembershipStatuses] = useState({});
 
+  useEffect(() => {
+    const fetchClubMeta = async () => {
+      try {
+        const token = await AsyncStorage.getItem("jwt");
+        if (!token) return;
+
+        // 1. Fetch all roles in clubs
+        const roleRes = await fetchBaseResponse("/api/clubs/my-club-roles", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (roleRes.status === 200 && Array.isArray(roleRes.data)) {
+          const roleMap = {};
+          roleRes.data.forEach((r) => {
+            roleMap[r.clubId] = r.myRole;
+          });
+          setClubRoles(roleMap);
+        }
+
+        // 2. Fetch statuses in parallel
+        const clubIds = data.map((club) => club.clubId);
+        const statusPromises = clubIds.map(async (clubId) => {
+          const res = await fetchBaseResponse(
+            `/api/memberships/status?clubId=${clubId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+
+          return {
+            clubId,
+            status: res.status === 200 ? res.data : null
+          };
+        });
+
+        const statusResults = await Promise.all(statusPromises);
+        const statusMap = {};
+        statusResults.forEach(({ clubId, status }) => {
+          statusMap[clubId] = status;
+        });
+
+        setMembershipStatuses(statusMap);
+      } catch (error) {
+        console.error("Error fetching club metadata", error);
+      }
+    };
+
+    fetchClubMeta();
+  }, [data]); // ✅ nhớ thêm `data` vào dependency nếu `data` đến từ props hoặc state
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = await AsyncStorage.getItem("jwt");
+        const response = await fetchBaseResponse(`/api/users/getInfo`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.status === 200) {
+          setDataProfile(response.data);
+        } else {
+          throw new Error(`HTTP Status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        Alert.alert("Lỗi", "Không nhận được dữ liệu từ userInfo");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   React.useEffect(() => {
     const fetchUser = async () => {
       const storedEmail = await AsyncStorage.getItem("email");
@@ -44,22 +149,7 @@ const Homepage = ({ navigation }) => {
     return unsubscribe;
   }, []);
 
-  React.useEffect(() => {
-    const fetchMyClubRoles = async () => {
-      try {
-        const token = await AsyncStorage.getItem("jwt");
-        const res = await fetchBaseResponse(`/api/clubs/my-club-roles`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.status === 200) setMyClubRoles(res.data);
-      } catch (e) {
-        console.error("Error fetching roles", e);
-      }
-    };
-    fetchMyClubRoles();
-  }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchAll = async () => {
       try {
         const [clubRes, eventRes, blogRes] = await Promise.all([
@@ -69,327 +159,684 @@ const Homepage = ({ navigation }) => {
         ]);
 
         if (clubRes.status === 200) setData(clubRes.data);
-        if (eventRes.status === 200) setEvent(eventRes.data);
-        if (blogRes.status === 200)
+        if (eventRes.status === 200) {
+          const events = eventRes.data;
+
+          setEvent(events);
+
+          const sortedEvents = events
+            .filter((e) => new Date(e.eventDate) > new Date()) // loại bỏ sự kiện quá khứ
+            .sort((a, b) => new Date(a.eventDate) - new Date(b.time));
+
+          setNearestEvent(sortedEvents[0]);
+          setFurthestEvent(sortedEvents[sortedEvents.length - 1]);
+        }
+
+        if (blogRes.status === 200) {
           setBlog(blogRes.data.sort((a, b) => b.createdAt - a.createdAt));
+        }
       } catch (e) {
         console.error("Error fetching data", e);
         Alert.alert("Lỗi", "Không thể tải dữ liệu");
       }
     };
+
     fetchAll();
   }, []);
 
-  const GridClubList = ({ data, onPressItem }) => (
-    <FlatList
-      data={data.slice(0, 6)} // 👉 Hiển thị đúng 6 item đầu tiên
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() => onPressItem(item.clubId)}
-          activeOpacity={0.85}
-          style={{ flex: 1 }}
-        >
-          <View style={styles.card}>
-            <Image
-              source={{ uri: item.logoUrl }}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <Text style={styles.cardDesc} numberOfLines={2}>
-                {stripMarkdown(item.description)}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      )}
-      keyExtractor={(item) => item.clubId.toString()}
-      numColumns={2}
-      contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 24 }}
-      scrollEnabled={false}
-    />
-  );
-
-  const chunkArray = (arr, size) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size)
-      result.push(arr.slice(i, i + size));
-    return result;
-  };
-
-  const EventCardList = ({ eventData, onPressItem }) => {
-    // 1. Lấy ngày hiện tại
-    const now = new Date();
-
-    // 2. Lọc những event trong tương lai
-    const futureEvents = eventData.filter((e) => new Date(e.eventDate) >= now);
-
-    // 3. Sắp xếp theo ngày tăng dần (gần nhất → xa nhất)
-    const sortedData = [...futureEvents].sort(
-      (a, b) => new Date(a.eventDate) - new Date(b.eventDate)
-    );
-
-    // 4. Cắt 6 item đầu
-    const rows = chunkArray(sortedData.slice(0, 6), 2);
-
-    // 5. Xác định ngày gần nhất và xa nhất (nếu cần dùng)
-    const nearestDate = sortedData[0]?.eventDate;
-    const furthestDate = sortedData[sortedData.length - 1]?.eventDate;
-
-    return (
-      <View style={styles.cardGrid}>
-        {sortedData.length > 0 && (
-          <View style={{ marginBottom: 12 }}>
-            <Text style={styles.rangeText}>
-              📆 Từ ngày {new Date(nearestDate).toLocaleDateString("vi-VN")} đến{" "}
-              {new Date(furthestDate).toLocaleDateString("vi-VN")}
-            </Text>
-          </View>
-        )}
-
-        {rows.map((row, i) => (
-          <View key={i} style={styles.row}>
-            {row.map((item) => (
-              <TouchableOpacity
-                key={item.eventId}
-                onPress={() => onPressItem(item.eventId)}
-                activeOpacity={0.85}
-                style={styles.cardSmall}
-              >
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                <Text style={styles.cardInfo}>
-                  🕒{" "}
-                  {new Date(item.eventDate).toLocaleString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
-                  })}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            {row.length < 2 && <View style={{ width: "48%" }} />}
-          </View>
-        ))}
-      </View>
-    );
-  };
-  const BlogCardList = ({ blogData, onPressItem }) => {
-    const rows = chunkArray(blogData.slice(0, 6), 2);
-    return (
-      <View style={styles.cardGrid}>
-        {rows.map((row, i) => (
-          <View key={i} style={styles.row}>
-            {row.map((item) => (
-              <TouchableOpacity
-                key={item.blogId}
-                onPress={() => onPressItem(item.blogId)}
-                activeOpacity={0.85}
-                style={styles.cardBlog}
-              >
-                <Image
-                  source={{ uri: item.thumbnailUrl }}
-                  style={styles.blogImage}
-                />
-                <View style={{ padding: 8 }}>
-                  <Text style={styles.cardTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-            {row.length < 2 && <View style={{ width: "48%" }} />}
-          </View>
-        ))}
-      </View>
-    );
-  };
-
-  const handleClubPress = async (clubId) => {
-    const matched = myClubRoles.find((role) => role.clubId === clubId);
-    const token = await AsyncStorage.getItem("jwt");
-
+  // Banner tự động chuyển 4s/lần
+  const fetchBanners = async () => {
     try {
-      const res = await fetchBaseResponse(
-        `/api/memberships/status?clubId=${clubId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const [eventsRes] = await Promise.all([
+        fetchBaseResponse("/api/events/public")
+      ]);
 
-      const isMember = res.data;
-      if (
-        isMember === "APPROVED" ||
-        (isMember === null && ["CLUBLEADER", "MEMBER"].includes(matched?.role))
-      ) {
-        navigation.navigate("Club", {
-          screen: "ClubGroup",
-          params: { clubId }
-        });
-      } else {
-        navigation.navigate("Club", {
-          screen: "ClubId",
-          params: { clubId }
-        });
+      if (eventsRes.status === 200) {
+        const banners = eventsRes.data.slice(0, 5).map((event) => ({
+          img: { uri: event.thumbnailUrl },
+          text: `Sự kiện: ${event.title}`,
+          sub:
+            stripMarkdown(event.description?.slice(0, 60)) || "Tham gia ngay!",
+          onPress: () =>
+            navigation.navigate("Event", {
+              screen: "EventDetail",
+              params: { eventId: event.eventId }
+            })
+        }));
+
+        setBannerData(banners);
+        setLoading(false);
       }
-    } catch (e) {
-      console.error("Membership check failed", e);
-      Alert.alert("Lỗi", "Bạn phải đăng nhập để vào câu lạc bộ");
+    } catch (error) {
+      console.error("Lỗi load banner:", error);
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  useEffect(() => {
+    if (!bannerData || bannerData.length <= 1) return;
+
+    intervalRef.current = setInterval(() => {
+      setBannerIdx((prevIdx) => (prevIdx + 1) % bannerData.length);
+    }, 3000); // ⏱ 3s
+
+    return () => clearInterval(intervalRef.current);
+  }, [bannerData]);
+
+  const handlePress = () => {
+    const banner = bannerData[bannerIdx];
+    if (banner?.type === "event") {
+      navigation.navigate("EventId", { eventId: banner.eventId });
+    }
+  };
+
+  if (!bannerData.length) return null;
+  if (loading) {
+    return (
+      <View style={styles.loadingWrapper}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  if (!bannerData.length) return null;
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#fcf4eb", marginBottom: -20 }}>
+    <>
       <Header />
-      <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
-        <SectionHeader
-          title="CLB nổi bật"
-          onPressAll={() => navigation.navigate("Club", { screen: "ClubNo" })}
-        />
-        <GridClubList data={data} onPressItem={handleClubPress} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f8fa" }}>
+        <StatusBar barStyle="light-content" />
+        {/* Header */}
+        <LinearGradient colors={["#ff6600", "#ff6600"]} style={[styles.header]}>
+          <View style={styles.headerWrap}>
+            <View>
+              <Text style={styles.hello}>
+                Chào {dataprofile.fullName}
+                👋,
+              </Text>
+            </View>
+            <Image
+              source={{
+                uri: dataprofile.avatarUrl
+              }}
+              style={styles.avatar}
+            />
+          </View>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm CLB, sự kiện, bạn bè..."
+              placeholderTextColor="#80b6b2"
+            />
+            <Image
+              source={{
+                uri: "https://img.icons8.com/ios-filled/50/23d4ae/search--v1.png"
+              }}
+              style={styles.iconSearch}
+            />
+          </View>
+          {/* Chỉ số tổng quan */}
+          <View style={styles.indicatorWrap}>
+            {indicators.map((item) => (
+              <View
+                key={item.id}
+                style={[styles.indicatorCard, { backgroundColor: item.bg }]}
+              >
+                <Image
+                  source={{ uri: item.icon }}
+                  style={{ width: 26, height: 26, marginBottom: 3 }}
+                />
+                <Text style={styles.indicatorCount}>{item.count}</Text>
+                <Text style={styles.indicatorLabel}>{item.label}</Text>
+              </View>
+            ))}
+          </View>
+        </LinearGradient>
+        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+          {/* Banner/Carousel */}
+          <TouchableOpacity
+            style={styles.bannerCard}
+            onPress={handlePress}
+            activeOpacity={0.9}
+          >
+            <Image
+              source={bannerData[bannerIdx].img}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+            <View style={styles.bannerTextContainer}>
+              <Text style={styles.bannerTitle}>
+                {bannerData[bannerIdx].text}
+              </Text>
+              <Text style={styles.bannerSubtitle} numberOfLines={2}>
+                {bannerData[bannerIdx].sub}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
-        <SectionHeader
-          title="Sự kiện nổi bật"
-          onPressAll={() =>
-            navigation.navigate("Event", { screen: "EventStack" })
-          }
-        />
-        <EventCardList
-          eventData={event}
-          onPressItem={(eventId) =>
-            navigation.navigate("Event", {
-              screen: "EventId",
-              params: { eventId }
-            })
-          }
-        />
+          {/* Check-in box */}
+          <TouchableOpacity style={styles.checkinBox} activeOpacity={0.9}>
+            <Image
+              source={{
+                uri: "https://img.icons8.com/color/96/000000/attendance-mark.png"
+              }}
+              style={{ width: 33, height: 33 }}
+            />
+            <View>
+              <Text style={[styles.checkinTitle, { color: "#4E342E" }]}>
+                Điểm danh hôm nay
+              </Text>
+              <Text
+                style={{
+                  color: "#4E342E",
+                  fontSize: 14,
+                  fontWeight: "500",
+                  marginTop: 2,
+                  marginLeft: 8
+                }}
+              >
+                Click để điểm danh nhanh sự kiện!
+              </Text>
+            </View>
+          </TouchableOpacity>
 
-        <SectionHeader
-          title="Bài viết nổi bật"
-          onPressAll={() => navigation.navigate("Club", { screen: "Blog" })}
-        />
-        <BlogCardList
-          blogData={blog}
-          onPressItem={(blogId) =>
-            navigation.navigate("Club", {
-              screen: "BlogDetail",
-              params: { blogId }
-            })
-          }
-        />
-      </ScrollView>
-    </View>
+          {/* Danh sách CLB gợi ý */}
+          <View style={{ marginBottom: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 14
+              }}
+            >
+              <Text style={styles.sectionTitle}>CLB nổi bật</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "ClubNo"
+                  })
+                }
+              >
+                <Text style={styles.viewAllText}>Xem tất cả</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              horizontal
+              data={data.slice(0, 4)} // 👉 Lấy 4 CLB đầu
+              keyExtractor={(i) => i.clubId.toString()}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 14 }}
+              renderItem={({ item }) => {
+                const role = clubRoles[item.clubId];
+                const status = membershipStatuses[item.clubId];
+                const isApproved = status === "APPROVED";
+                const isPending = status === "PENDING";
+                const isLeaderOrMember =
+                  role === "CLUBLEADER" || role === "MEMBER";
+
+                return (
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("Club", {
+                        screen: "ClubId",
+                        params: {
+                          clubId: item.clubId
+                        }
+                      })
+                    }
+                  >
+                    <View style={styles.clubCard}>
+                      <Image
+                        source={{ uri: item.logoUrl }}
+                        style={styles.clubImg}
+                      />
+                      <Text style={styles.clubName}>{item.name}</Text>
+                      <Text style={styles.clubDescription} numberOfLines={2}>
+                        {stripMarkdown(item.description) || "Không có mô tả"}
+                      </Text>
+
+                      {isApproved || isLeaderOrMember ? (
+                        <TouchableOpacity
+                          style={styles.groupButton}
+                          onPress={() =>
+                            navigation.navigate("Club", {
+                              screen: "ClubGroup",
+                              params: { clubId: item.clubId }
+                            })
+                          }
+                        >
+                          <Text style={styles.groupButtonText}>
+                            Truy cập nhóm
+                          </Text>
+                        </TouchableOpacity>
+                      ) : isPending ? (
+                        <TouchableOpacity
+                          style={[
+                            styles.joinbtnSmall,
+                            { backgroundColor: "#facc15" }
+                          ]}
+                        >
+                          <Text
+                            style={[styles.joinbtnSmallText, { color: "#000" }]}
+                          >
+                            Đang chờ duyệt
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.joinbtnSmall}
+                          onPress={() =>
+                            navigation.navigate("Club", {
+                              screen: "FormRegister",
+                              params: { clubId: item.clubId }
+                            })
+                          }
+                        >
+                          <Text style={styles.joinbtnSmallText}>
+                            Tham gia clb
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+
+          {/* Sự kiện sắp tới */}
+          <View style={{ marginBottom: 25 }}>
+            <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
+            <FlatList
+              horizontal
+              data={event.slice(0, 4)}
+              keyExtractor={(item) => item.eventId.toString()}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 14 }}
+              renderItem={({ item }) => {
+                const eventTime = dayjs(item.eventDate).format(
+                  "HH:mm, DD/MM/YYYY"
+                );
+                return (
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    style={styles.eventCard}
+                    onPress={() => {
+                      navigation.navigate("Event", {
+                        screen: "EventId",
+                        params: {
+                          eventId: item.eventId
+                        }
+                      });
+                    }}
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          item.projectFileUrl ||
+                          "https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/2020-Chevrolet-Corvette-Stingray/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=960"
+                      }}
+                      style={styles.eventImg}
+                    />
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <Text style={styles.eventTitle}>{item.title}</Text>
+                      <Text style={styles.eventDesc}>
+                        {eventTime} • {item.location}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+          {/* Nút tham gia sự kiện */}
+          {/* <TouchableOpacity style={styles.bigJoinBtn}>
+            <Text style={styles.bigJoinBtnText}>
+              + Tham gia một sự kiện mới
+            </Text>
+          </TouchableOpacity> */}
+        </ScrollView>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("FormClub")}
+          activeOpacity={0.9}
+          style={{
+            position: "absolute",
+            bottom: 30,
+            right: 20,
+            backgroundColor: "#ff6600",
+            paddingVertical: 14,
+            paddingHorizontal: 20,
+            borderRadius: 100,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+            zIndex: 10
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+            + Tạo CLB
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </>
   );
-};
+}
 
+// ---------- STYLE ----------
+const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 12
+  header: {
+    paddingTop: Platform.OS === "android" ? 44 : 28,
+    paddingBottom: 20,
+    paddingHorizontal: 18,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+    marginBottom: 14,
+    marginTop: -5
   },
-
-  sectionTitle: {
+  cardContainer: {
+    borderRadius: 12,
+    overflow: "hidden"
+  },
+  textContainer: {
+    padding: 12,
+    backgroundColor: "#fff"
+  },
+  bannerTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#111827"
-  },
-
-  seeAll: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#2563EB"
-  },
-
-  card: {
-    height: 180,
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 2,
-    margin: 8
-  },
-  cardImage: {
-    width: "100%",
-    height: 90
-  },
-  cardContent: {
-    padding: 10,
-    flex: 1,
-    justifyContent: "space-between"
-  },
-  cardTitle: {
-    fontSize: 14,
     fontWeight: "600",
-    color: "#1F2937"
+    color: "#4E342E",
+    marginBottom: 4,
+    textAlign: "center"
   },
-  cardDesc: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 4
+  bannerSubtitle: {
+    fontSize: 14,
+    color: "#6D4C41",
+    textAlign: "center"
   },
-  cardGrid: {
-    paddingHorizontal: 16,
-    paddingBottom: 16
+  clubDescription: {
+    fontSize: 12,
+    color: "#4E342E",
+    marginVertical: 4
   },
-  row: {
+  groupButton: {
+    marginTop: 8,
+    backgroundColor: "#3b82f6",
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  groupButtonText: {
+    color: "#fff",
+    fontWeight: "600"
+  },
+  joinbtnSmall: {
+    marginTop: 8,
+    backgroundColor: "#10b981",
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  joinbtnSmallText: {
+    color: "#fff",
+    fontWeight: "600"
+  },
+  viewAllText: {
+    color: "#007bff",
+    fontSize: 13
+  },
+
+  headerWrap: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16
+    marginBottom: 8
   },
-  cardSmall: {
-    width: "48%",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 2,
-    padding: 10
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: "#fff"
   },
-  cardInfo: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginTop: 4
+  hello: { fontSize: 17, color: "#fff", fontWeight: "500", opacity: 0.9 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+    marginTop: 2
   },
-  cardBlog: {
-    flexDirection: "row", // chuyển sang bố cục ngang
-    flex: 0.48,
-    height: 140,
+  searchContainer: {
+    marginTop: 12,
     backgroundColor: "#fff",
     borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    shadowColor: "#00b8be",
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2
+  },
+  searchInput: { flex: 1, fontSize: 16.5, color: "#333", paddingLeft: 2 },
+  iconSearch: {
+    width: 20,
+    height: 20,
+    tintColor: ACCENT,
+    marginLeft: 8,
+    opacity: 0.84
+  },
+  indicatorWrap: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: -14
+  },
+  indicatorCard: {
+    flex: 1,
+    marginHorizontal: 4.5,
+    borderRadius: 13,
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 2,
+    shadowColor: "#7df3cf",
+    shadowOpacity: 0.17,
+    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  indicatorCount: { fontSize: 20, fontWeight: "bold", color: "#21ad93" },
+  indicatorLabel: {
+    fontSize: 12.5,
+    color: "#467e74",
+    fontWeight: "500",
+    marginTop: 1
+  },
+  bannerCard: {
+    borderRadius: 16,
     overflow: "hidden",
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginTop: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    marginBottom: 30
   },
-  blogImage: {
-    flex: 3, // 3 phần ảnh (3/5)
-    height: "100%",
+
+  bannerImage: {
     width: "100%",
-    backgroundColor: "#E5E7EB"
+    height: 160
   },
-  cardContent: {
-    flex: 2, // 2 phần chữ (2/5)
-    padding: 10,
-    justifyContent: "center"
+
+  bannerTextContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF8F0"
+  },
+
+  bannerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#4E342E",
+    marginBottom: 4,
+    textAlign: "center"
+  },
+
+  bannerSubtitle: {
+    fontSize: 14,
+    color: "#6D4C41",
+    textAlign: "center"
+  },
+  checkinBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e6f9ff",
+    borderRadius: 17,
+    marginHorizontal: 18,
+    marginBottom: 8,
+    padding: 13,
+    shadowColor: "#00eec4",
+    shadowOpacity: 0.13,
+    shadowRadius: 7
+  },
+  checkinTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#23d4ae",
+    marginLeft: 8
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#4E342E",
+    marginLeft: 1,
+    marginTop: 22,
+    marginBottom: 8,
+    letterSpacing: 0.1
+  },
+  clubCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 12,
+    marginRight: 14,
+    width: 220,
+    shadowColor: "#ccc",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+    alignItems: "center"
+  },
+  clubImg: {
+    width: "100%",
+    height: 100,
+    borderRadius: 10,
+    marginBottom: 8
+  },
+  clubName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#222",
+    textAlign: "center",
+    marginBottom: 4
+  },
+  clubDescription: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 8,
+    lineHeight: 16
+  },
+  joinbtnSmall: {
+    backgroundColor: "#3fb27f",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20
+  },
+  joinbtnSmallText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "500"
+  },
+  eventCard: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    alignItems: "flex-start",
+    marginRight: 20,
+    shadowColor: "#e2f4ed",
+    shadowOpacity: 0.13,
+    shadowRadius: 8,
+    marginBottom: 12,
+    width: 300,
+    padding: 10
+  },
+
+  eventImg: {
+    width: 130, // Tăng kích thước hình
+    height: 200,
+    borderRadius: 10
+  },
+
+  eventTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 12,
+    flexWrap: "wrap"
+  },
+
+  eventDesc: {
+    fontSize: 12,
+    color: "#555",
+    marginBottom: 2,
+    flexWrap: "wrap"
+  },
+
+  detailBtn: {
+    marginTop: 20,
+    backgroundColor: "#e5f0ff",
+    paddingHorizontal: 18,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: "flex-start"
+  },
+
+  detailBtnText: {
+    fontSize: 12,
+    color: "#3366cc",
+    fontWeight: "500"
+  },
+
+  bigJoinBtn: {
+    backgroundColor: ACCENT,
+    borderRadius: 23,
+    marginHorizontal: 40,
+    marginTop: 8,
+    alignItems: "center",
+    paddingVertical: 13,
+    marginBottom: 35,
+    shadowColor: "#17f0be",
+    shadowOpacity: 0.23,
+    shadowRadius: 5
+  },
+  bigJoinBtnText: {
+    color: "#fff",
+    fontSize: 16.3,
+    fontWeight: "bold",
+    letterSpacing: 0.19
   }
 });
-
-export default Homepage;
