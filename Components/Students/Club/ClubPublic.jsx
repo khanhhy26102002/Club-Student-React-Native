@@ -176,9 +176,7 @@ const ClubPublic = ({ navigation }) => {
                 }}
               >
                 <View style={styles.clubButtonContent}>
-                  <Text style={styles.clubButtonText}>
-                    Tạo câu lạc bộ
-                  </Text>
+                  <Text style={styles.clubButtonText}>Tạo câu lạc bộ</Text>
                 </View>
               </TouchableOpacity>
 
@@ -220,10 +218,11 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#686868ff",
     textAlign: "center",
     paddingHorizontal: 12,
-    marginBottom: 16
+    marginBottom: 16,
+    fontWeight: "bold"
   },
   clubButton: {
     backgroundColor: "#E0E7FF",
