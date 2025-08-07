@@ -503,7 +503,11 @@ export default function Homepage() {
           </TouchableOpacity> */}
         </ScrollView>
         <TouchableOpacity
-          onPress={() => navigation.navigate("FormClub")}
+          onPress={() =>
+            navigation.navigate("Club", {
+              screen: "FormClub"
+            })
+          }
           activeOpacity={0.9}
           style={{
             position: "absolute",
