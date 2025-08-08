@@ -44,7 +44,16 @@ export default function Event({ navigation }) {
     fetchData();
   }, []);
 
-  // Hàm format ngày/tháng
+  const getCoverImg = (format) => {
+    if (format === "ONLINE")
+      return { uri: "https://img.icons8.com/color/96/000000/laptop.png" };
+    if (format === "OFFLINE")
+      return { uri: "https://img.icons8.com/color/96/000000/conference.png" };
+    return {
+      uri: "https://img.icons8.com/external-flatart-icons-outline-flatarticons/64/000000/external-calendar-back-to-school-flatart-icons-outline-flatarticons.png"
+    };
+  };
+
   const formatDay = (str) => {
     if (!str) return "";
     const d = new Date(str);
@@ -58,39 +67,32 @@ export default function Event({ navigation }) {
       .padStart(2, "0")}/${d.getFullYear()}`;
   };
 
-  // Biểu tượng hoặc hình ảnh theo sự kiện
-  const getCoverImg = (format) => {
-    if (format === "ONLINE")
-      return { uri: "https://img.icons8.com/color/96/000000/laptop.png" };
-    if (format === "OFFLINE")
-      return { uri: "https://img.icons8.com/color/96/000000/conference.png" };
-    return { uri: "https://i.imgur.com/jT7yA9C.png" };
-  };
-
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={{
-        width: "48%",
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        overflow: "hidden",
-        elevation: 2
-      }}
+      style={styles.card}
       activeOpacity={0.85}
-      onPress={() => handleEventPress(item.eventId)}
+      onPress={() =>
+        navigation.navigate("Event", {
+          screen: "EventId",
+          params: {
+            eventId: item.eventId
+          }
+        })
+      }
     >
       <Image
-        source={{ uri: item.thumbnailUrl }}
+        source={getCoverImg(item.format)}
         style={{ width: "100%", height: 100 }}
         resizeMode="cover"
       />
       <View style={{ padding: 8 }}>
-        <Text numberOfLines={2} style={{ fontWeight: "600", fontSize: 14 }}>
-          {item.name}
+        <Text numberOfLines={2} style={styles.cardTitle}>
+          {item.title}
         </Text>
-        <Text style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
-          {item.date}
-        </Text>
+        <Text style={styles.cardDate}>{formatDay(item.eventDate)}</Text>
+        {item.location && (
+          <Text style={styles.cardLocation}>{item.location}</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -104,7 +106,7 @@ export default function Event({ navigation }) {
         {loading ? (
           <ActivityIndicator
             size="large"
-            color="#23d4ae"
+            color="#f57c00"
             style={{ marginTop: 40 }}
           />
         ) : (
@@ -137,56 +139,40 @@ export default function Event({ navigation }) {
   );
 }
 
-// ----------- STYLE -----------
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: {
+    flex: 1,
+    backgroundColor: "#fffaf2",
+    marginBottom: -50
+  },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#10998c",
+    color: "#f57c00",
     margin: 20,
     marginBottom: 8,
     letterSpacing: 0.13
   },
   card: {
+    width: "48%",
     backgroundColor: "#fff",
-    borderRadius: 20,
-    flexDirection: "row",
-    marginBottom: 24,
-    shadowColor: "#56dacd",
-    shadowOpacity: 0.13,
-    shadowRadius: 8,
-    elevation: 3,
-    alignItems: "center"
+    borderRadius: 10,
+    overflow: "hidden",
+    elevation: 2
   },
-  img: {
-    width: 72,
-    height: 72,
-    borderRadius: 14,
-    margin: 12,
-    backgroundColor: "#e1eeec"
+  cardTitle: {
+    fontWeight: "600",
+    fontSize: 14,
+    color: "#333"
   },
-  cardBody: { flex: 1, paddingRight: 10 },
-  eventTitle: {
-    fontSize: 16.4,
-    fontWeight: "bold",
-    color: "#10998c",
-    marginBottom: 1,
-    flexWrap: "wrap"
+  cardDate: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4
   },
-  tagRow: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
-  typeTag: {
-    borderRadius: 9,
-    paddingHorizontal: 10,
-    paddingVertical: 2.5,
-    marginRight: 7
-  },
-  typeTagText: { fontWeight: "bold", fontSize: 13 },
-  eventDesc: {
-    color: "#44786a",
-    fontSize: 13.5,
-    marginBottom: 3,
-    fontWeight: "400"
-  },
-  eventInfo: { color: "#44847a", fontSize: 13, marginTop: 2 }
+  cardLocation: {
+    fontSize: 12,
+    color: "#aaa",
+    marginTop: 2
+  }
 });

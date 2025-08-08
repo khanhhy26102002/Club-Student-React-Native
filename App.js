@@ -32,6 +32,12 @@ export default function App() {
         console.error("❌ Lỗi khi gọi hàm:", err);
       });
   });
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        "660569491893-hjd276bbkkklk43h8ibivj66hcmm81a8.apps.googleusercontent.com"
+    });
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Main">
