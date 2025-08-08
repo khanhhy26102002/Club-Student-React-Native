@@ -1,45 +1,55 @@
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
-  Alert,
+  Text,
+  StyleSheet,
   Image,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Linking
 } from "react-native";
-import React from "react";
-import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { stripMarkdown } from "../../../stripmarkdown";
-import { Ionicons } from "@expo/vector-icons";
+// import fetchBaseResponse từ service của bạn
 
-const EventId = ({ navigation }) => {
-  const route = useRoute();
+const FORMAT_ICON = {
+  OFFLINE: "https://img.icons8.com/color/96/000000/conference.png",
+  ONLINE: "https://img.icons8.com/color/96/000000/laptop.png"
+};
+const TYPE_COLOR = {
+  OFFLINE: "#42dfa5",
+  ONLINE: "#149ee2"
+};
+
+export default function EventDetail({ route }) {
+  // Nhận eventId từ navigation param
   const { eventId } = route.params;
-  const [data, setData] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  React.useEffect(() => {
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
+        // Lấy public event
         const publicRes = await fetchBaseResponse(
           `/api/events/public/${eventId}`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json"
-            }
+            headers: { "Content-Type": "application/json" }
           }
         );
-
         if (publicRes.status !== 200) {
           Alert.alert("Thông báo", "Không tìm thấy sự kiện.");
           setData(null);
           return;
         }
-
         let roleName = null;
         const token = await AsyncStorage.getItem("jwt");
         try {
@@ -47,12 +57,9 @@ const EventId = ({ navigation }) => {
             `/api/event-roles/my/${eventId}`,
             {
               method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
+              headers: { Authorization: `Bearer ${token}` }
             }
           );
-
           if (myRes.status === 200) {
             roleName = myRes.data.roleName;
           }
@@ -60,11 +67,7 @@ const EventId = ({ navigation }) => {
           // Không làm gì nếu lỗi, roleName sẽ là null
           console.log("Không lấy được role cho sự kiện", err);
         }
-
-        const mergedData = {
-          ...publicRes.data,
-          roleName
-        };
+        const mergedData = { ...publicRes.data, roleName };
         setData(mergedData);
       } catch (error) {
         Alert.alert("Lỗi", "Không lấy được event theo id");
@@ -73,7 +76,6 @@ const EventId = ({ navigation }) => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [eventId]);
 
@@ -92,6 +94,8 @@ const EventId = ({ navigation }) => {
       </View>
     );
   }
+
+  // Định dạng ngày tiếng Việt
   const formattedDate = new Date(data.eventDate).toLocaleString("vi-VN", {
     weekday: "long",
     year: "numeric",
@@ -100,333 +104,227 @@ const EventId = ({ navigation }) => {
     hour: "2-digit",
     minute: "2-digit"
   });
+
+  // Chọn icon/màu theo format
+  const coverImg = FORMAT_ICON[data.format] || FORMAT_ICON.OFFLINE;
+  const color = TYPE_COLOR[data.format] || TYPE_COLOR.OFFLINE;
+
   return (
-    <View style={styles.wrapper}>
+    <>
       <Header />
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate("Home")}
-      >
-        <Ionicons name="arrow-back" size={20} color="#000" />
-        <Text style={styles.backText}>Quay về</Text>
-      </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Banner */}
-        <Image
-          source={{
-            uri:
-              data.image ||
-              "https://cdn-icons-png.flaticon.com/512/7466/7466140.png"
-          }}
-          style={styles.banner}
-        />
-        <View style={styles.registerContainer}>
-          {data.roleName === "ORGANIZER" ? (
-            <View style={styles.organizerCard}>
-              <View style={styles.organizerHeader}>
-                <Image
-                  source={{
-                    uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                  }}
-                  style={styles.organizerIcon}
-                />
-                <Text style={styles.organizerText}>
-                  🎉 Bạn là người tổ chức sự kiện này
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.taskButton}
-                onPress={() => {
-                  navigation.navigate("Event", {
-                    screen: "EventAssign",
-                    params: {
-                      eventId: data.eventId,
-                      title: data.title,
-                      userId: data.userId
-                    }
-                  });
-                }}
-              >
-                <Text style={styles.taskButtonText}>
-                  🧩 Phân chia role cho thành viên
-                </Text>
-              </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+        <StatusBar barStyle="dark-content" />
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 36 }}
+        >
+          {/* Banner */}
+          <View style={[styles.bannerWrap, { backgroundColor: color + "22" }]}>
+            <Image source={{ uri: coverImg }} style={styles.bannerImg} />
+          </View>
+          {/* Tag loại, eventType */}
+          <View style={styles.tagRow}>
+            <View style={[styles.typeTag, { backgroundColor: color }]}>
+              <Text style={styles.typeTagText}>{data.format || "OFFLINE"}</Text>
             </View>
-          ) : data.roleName === "CHECKIN" ? (
-            <View style={styles.organizerCard}>
-              <View style={styles.organizerHeader}>
-                <Image
-                  source={{
-                    uri: "https://cdn-icons-png.flaticon.com/512/4202/4202849.png"
-                  }}
-                  style={styles.organizerIcon}
-                />
-                <View style={{ flex: 1 }}>
-                  <TouchableOpacity
-                    style={styles.viewTaskButton}
-                    onPress={() =>
-                      navigation.navigate("Event", {
-                        screen: "EventTaskView",
-                        params: {
-                          eventId: data.eventId
-                        }
-                      })
-                    }
-                  >
-                    <Text style={styles.viewTaskText}>
-                      📋 Xem nhiệm vụ của bạn
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+            {data.eventType ? (
+              <View style={styles.typeTag2}>
+                <Text style={styles.typeTagText2}>{data.eventType}</Text>
               </View>
-            </View>
-          ) : data.roleName === "CHECKOUT" ? (
-            <View style={styles.organizerCard}>
-              <View style={styles.organizerHeader}>
-                <Image
-                  source={{
-                    uri: "https://cdn-icons-png.flaticon.com/512/4202/4202849.png"
-                  }}
-                  style={styles.organizerIcon}
-                />
-                <Text style={styles.organizerText}>
-                  ✅ Bạn là người điểm danh ra khỏi sự kiện này
-                </Text>
+            ) : null}
+            {data.roleName ? (
+              <View style={styles.roleTag}>
+                <Text style={styles.roleTagText}>Vai trò: {data.roleName}</Text>
               </View>
-            </View>
-          ) : data.roleName === "VOLUNTEER" ? (
-            <View style={styles.organizerCard}>
-              <View style={styles.organizerHeader}>
-                <Image
-                  source={{
-                    uri: "https://cdn-icons-png.flaticon.com/512/1067/1067566.png"
-                  }}
-                  style={styles.organizerIcon}
-                />
-                <Text style={styles.organizerText}>
-                  🙌 Bạn là tình nguyện viên trong sự kiện này
-                </Text>
-              </View>
-            </View>
-          ) : (
-            <>
-              <Text style={styles.registerText}>
-                Nếu bạn hứng thú với sự kiện này, hãy bấm để đăng kí tham gia 👇
-              </Text>
-              <TouchableOpacity
-                style={styles.registerButton}
-                onPress={async () => {
-                  try {
-                    const token = await AsyncStorage.getItem("jwt");
-                    if (!token) {
-                      Alert.alert(
-                        "Thông báo",
-                        "Vui lòng đăng nhập để đăng ký sự kiện."
-                      );
-                      return;
-                    }
-
-                    navigation.navigate("Event", {
-                      screen: "EventRegistration",
-                      params: {
-                        eventId: data.eventId,
-                        title: data.title
-                      }
-                    });
-                  } catch (err) {
-                    Alert.alert(
-                      "Lỗi",
-                      "Không thể kiểm tra trạng thái đăng nhập."
-                    );
-                  }
-                }}
-              >
-                <Text style={styles.registerButtonText}>Đăng ký sự kiện</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-        {/* Event Info */}
-        <View style={styles.card}>
+            ) : null}
+          </View>
+          {/* Tiêu đề */}
           <Text style={styles.title}>{data.title}</Text>
-          <Text style={styles.description}>
-            {stripMarkdown(data.description)}
+          {/* Thông tin chính */}
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>🗓 Thời gian</Text>
+            <Text style={styles.infoVal}>{formattedDate}</Text>
+            <Text style={styles.infoLabel}>📍 Địa điểm</Text>
+            <Text style={styles.infoVal}>{data.location}</Text>
+          </View>
+          {/* Mô tả */}
+          <Text style={styles.descLabel}>Mô tả sự kiện</Text>
+          <Text style={styles.descText}>
+            {data.description || "(Không có mô tả)"}
           </Text>
-          <Text style={styles.date}>📅 {formattedDate}</Text>
-        </View>
-
-        {/* Format & Location */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>💻 Hình thức:</Text>
-            <Text style={styles.value}>{data.format}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.label}>📍 Địa điểm:</Text>
-            <Text style={styles.value}>{data.location}</Text>
-          </View>
-        </View>
-
-        {/* Registration Section */}
-      </ScrollView>
-    </View>
+          {/* Tệp đính kèm */}
+          {data.projectFileUrl ? (
+            <TouchableOpacity
+              style={styles.fileBtn}
+              activeOpacity={0.82}
+              onPress={() => Linking.openURL(data.projectFileUrl)}
+            >
+              <Image
+                source={{
+                  uri: "https://img.icons8.com/color/48/000000/pdf.png"
+                }}
+                style={{ width: 28, height: 28, marginRight: 9 }}
+              />
+              <Text style={styles.fileBtnText}>Tải file đính kèm</Text>
+            </TouchableOpacity>
+          ) : null}
+          {/* Nút tham gia */}
+          <TouchableOpacity
+            style={[styles.joinBtn, { backgroundColor: color }]}
+          >
+            <Text style={styles.joinBtnText}>THAM GIA NGAY</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
+    </>
   );
-};
+}
 
-export default EventId;
-
+// -------- STYLES --------
 const styles = StyleSheet.create({
-  backButton: {
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8fafc"
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8fafc"
+  },
+  errorText: { color: "#e55", fontSize: 16, fontWeight: "bold" },
+
+  bannerWrap: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 26,
+    backgroundColor: "#eaf9f3"
+  },
+  bannerImg: {
+    width: 90,
+    height: 90,
+    borderRadius: 28,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#cdedea"
+  },
+  tagRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    backgroundColor: "#e0f2fe"
+    marginHorizontal: 23,
+    marginTop: 20,
+    marginBottom: 11,
+    gap: 13,
+    flexWrap: "wrap"
   },
-  backText: {
-    marginLeft: 6,
-    fontSize: 16,
-    color: "#000",
-    fontWeight: "500"
+  typeTag: {
+    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 13,
+    alignSelf: "flex-start"
   },
-  wrapper: {
-    flex: 1,
-    backgroundColor: "#F9FAFB"
+  typeTagText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 14.5,
+    letterSpacing: 0.4,
+    textTransform: "uppercase"
   },
-  container: {
-    padding: 16,
-    paddingBottom: 50
+  typeTag2: {
+    backgroundColor: "#daf2fd",
+    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    marginLeft: 8
   },
-  banner: {
-    width: "100%",
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 20
+  typeTagText2: {
+    color: "#098ddc",
+    fontWeight: "bold",
+    fontSize: 13.5,
+    letterSpacing: 0.3
   },
-  card: {
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4
+  roleTag: {
+    backgroundColor: "#fbeee7",
+    borderRadius: 9,
+    paddingVertical: 4,
+    paddingHorizontal: 11,
+    marginLeft: 8
   },
+  roleTagText: { color: "#e18e2e", fontWeight: "bold", fontSize: 13 },
+
   title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#1F2937",
-    marginBottom: 6
+    fontSize: 21,
+    fontWeight: "bold",
+    color: "#1e7763",
+    marginHorizontal: 23,
+    marginTop: 3,
+    marginBottom: 14,
+    lineHeight: 27
   },
-  description: {
-    fontSize: 15,
-    color: "#4B5563",
-    marginBottom: 8
-  },
-  date: {
-    fontSize: 14,
-    color: "#2563EB"
-  },
-  infoCard: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10
-  },
-  label: {
-    fontSize: 15,
-    color: "#374151",
-    fontWeight: "600"
-  },
-  value: {
-    fontSize: 15,
-    color: "#1E40AF",
-    fontWeight: "500"
-  },
-  registerContainer: {
-    marginTop: 10,
-    marginBottom: 20
-  },
-  registerText: {
-    fontSize: 15,
-    color: "#374151",
-    textAlign: "center",
+  infoBox: {
+    backgroundColor: "#e4f8f2",
+    borderRadius: 14,
+    marginHorizontal: 19,
+    padding: 16,
     marginBottom: 14
   },
-  registerButton: {
-    backgroundColor: "#1E40AF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    alignItems: "center"
+  infoLabel: {
+    color: "#1fa285",
+    fontWeight: "bold",
+    fontSize: 13.8,
+    marginTop: 2
   },
-  registerButtonText: {
-    color: "#FFFFFF",
+  infoVal: { color: "#236177", fontSize: 15, marginBottom: 5, marginLeft: 3 },
+  descLabel: {
+    fontWeight: "700",
+    color: "#16b59c",
     fontSize: 16,
-    fontWeight: "600"
+    marginHorizontal: 23,
+    marginBottom: 2,
+    marginTop: 15
   },
-  organizerCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
+  descText: {
+    color: "#4a756a",
+    fontSize: 14.3,
+    lineHeight: 20,
+    marginHorizontal: 23,
+    marginBottom: 16,
+    fontWeight: "400"
+  },
+  fileBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff8e0",
+    marginHorizontal: 24,
+    borderRadius: 13,
+    padding: 11,
+    marginTop: 8,
+    marginBottom: 13,
+    shadowColor: "#ddf0ca",
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
     elevation: 2
   },
-  organizerHeader: {
-    flexDirection: "row",
+  fileBtnText: { color: "#ea863e", fontWeight: "bold", fontSize: 15.2 },
+  joinBtn: {
+    marginHorizontal: 32,
+    marginTop: 12,
+    borderRadius: 25,
     alignItems: "center",
-    justifyContent: "space-between"
+    paddingVertical: 14,
+    backgroundColor: "#42dfa5",
+    shadowColor: "#18e7b7",
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 3
   },
-  organizerIcon: {
-    width: 48,
-    height: 48,
-    marginRight: 12
-  },
-  viewTaskButton: {
-    backgroundColor: "#3B82F6",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginTop: 10
-  },
-  viewTaskText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 14
-  },
-  organizerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14
-  },
-  organizerIcon: {
-    width: 40,
-    height: 40,
-    marginRight: 10
-  },
-  organizerText: {
-    fontSize: 15,
-    color: "#1E3A8A",
-    fontWeight: "600"
-  },
-  taskButton: {
-    backgroundColor: "#1E3A8A",
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  taskButtonText: {
+  joinBtnText: {
     color: "#fff",
-    fontWeight: "600",
-    fontSize: 15
+    fontWeight: "bold",
+    fontSize: 16.5,
+    letterSpacing: 0.18
   }
 });
