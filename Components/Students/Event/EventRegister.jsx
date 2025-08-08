@@ -67,33 +67,6 @@ const EventRegister = ({ navigation }) => {
       console.error("Error: ", error);
     }
   };
-  const validateForm = () => {
-    if (!title.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập tên sự kiện");
-      return false;
-    }
-    if (!description.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập mô tả sự kiện");
-      return false;
-    }
-    if (!format) {
-      Alert.alert("Lỗi", "Vui lòng chọn hình thức tổ chức");
-      return false;
-    }
-    if (!location.trim()) {
-      Alert.alert("Lỗi", "Vui lòng nhập địa điểm tổ chức");
-      return false;
-    }
-    if (maximumParticipants <= 0) {
-      Alert.alert("Lỗi", "Số lượng tối đa phải lớn hơn 0");
-      return false;
-    }
-    if (!visibility) {
-      Alert.alert("Lỗi", "Vui lòng chọn mức độ công khai");
-      return false;
-    }
-    return true;
-  };
   React.useEffect(() => {
     fetchData();
   }, [clubId]);

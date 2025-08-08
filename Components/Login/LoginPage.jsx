@@ -10,13 +10,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Modal,
   Image
 } from "react-native";
 import { checkEventRole, fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode"; // dùng đúng export
 import { useRoute } from "@react-navigation/native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
 const LoginPage = ({ navigation }) => {
   const route = useRoute();
   const { eventId } = route.params || {};
@@ -24,6 +25,17 @@ const LoginPage = ({ navigation }) => {
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  
+
+  const handleGoogleLogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      console.log("User info:", userInfo);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   // tab clubs đang có clubs/public
   const handleLogin = async () => {
     try {
@@ -47,7 +59,6 @@ const LoginPage = ({ navigation }) => {
         const roleName = roles?.[0] || "GUEST";
         const decoded = jwtDecode(token);
         const userId = decoded.sub;
-
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
@@ -62,7 +73,7 @@ const LoginPage = ({ navigation }) => {
             return;
           }
         }
-
+        console.log("UserId", userId);
         if (roleName === "MEMBER") {
           navigation.replace("Main");
         } else if (roleName === "ORGANIZERS") {
@@ -161,6 +172,7 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.orText}>Hoặc đăng nhập bằng</Text>
           <View style={styles.socialContainer}>
             <TouchableOpacity
+              onPress={handleGoogleLogin}
               style={[styles.socialButton, styles.google]}
               activeOpacity={0.7}
             >

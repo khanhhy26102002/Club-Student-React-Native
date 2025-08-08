@@ -16,21 +16,23 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import { useNavigation } from "@react-navigation/native";
 // import fetchBaseResponse từ service của bạn
-
+import Icon from "react-native-vector-icons/Ionicons"; // hoặc Feather, MaterialIcons, etc.
 const FORMAT_ICON = {
   OFFLINE: "https://img.icons8.com/color/96/000000/conference.png",
   ONLINE: "https://img.icons8.com/color/96/000000/laptop.png"
 };
+
 const TYPE_COLOR = {
-  OFFLINE: "#42dfa5",
-  ONLINE: "#149ee2"
+  OFFLINE: "#f57c00", // cam đậm
+  ONLINE: "#f57c00"
 };
 
 export default function EventDetail({ route }) {
   // Nhận eventId từ navigation param
   const { eventId } = route.params;
-
+  const navigation = useNavigation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +52,7 @@ export default function EventDetail({ route }) {
           setData(null);
           return;
         }
+        console.log("Response:",publicRes.data);
         let roleName = null;
         const token = await AsyncStorage.getItem("jwt");
         try {
@@ -112,48 +115,54 @@ export default function EventDetail({ route }) {
   return (
     <>
       <Header />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff8f1" }}>
         <StatusBar barStyle="dark-content" />
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 36 }}
         >
-          {/* Banner */}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+          >
+            <Icon name="arrow-back" size={26} color="#333" />
+          </TouchableOpacity>
+
           <View style={[styles.bannerWrap, { backgroundColor: color + "22" }]}>
             <Image source={{ uri: coverImg }} style={styles.bannerImg} />
           </View>
-          {/* Tag loại, eventType */}
+
           <View style={styles.tagRow}>
             <View style={[styles.typeTag, { backgroundColor: color }]}>
               <Text style={styles.typeTagText}>{data.format || "OFFLINE"}</Text>
             </View>
-            {data.eventType ? (
+            {data.eventType && (
               <View style={styles.typeTag2}>
                 <Text style={styles.typeTagText2}>{data.eventType}</Text>
               </View>
-            ) : null}
-            {data.roleName ? (
+            )}
+            {data.roleName && (
               <View style={styles.roleTag}>
                 <Text style={styles.roleTagText}>Vai trò: {data.roleName}</Text>
               </View>
-            ) : null}
+            )}
           </View>
-          {/* Tiêu đề */}
+
           <Text style={styles.title}>{data.title}</Text>
-          {/* Thông tin chính */}
+
           <View style={styles.infoBox}>
             <Text style={styles.infoLabel}>🗓 Thời gian</Text>
             <Text style={styles.infoVal}>{formattedDate}</Text>
             <Text style={styles.infoLabel}>📍 Địa điểm</Text>
             <Text style={styles.infoVal}>{data.location}</Text>
           </View>
-          {/* Mô tả */}
+
           <Text style={styles.descLabel}>Mô tả sự kiện</Text>
           <Text style={styles.descText}>
             {data.description || "(Không có mô tả)"}
           </Text>
-          {/* Tệp đính kèm */}
-          {data.projectFileUrl ? (
+
+          {data.projectFileUrl && (
             <TouchableOpacity
               style={styles.fileBtn}
               activeOpacity={0.82}
@@ -167,10 +176,19 @@ export default function EventDetail({ route }) {
               />
               <Text style={styles.fileBtnText}>Tải file đính kèm</Text>
             </TouchableOpacity>
-          ) : null}
-          {/* Nút tham gia */}
+          )}
+
           <TouchableOpacity
             style={[styles.joinBtn, { backgroundColor: color }]}
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "EventRegistration",
+                params: {
+                  eventId: data.eventId,
+                  title: data.title
+                }
+              })
+            }
           >
             <Text style={styles.joinBtnText}>THAM GIA NGAY</Text>
           </TouchableOpacity>
@@ -186,30 +204,35 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8fafc"
+    backgroundColor: "#fff8f1"
   },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8fafc"
+    backgroundColor: "#fff8f1"
   },
   errorText: { color: "#e55", fontSize: 16, fontWeight: "bold" },
 
   bannerWrap: {
     width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 26,
-    backgroundColor: "#eaf9f3"
+    height: 220, // hoặc cao hơn tùy ý
+    marginBottom: 16
   },
+  backBtn: {
+    position: "absolute",
+    top: Platform.OS === "android" ? 80 : 20,
+    left: 16,
+    zIndex: 10,
+    backgroundColor: "#fff8f1cc",
+    padding: 8,
+    borderRadius: 30
+  },
+
   bannerImg: {
-    width: 90,
-    height: 90,
-    borderRadius: 28,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#cdedea"
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover"
   },
   tagRow: {
     flexDirection: "row",
@@ -234,60 +257,68 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   typeTag2: {
-    backgroundColor: "#daf2fd",
+    backgroundColor: "#fff3e0",
     borderRadius: 10,
     paddingVertical: 4,
     paddingHorizontal: 12,
     marginLeft: 8
   },
   typeTagText2: {
-    color: "#098ddc",
+    color: "#f57c00",
     fontWeight: "bold",
     fontSize: 13.5,
     letterSpacing: 0.3
   },
   roleTag: {
-    backgroundColor: "#fbeee7",
+    backgroundColor: "#ffe8d0",
     borderRadius: 9,
     paddingVertical: 4,
     paddingHorizontal: 11,
     marginLeft: 8
   },
-  roleTagText: { color: "#e18e2e", fontWeight: "bold", fontSize: 13 },
-
+  roleTagText: {
+    color: "#ef6c00",
+    fontWeight: "bold",
+    fontSize: 13
+  },
   title: {
     fontSize: 21,
     fontWeight: "bold",
-    color: "#1e7763",
+    color: "#bf360c",
     marginHorizontal: 23,
     marginTop: 3,
     marginBottom: 14,
     lineHeight: 27
   },
   infoBox: {
-    backgroundColor: "#e4f8f2",
+    backgroundColor: "#fff3e0",
     borderRadius: 14,
     marginHorizontal: 19,
     padding: 16,
     marginBottom: 14
   },
   infoLabel: {
-    color: "#1fa285",
+    color: "#ef6c00",
     fontWeight: "bold",
     fontSize: 13.8,
     marginTop: 2
   },
-  infoVal: { color: "#236177", fontSize: 15, marginBottom: 5, marginLeft: 3 },
+  infoVal: {
+    color: "#4e342e",
+    fontSize: 15,
+    marginBottom: 5,
+    marginLeft: 3
+  },
   descLabel: {
     fontWeight: "700",
-    color: "#16b59c",
+    color: "#f57c00",
     fontSize: 16,
     marginHorizontal: 23,
     marginBottom: 2,
     marginTop: 15
   },
   descText: {
-    color: "#4a756a",
+    color: "#6d4c41",
     fontSize: 14.3,
     lineHeight: 20,
     marginHorizontal: 23,
@@ -297,26 +328,30 @@ const styles = StyleSheet.create({
   fileBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff8e0",
+    backgroundColor: "#fff8e1",
     marginHorizontal: 24,
     borderRadius: 13,
     padding: 11,
     marginTop: 8,
     marginBottom: 13,
-    shadowColor: "#ddf0ca",
+    shadowColor: "#ffa726",
     shadowOpacity: 0.12,
     shadowRadius: 5,
     elevation: 2
   },
-  fileBtnText: { color: "#ea863e", fontWeight: "bold", fontSize: 15.2 },
+  fileBtnText: {
+    color: "#f57c00",
+    fontWeight: "bold",
+    fontSize: 15.2
+  },
   joinBtn: {
     marginHorizontal: 32,
     marginTop: 12,
     borderRadius: 25,
     alignItems: "center",
     paddingVertical: 14,
-    backgroundColor: "#42dfa5",
-    shadowColor: "#18e7b7",
+    backgroundColor: "#f57c00",
+    shadowColor: "#fb8c00",
     shadowOpacity: 0.16,
     shadowRadius: 8,
     elevation: 3

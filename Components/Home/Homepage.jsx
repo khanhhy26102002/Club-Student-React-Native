@@ -360,22 +360,6 @@ export default function Homepage() {
               }}
               style={{ width: 33, height: 33 }}
             />
-            <View>
-              <Text style={[styles.checkinTitle, { color: "#4E342E" }]}>
-                Điểm danh hôm nay
-              </Text>
-              <Text
-                style={{
-                  color: "#4E342E",
-                  fontSize: 14,
-                  fontWeight: "500",
-                  marginTop: 2,
-                  marginLeft: 8
-                }}
-              >
-                Click để điểm danh nhanh sự kiện!
-              </Text>
-            </View>
           </TouchableOpacity>
 
           {/* Danh sách CLB gợi ý */}
@@ -434,7 +418,7 @@ export default function Homepage() {
                       <Text style={styles.clubDescription} numberOfLines={2}>
                         {stripMarkdown(item.description) || "Không có mô tả"}
                       </Text>
-{/* 
+                      {/* 
                       {isApproved || isLeaderOrMember ? (
                         <TouchableOpacity
                           style={styles.groupButton}
@@ -486,7 +470,7 @@ export default function Homepage() {
 
           {/* Sự kiện sắp tới */}
           <View style={{ marginBottom: 25 }}>
-            <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
+            <Text style={styles.sectionTitle}>Sự kiện sắp tới</Text>
             <FlatList
               horizontal
               data={event.slice(0, 4)}
@@ -530,26 +514,24 @@ export default function Homepage() {
             />
           </View>
           <View style={{ marginBottom: 25 }}>
-            <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
+            <Text style={styles.sectionTitle}>Blog nổi bật</Text>
             <FlatList
               horizontal
-              data={event.slice(0, 4)}
-              keyExtractor={(item) => item.eventId.toString()}
+              data={blog.slice(0, 4)} // blogs là array chứa danh sách blog
+              keyExtractor={(item) => item.blogId.toString()}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 14 }}
               renderItem={({ item }) => {
-                const eventTime = dayjs(item.eventDate).format(
-                  "HH:mm, DD/MM/YYYY"
-                );
+                const createdAt = dayjs(item.createdAt).format("DD/MM/YYYY");
                 return (
                   <TouchableOpacity
                     activeOpacity={0.85}
-                    style={styles.eventCard}
+                    style={styles.blogCard}
                     onPress={() => {
-                      navigation.navigate("Event", {
-                        screen: "EventId",
+                      navigation.navigate("Blog", {
+                        screen: "BlogId",
                         params: {
-                          eventId: item.eventId
+                          blogId: item.blogId
                         }
                       });
                     }}
@@ -557,15 +539,17 @@ export default function Homepage() {
                     <Image
                       source={{
                         uri:
-                          item.projectFileUrl ||
-                          "https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/2020-Chevrolet-Corvette-Stingray/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=960"
+                          item.thumbnailUrl ||
+                          "https://via.placeholder.com/120x90.png?text=No+Image"
                       }}
-                      style={styles.eventImg}
+                      style={styles.blogImg}
                     />
                     <View style={{ flex: 1, marginLeft: 10 }}>
-                      <Text style={styles.eventTitle}>{item.title}</Text>
-                      <Text style={styles.eventDesc}>
-                        {eventTime} • {item.location}
+                      <Text numberOfLines={2} style={styles.blogTitle}>
+                        {item.title}
+                      </Text>
+                      <Text style={styles.blogDesc}>
+                        {item.authorName} • {createdAt}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -610,13 +594,19 @@ export default function Homepage() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 16,
-    paddingTop: -10,
+    paddingTop: -1,
     justifyContent: "flex-end",
+    borderTopLeftRadius: 1,
+    borderTopRightRadius: 1,
+    marginTop: -5,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 30
   },
   iconRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8
+    marginBottom: 8,
+    marginTop: 58
   },
   icon: {
     width: 30,
@@ -869,7 +859,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     marginBottom: 12,
     width: 300,
-    padding: 10
+    padding: 10,
+    marginTop: 10
   },
 
   eventImg: {
@@ -925,5 +916,36 @@ const styles = StyleSheet.create({
     fontSize: 16.3,
     fontWeight: "bold",
     letterSpacing: 0.19
+  },
+  blogCard: {
+    width: 180,
+    marginRight: 16,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    padding: 10,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    alignItems: "center"
+  },
+  blogImg: {
+    width: "100%",
+    height: 110,
+    borderRadius: 10,
+    marginBottom: 8
+  },
+  blogTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#222",
+    textAlign: "center",
+    marginBottom: 4
+  },
+  blogDesc: {
+    fontSize: 12,
+    color: "#777",
+    textAlign: "center"
   }
 });

@@ -44,7 +44,8 @@ export const CustomDrawer = (props) => {
             "Content-Type": "application/json"
           }
         });
-
+        console.log("Token:", token);
+        console.log("User info response:", res);
         if (res.status === 200) {
           setUserInfo(res.data);
         } else {
