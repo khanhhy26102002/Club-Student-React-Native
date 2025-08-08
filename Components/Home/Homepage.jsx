@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,9 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
-  Dimensions,
-  Platform
+  Platform,
+  Animated,
+  UIManager
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../Header/Header";
@@ -21,6 +22,8 @@ import { useNavigation } from "@react-navigation/native";
 import { stripMarkdown } from "../../stripmarkdown";
 import dayjs from "dayjs";
 const ACCENT = "#2E3A59";
+// thanh ở trên thu gọn lại còn thanh search
+// bỏ cái nút đang chờ duyệt ở trang home
 const indicators = [
   {
     id: "i1",
@@ -44,6 +47,15 @@ const indicators = [
     bg: "#f5f2ff"
   }
 ];
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+const HEADER_MAX_HEIGHT = 100;
+const HEADER_MIN_HEIGHT = 10;
+const ICON_OPACITY_SCROLL_THRESHOLD = 30;
 export default function Homepage() {
   const navigation = useNavigation();
   const [bannerData, setBannerData] = useState([]);
@@ -59,6 +71,19 @@ export default function Homepage() {
   const [loading, setLoading] = React.useState(false);
   const [clubRoles, setClubRoles] = useState({});
   const [membershipStatuses, setMembershipStatuses] = useState({});
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const headerHeight = scrollY.interpolate({
+    inputRange: [0, ICON_OPACITY_SCROLL_THRESHOLD],
+    outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+    extrapolate: "clamp"
+  });
+
+  const iconOpacity = scrollY.interpolate({
+    inputRange: [0, ICON_OPACITY_SCROLL_THRESHOLD],
+    outputRange: [1, 0],
+    extrapolate: "clamp"
+  });
 
   useEffect(() => {
     const fetchClubMeta = async () => {
@@ -259,12 +284,12 @@ export default function Homepage() {
                 👋,
               </Text>
             </View>
-            <Image
+            {/* <Image
               source={{
                 uri: dataprofile.avatarUrl
               }}
               style={styles.avatar}
-            />
+            /> */}
           </View>
           <View style={styles.searchContainer}>
             <TextInput
@@ -280,23 +305,32 @@ export default function Homepage() {
             />
           </View>
           {/* Chỉ số tổng quan */}
-          <View style={styles.indicatorWrap}>
-            {indicators.map((item) => (
-              <View
-                key={item.id}
-                style={[styles.indicatorCard, { backgroundColor: item.bg }]}
-              >
-                <Image
-                  source={{ uri: item.icon }}
-                  style={{ width: 26, height: 26, marginBottom: 3 }}
-                />
-                <Text style={styles.indicatorCount}>{item.count}</Text>
-                <Text style={styles.indicatorLabel}>{item.label}</Text>
-              </View>
-            ))}
-          </View>
+          <Animated.View style={[styles.header, { height: headerHeight }]}>
+            <Animated.View style={[styles.iconRow, { opacity: iconOpacity }]}>
+              {indicators.map((item) => (
+                <View
+                  key={item.id}
+                  style={[styles.indicatorCard, { backgroundColor: item.bg }]}
+                >
+                  <Image
+                    source={{ uri: item.icon }}
+                    style={{ width: 26, height: 26, marginBottom: 3 }}
+                  />
+                  <Text style={styles.indicatorCount}>{item.count}</Text>
+                  <Text style={styles.indicatorLabel}>{item.label}</Text>
+                </View>
+              ))}
+            </Animated.View>
+          </Animated.View>
         </LinearGradient>
-        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+        <Animated.ScrollView
+          style={{ flex: 1 }}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
           {/* Banner/Carousel */}
           <TouchableOpacity
             style={styles.bannerCard}
@@ -400,7 +434,7 @@ export default function Homepage() {
                       <Text style={styles.clubDescription} numberOfLines={2}>
                         {stripMarkdown(item.description) || "Không có mô tả"}
                       </Text>
-
+{/* 
                       {isApproved || isLeaderOrMember ? (
                         <TouchableOpacity
                           style={styles.groupButton}
@@ -442,7 +476,7 @@ export default function Homepage() {
                             Tham gia clb
                           </Text>
                         </TouchableOpacity>
-                      )}
+                      )} */}
                     </View>
                   </TouchableOpacity>
                 );
@@ -495,15 +529,57 @@ export default function Homepage() {
               }}
             />
           </View>
-          {/* Nút tham gia sự kiện */}
-          {/* <TouchableOpacity style={styles.bigJoinBtn}>
-            <Text style={styles.bigJoinBtnText}>
-              + Tham gia một sự kiện mới
-            </Text>
-          </TouchableOpacity> */}
-        </ScrollView>
+          <View style={{ marginBottom: 25 }}>
+            <Text style={styles.sectionTitle}>Sự kiện nổi bật</Text>
+            <FlatList
+              horizontal
+              data={event.slice(0, 4)}
+              keyExtractor={(item) => item.eventId.toString()}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 14 }}
+              renderItem={({ item }) => {
+                const eventTime = dayjs(item.eventDate).format(
+                  "HH:mm, DD/MM/YYYY"
+                );
+                return (
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    style={styles.eventCard}
+                    onPress={() => {
+                      navigation.navigate("Event", {
+                        screen: "EventId",
+                        params: {
+                          eventId: item.eventId
+                        }
+                      });
+                    }}
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          item.projectFileUrl ||
+                          "https://imageio.forbes.com/specials-images/imageserve/5d35eacaf1176b0008974b54/2020-Chevrolet-Corvette-Stingray/0x0.jpg?format=jpg&crop=4560,2565,x790,y784,safe&width=960"
+                      }}
+                      style={styles.eventImg}
+                    />
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <Text style={styles.eventTitle}>{item.title}</Text>
+                      <Text style={styles.eventDesc}>
+                        {eventTime} • {item.location}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </Animated.ScrollView>
         <TouchableOpacity
-          onPress={() => navigation.navigate("FormClub")}
+          onPress={() =>
+            navigation.navigate("Club", {
+              screen: "FormClub"
+            })
+          }
           activeOpacity={0.9}
           style={{
             position: "absolute",
@@ -531,16 +607,20 @@ export default function Homepage() {
 }
 
 // ---------- STYLE ----------
-const { width } = Dimensions.get("window");
 const styles = StyleSheet.create({
   header: {
-    paddingTop: Platform.OS === "android" ? 44 : 28,
-    paddingBottom: 20,
-    paddingHorizontal: 18,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 26,
-    marginBottom: 14,
-    marginTop: -5
+    paddingHorizontal: 16,
+    paddingTop: -10,
+    justifyContent: "flex-end",
+  },
+  iconRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8
+  },
+  icon: {
+    width: 30,
+    height: 30
   },
   cardContainer: {
     borderRadius: 12,
@@ -596,18 +676,25 @@ const styles = StyleSheet.create({
 
   headerWrap: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 17,
+    paddingBottom: 8, // giảm padding để gọn hơn
+    marginTop: 10
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     borderWidth: 2,
     borderColor: "#fff"
   },
-  hello: { fontSize: 17, color: "#fff", fontWeight: "500", opacity: 0.9 },
+  hello: {
+    fontSize: 16, // giảm font
+    fontWeight: "600",
+    color: "#fff"
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -625,15 +712,14 @@ const styles = StyleSheet.create({
     shadowColor: "#00b8be",
     shadowOpacity: 0.06,
     shadowRadius: 2,
-    elevation: 2
+    elevation: 2,
+    height: 36 // giảm chiều cao ô tìm kiếm
   },
-  searchInput: { flex: 1, fontSize: 16.5, color: "#333", paddingLeft: 2 },
+  searchInput: { flex: 1, fontSize: 14, padding: 0, color: "#000" },
   iconSearch: {
-    width: 20,
-    height: 20,
-    tintColor: ACCENT,
-    marginLeft: 8,
-    opacity: 0.84
+    width: 18,
+    height: 18,
+    tintColor: "#23d4ae"
   },
   indicatorWrap: {
     flexDirection: "row",
@@ -651,11 +737,12 @@ const styles = StyleSheet.create({
     shadowColor: "#7df3cf",
     shadowOpacity: 0.17,
     shadowRadius: 7,
-    shadowOffset: { width: 0, height: 3 }
+    shadowOffset: { width: 0, height: 3 },
+    paddingVertical: 10 // giảm chiều cao thẻ
   },
-  indicatorCount: { fontSize: 20, fontWeight: "bold", color: "#21ad93" },
+  indicatorCount: { fontSize: 14, fontWeight: "bold", color: "#21ad93" },
   indicatorLabel: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: "#467e74",
     fontWeight: "500",
     marginTop: 1

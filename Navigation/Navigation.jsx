@@ -5,8 +5,9 @@ import EventStack from "../Components/Students/Event/EventStack";
 import ClubStack from "../Components/Students/Club/ClubStack";
 import ProfileStack from "../Components/Students/Profile/ProfileStack";
 import Homepage from "../Components/Home/Homepage";
+import EventAllTask from "../Components/Students/Event/EventAllTask";
 const Tab = createBottomTabNavigator();
-const Navigation = () => {
+const Navigation = ({ eventId }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -15,7 +16,7 @@ const Navigation = () => {
           if (route.name === "Home") iconName = "home";
           else if (route.name === "Club") iconName = "people-outline";
           else if (route.name === "Event") iconName = "remove-circle-sharp";
-          else if (route.name === "Profile") iconName = "person-circle-sharp";
+          else if (route.name === "Task") iconName = "person-circle-sharp";
           else if (route.name === "Blog") iconName = "document-text-outline";
           const iconSize = focused ? 28 : 24;
           return <Ionicons name={iconName} size={iconSize} color={color} />;
@@ -62,8 +63,9 @@ const Navigation = () => {
         options={{ headerShown: false }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
+        name="Task"
+        component={EventAllTask}
+        initialParams={{ eventId }}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

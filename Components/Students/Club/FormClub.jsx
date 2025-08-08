@@ -22,7 +22,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import QuillEditor from "../../QuillEditor";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
 import { Picker } from "@react-native-picker/picker";
 import { API_URL } from "@env";
 const screenWidth = Dimensions.get("window").width;
@@ -35,6 +35,7 @@ const FormClub = ({ navigation }) => {
   const [logoFile, setLogoFile] = React.useState(null);
   const [mentorId, setMentorId] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
+  const [projectFile, setProjectFile] = React.useState(null);
   const fetchData = async () => {
     const token = await AsyncStorage.getItem("jwt");
     const response = await fetchBaseResponse("/api/clubs", {
@@ -98,31 +99,43 @@ const FormClub = ({ navigation }) => {
       return;
     }
 
+    if (!projectFile) {
+      Alert.alert("⚠️ Thiếu file", "Vui lòng đính kèm file dự án.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const token = await AsyncStorage.getItem("jwt");
 
-      const uploadUrl = `${API_URL}/api/clubs/create-club`;
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("description", htmlDescription);
+      formData.append("mentorId", mentorId.toString());
 
-      console.log("📤 Submitting with:", logoFile);
+      formData.append("logoFile", {
+        uri: logoFile.uri,
+        type: logoFile.type,
+        name: logoFile.name
+      });
 
-      const result = await FileSystem.uploadAsync(uploadUrl, logoFile.uri, {
-        httpMethod: "POST",
-        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-        fieldName: "logoFile", // Tên field backend expect
+      formData.append("projectFile", {
+        uri: projectFile.uri,
+        type: projectFile.type,
+        name: projectFile.name
+      });
+
+      const response = await fetch(`${API_URL}/api/clubs/create-club`, {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
         },
-        parameters: {
-          name,
-          description: htmlDescription,
-          mentorId: mentorId.toString()
-        }
+        body: formData
       });
 
-      const responseJson = JSON.parse(result.body);
+      const responseJson = await response.json();
       console.log("📥 Server response:", responseJson);
 
       if (
@@ -130,9 +143,7 @@ const FormClub = ({ navigation }) => {
         "Your request to create the club has been successfully submitted and is currently awaiting approval."
       ) {
         Alert.alert("🎉 Thành công", "Câu lạc bộ đã được gửi để xét duyệt.");
-        navigation.navigate("Club", {
-          screen: "ClubNo"
-        });
+        navigation.navigate("Club", { screen: "ClubNo" });
       } else if (
         responseJson.message ===
         "You have already submitted a club creation request"
@@ -149,12 +160,12 @@ const FormClub = ({ navigation }) => {
       }
     } catch (error) {
       console.log("❌ Error:", error);
-
       Alert.alert("❌ Lỗi", "Không thể gửi yêu cầu: " + error.message);
     } finally {
       setLoading(false);
     }
   };
+
   React.useEffect(() => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
@@ -225,7 +236,36 @@ const FormClub = ({ navigation }) => {
       console.log("🖼️ LogoFile đã được set:", imageFile);
     }
   };
+  const handlePickProjectFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "*/*", // hoặc "application/pdf"
+      copyToCacheDirectory: true,
+      multiple: false
+    });
 
+    if (!result.canceled && result.assets?.length > 0) {
+      const picked = result.assets[0];
+      const uri = picked.uri;
+      const name = picked.name || `project_${Date.now()}.pdf`;
+      const extension = name.split(".").pop()?.toLowerCase();
+
+      const mimeType =
+        extension === "pdf"
+          ? "application/pdf"
+          : extension === "docx"
+          ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          : "application/octet-stream";
+
+      const file = {
+        uri,
+        name,
+        type: mimeType
+      };
+
+      setProjectFile(file);
+      console.log("📎 ProjectFile đã được set:", file);
+    }
+  };
   const renderField = (
     label,
     iconName,
@@ -336,6 +376,39 @@ const FormClub = ({ navigation }) => {
                   }}
                   resizeMode="contain"
                 />
+              )}
+            </View>
+            <View style={{ marginBottom: 18 }}>
+              <Text style={styles.label}>📎 File mô tả dự án *</Text>
+
+              <TouchableOpacity
+                onPress={handlePickProjectFile}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                  borderRadius: 12,
+                  padding: 12,
+                  alignItems: "center",
+                  backgroundColor: "#fff"
+                }}
+              >
+                <Text style={{ color: "#ff6600", fontWeight: "600" }}>
+                  {projectFile ? "📝 Đổi file" : "📁 Chọn file từ thiết bị"}
+                </Text>
+              </TouchableOpacity>
+
+              {projectFile && (
+                <Text
+                  style={{
+                    marginTop: 8,
+                    color: "#374151",
+                    fontSize: 14,
+                    fontStyle: "italic",
+                    textAlign: "center"
+                  }}
+                >
+                  📄 {projectFile.name}
+                </Text>
               )}
             </View>
 

@@ -34,6 +34,7 @@ const EventRegister = ({ navigation }) => {
   const [location, setLocation] = React.useState("");
   const [maximumParticipants, setMaximumParticipants] = React.useState(0);
   const [visibility, setVisibility] = React.useState("");
+  const [eventType, setEventType] = React.useState("TICKET");
   const [useLab, setUseLab] = React.useState(true);
   const { clubId, name } = route.params;
   console.log("📌 clubId từ params:", clubId);
@@ -116,7 +117,7 @@ const EventRegister = ({ navigation }) => {
       formData.append("visibility", visibility);
       formData.append("useLab", useLab.toString());
       formData.append("clubId", clubId.toString());
-
+      formData.append("eventType", eventType);
       const response = await fetch(
         `${API_URL}/api/events/create-event-request`,
         {
@@ -408,6 +409,16 @@ const EventRegister = ({ navigation }) => {
               placeholderTextColor="#aaa"
             />
           </View> */}
+          {renderLabeledSelect(
+            "🎫 Loại sự kiện",
+            eventType,
+            setEventType,
+            "Chọn loại sự kiện",
+            [
+              { label: "TICKET", value: "TICKET" },
+              { label: "PRODUCT", value: "PRODUCT" }
+            ]
+          )}
 
           <TouchableOpacity
             onPress={handleSubmit}
