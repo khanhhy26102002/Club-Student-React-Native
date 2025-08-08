@@ -9,6 +9,7 @@ import * as Notifications from "expo-notifications";
 import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 import { getFirebaseToken } from "./getFirebaseToken";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -32,10 +33,11 @@ export default function App() {
         console.error("❌ Lỗi khi gọi hàm:", err);
       });
   });
-  useEffect(() => {
+  React.useEffect(() => {
     GoogleSignin.configure({
       webClientId:
-        "660569491893-hjd276bbkkklk43h8ibivj66hcmm81a8.apps.googleusercontent.com"
+        "660569491893-bqdib599hf583vfpvkmt8bi61d0gooe7.apps.googleusercontent.com",
+      offlineAccess: true
     });
   }, []);
   return (

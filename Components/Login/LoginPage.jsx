@@ -25,17 +25,42 @@ const LoginPage = ({ navigation }) => {
   const [password, setPassword] = React.useState("");
   const [roleName, setRoleName] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  
 
   const handleGoogleLogin = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log("User info:", userInfo);
+
+      const idToken = userInfo.idToken;
+      if (!idToken) {
+        Alert.alert("Lỗi", "Không lấy được mã token từ Google");
+        return;
+      }
+
+      // Gửi token đến API backend để xác thực
+      const response = await fetchBaseResponse("/api/google-login", {
+        method: "POST",
+        data: {
+          token: idToken // hoặc serverAuthCode nếu backend dùng OAuth flow
+        }
+      });
+
+      // Xử lý lưu token, chuyển trang...
+      const jwt = response?.data?.token;
+      console.log("Token:", jwt);
+      if (jwt) {
+        await AsyncStorage.setItem("jwt", jwt);
+        Alert.alert("Thành công", "Đăng nhập Google thành công!");
+        navigation.navigate("Main");
+      } else {
+        Alert.alert("Lỗi", "Không nhận được JWT từ server");
+      }
     } catch (error) {
-      console.error(error);
+      console.error("❌ Google Login Error:", error);
+      Alert.alert("Lỗi", error?.message || "Không thể đăng nhập bằng Google");
     }
   };
+
   // tab clubs đang có clubs/public
   const handleLogin = async () => {
     try {

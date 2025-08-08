@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: "absolute",
-    top: Platform.OS === "android" ? 80 : 20,
+    top: Platform.OS === "android" ? 10 : 20,
     left: 16,
     zIndex: 10,
     backgroundColor: "#fff8f1cc",
