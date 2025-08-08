@@ -97,20 +97,23 @@ export const CustomDrawer = (props) => {
           <Text style={styles.studentCode}>🎓 {userInfo.studentCode}</Text>
         </View>
 
-        <View style={styles.infoBox}>
-          <InfoRow
-            label="Chuyên ngành"
-            value={userInfo.majorName}
-            icon="laptop-outline"
-          />
-          <InfoRow
-            label="Niên khóa"
-            value={yearStatus(userInfo.academicYear)}
-            icon="calendar-outline"
-          />
-          <InfoRow label="Email" value={userInfo.email} icon="mail-outline" />
-        </View>
-
+        <TouchableOpacity
+          onPress={() => navigation.navigate("EditProfile", {})}
+        >
+          <View style={styles.infoBox}>
+            <InfoRow
+              label="Chuyên ngành"
+              value={userInfo.majorName}
+              icon="laptop-outline"
+            />
+            <InfoRow
+              label="Niên khóa"
+              value={yearStatus(userInfo.academicYear)}
+              icon="calendar-outline"
+            />
+            <InfoRow label="Email" value={userInfo.email} icon="mail-outline" />
+          </View>
+        </TouchableOpacity>
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.actionButton}

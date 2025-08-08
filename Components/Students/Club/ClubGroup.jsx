@@ -78,7 +78,8 @@ export default function ClubGroup() {
 
         isClubLeader = roles.some(
           (role) =>
-            Number(role.clubId) === Number(clubId) && role.myRole === "CLUBLEADER"
+            Number(role.clubId) === Number(clubId) &&
+            role.myRole === "CLUBLEADER"
         );
         canCreateEvent = roles.some(
           (role) =>
@@ -135,11 +136,20 @@ export default function ClubGroup() {
       console.log("🔎 clubId hiện tại:", clubId);
 
       // Gộp blogs và events
-      const combined = [...blogs, ...events].sort((a, b) => {
-        const dateA = new Date(a.date || a.createdAt);
-        const dateB = new Date(b.date || b.createdAt);
-        return dateB - dateA;
-      });
+      const now = new Date();
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+
+      const combined = [...blogs, ...events]
+        .filter((item) => {
+          const createdDate = new Date(item.eventDate || item.createdAt);
+          return createdDate >= sevenDaysAgo;
+        })
+        .sort((a, b) => {
+          const dateA = new Date(a.eventDate || a.createdAt);
+          const dateB = new Date(b.eventDate || b.createdAt);
+          return dateA - dateB; // mới nhất lên trước
+        });
 
       setAllData(combined);
     } catch (err) {
