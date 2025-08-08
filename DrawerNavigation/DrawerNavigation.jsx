@@ -3,6 +3,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { CustomDrawer } from "../CustomDrawer/CustomDrawer";
 import ProjectStack from "../Components/Students/Projects/ProjectStack";
 import Navigation from "../Navigation/Navigation";
+import EditProfile from "../Components/Students/Profile/EditProfile";
 const Drawer = createDrawerNavigator();
 const DrawerNavigation = () => {
   return (
@@ -18,6 +19,11 @@ const DrawerNavigation = () => {
       <Drawer.Screen
         name="Project"
         component={ProjectStack}
+        options={{ headerShown: false }}
+      />
+      <Drawer.Screen
+        name="EditProfile"
+        component={EditProfile}
         options={{ headerShown: false }}
       />
     </Drawer.Navigator>
