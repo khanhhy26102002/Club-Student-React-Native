@@ -1,24 +1,24 @@
 export default {
   expo: {
-    name: "Your App Name",
-    slug: "your-app-slug", // 👈 phải giống project bạn đã tạo
+    name: "ClubSystem",
+    slug: "clubsystem", // 👈 phải giống project bạn đã tạo
     version: "1.0.0",
 
     config: {
       googleSignIn: {
         certificateHash:
-          "22:3f:35:94:1c:ec:a5:cc:46:f9:ed:44:c5:e9:82:dc:79:f7:8f:9c"
+          "a3:07:d9:9f:00:c2:b8:b2:24:56:1c:c8:50:5d:69:af:85:80:b9:f3"
       }
     },
     runtimeVersion: "1.0.0",
     android: {
-      package: "com.ledangkhanhhy.finalprojectmobilejavascript",
+      package: "com.clubsystem.app",
       googleServicesFile: "./google-services.json",
       versionCode: 1
     },
     extra: {
       eas: {
-        projectId: "381e44fe-e63e-49a9-9f1c-08e32118af09"
+        projectId: "ff75af8e-2b30-4f89-b037-95d096065768"
       }
     },
     plugins: [["@react-native-google-signin/google-signin"]]

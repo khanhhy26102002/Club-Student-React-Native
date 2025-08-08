@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:229693370621:android:9ee9982c4e6855a3e50e94",
+        "mobilesdk_app_id": "1:229693370621:android:05cce747d0268b47e50e94",
         "android_client_info": {
-          "package_name": "com.ledangkhanhhy.finalprojectmobilejavascript"
+          "package_name": "com.clubsystem.app"
         }
       },
       "oauth_client": [],
