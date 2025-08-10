@@ -17,7 +17,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode"; // dùng đúng export
 import { useRoute } from "@react-navigation/native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-
 const LoginPage = ({ navigation }) => {
   const route = useRoute();
   const { eventId } = route.params || {};
@@ -94,15 +93,15 @@ const LoginPage = ({ navigation }) => {
         if (eventId) {
           const role = await checkEventRole(eventId);
           if (role === "CHECKIN") {
-            navigation.replace("CheckinScreen", { eventId });
+            navigation.replace("CHECKIN", { eventId });
             return;
           }
         }
         console.log("UserId", userId);
         if (roleName === "MEMBER") {
           navigation.replace("Main");
-        } else if (roleName === "ORGANIZERS") {
-          navigation.replace("Organizer");
+        } else if (roleName === "CHECKIN") {
+          navigation.replace("CHECKIN");
         } else {
           navigation.replace("Main");
         }
