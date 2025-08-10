@@ -13,6 +13,7 @@ import Header from "../../../Header/Header";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 
 const EventRoles = () => {
   const route = useRoute();
@@ -97,6 +98,21 @@ const EventRoles = () => {
     <>
       <Header />
       <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{
+            marginLeft: 16,
+            marginTop: 12,
+            marginBottom: 6,
+            flexDirection: "row",
+            alignItems: "center"
+          }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#2563EB" />
+          <Text style={{ color: "#2563EB", fontSize: 16, marginLeft: 6 }}>
+            Quay lại
+          </Text>
+        </TouchableOpacity>
         <Text style={styles.title}>📋 Vai trò của bạn trong sự kiện</Text>
 
         <TouchableOpacity

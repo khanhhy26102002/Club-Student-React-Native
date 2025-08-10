@@ -205,31 +205,11 @@ export default function ClubGroup() {
       colors={["#dbeafe", "#f0f4ff"]}
       style={{ flex: 1, alignSelf: "flex-start" }}
     >
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={{
-          position: "absolute",
-          left: 16,
-          top: 10,
-          zIndex: 10,
-          backgroundColor: "#fff",
-          padding: 8,
-          borderRadius: 999,
-          shadowColor: "#000",
-          shadowOpacity: 0.1,
-          shadowOffset: { width: 0, height: 1 },
-          shadowRadius: 3,
-          elevation: 4,
-          marginTop: 100
-        }}
-      >
-        <Ionicons name="arrow-back" size={22} color="#1e3a8a" />
-      </TouchableOpacity>
       <Header />
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ marginBottom: 100 }}>
           {clubInfo && (
-            <View style={{ marginBottom: 16 }}>
+            <View style={{ marginBottom: 16, position: "relative" }}>
               {/* Banner */}
               <Image
                 source={{
@@ -243,7 +223,26 @@ export default function ClubGroup() {
                   backgroundColor: "#e5e7eb"
                 }}
               />
-
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{
+                  position: "absolute",
+                  left: 16,
+                  top: 10,
+                  zIndex: 10,
+                  backgroundColor: "#fff",
+                  padding: 8,
+                  borderRadius: 999,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.1,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowRadius: 3,
+                  elevation: 4,
+                  marginTop: 50
+                }}
+              >
+                <Ionicons name="arrow-back" size={22} color="#1e3a8a" />
+              </TouchableOpacity>
               {/* Info Block dưới banner */}
               <View style={{ marginTop: 12, paddingHorizontal: 20 }}>
                 <Text
@@ -465,6 +464,7 @@ export default function ClubGroup() {
                   navigation={navigation}
                   isLeader={isLeader}
                   onDelete={() => fetchAll()}
+                  clubId={clubId}
                 />
               )}
               scrollEnabled={false}

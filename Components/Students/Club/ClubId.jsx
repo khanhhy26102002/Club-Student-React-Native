@@ -203,7 +203,7 @@ const ClubId = ({ navigation }) => {
                       })
                     }
                   >
-                    <Text style={styles.buttonText}>👥 Tham gia nhóm CLB</Text>
+                    <Text style={styles.buttonText}>👥 Truy cập CLB</Text>
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity

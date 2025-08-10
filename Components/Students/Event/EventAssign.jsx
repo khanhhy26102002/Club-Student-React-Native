@@ -18,9 +18,11 @@ import { Picker } from "@react-native-picker/picker";
 const EventAssign = ({ route, navigation }) => {
   const [selectedUserId, setSelectedUserId] = React.useState(null);
   const [roleName, setRoleName] = React.useState("VOLUNTEER");
-  const { eventId, title } = route.params;
+  const { eventId, title, clubId } = route.params;
+  console.log("ClubId", clubId);
   const [loading, setLoading] = React.useState(false);
   const [data, setData] = React.useState([]);
+  const [member, setMember] = React.useState([]);
   const [hasPermission, setHasPermission] = React.useState(false);
   React.useEffect(() => {
     const fetchData = async () => {
@@ -81,6 +83,46 @@ const EventAssign = ({ route, navigation }) => {
 
     fetchData();
   }, [eventId]);
+  React.useEffect(() => {
+    const fetchMembership = async () => {
+      if (!clubId) {
+        console.warn("⚠️ clubId chưa có, bỏ qua fetchMembership");
+        return;
+      }
+
+      const token = await AsyncStorage.getItem("jwt");
+      if (!token) {
+        Alert.alert("Thiếu token", "Vui lòng đăng nhập lại.");
+        return;
+      }
+
+      try {
+        const response = await fetchBaseResponse(
+          `/api/memberships/getAllMembers/${clubId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        console.log("Membership API Response:", response);
+
+        if (response.status === 200) {
+          setMember(response.data);
+        } else {
+          console.error(`❌ HTTP Status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("❌ Fetch membership error:", error);
+        Alert.alert("Lỗi", "Không lấy được data membership");
+      }
+    };
+
+    fetchMembership();
+  }, [clubId]);
 
   const handleAssign = async () => {
     if (!selectedUserId) {
@@ -113,7 +155,8 @@ const EventAssign = ({ route, navigation }) => {
           screen: "EventTask",
           params: {
             eventId: eventId,
-            title: title
+            title: title,
+            clubId: clubId
           }
         });
       }
@@ -146,16 +189,20 @@ const EventAssign = ({ route, navigation }) => {
         <View style={styles.card}>
           <Text style={styles.label}>👥 Chọn người dùng:</Text>
           <View style={styles.pickerWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Nhập mã số người dùng"
-              value={selectedUserId ? selectedUserId.toString() : ""}
-              onChangeText={(text) => {
-                const parsed = parseInt(text);
-                setSelectedUserId(isNaN(parsed) ? null : parsed);
-              }}
-              keyboardType="numeric"
-            />
+            <Picker
+              selectedValue={selectedUserId}
+              onValueChange={(value) => setSelectedUserId(value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="-- Chọn thành viên --" value={null} />
+              {member.map((m) => (
+                <Picker.Item
+                  key={m.userId}
+                  label={`${m.userFullName}`}
+                  value={m.userId}
+                />
+              ))}
+            </Picker>
           </View>
         </View>
 

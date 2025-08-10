@@ -19,8 +19,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as DocumentPicker from "expo-document-picker";
 import { API_URL } from "@env";
 import dayjs from "dayjs";
+import { fetchBaseResponse } from "../../../utils/api";
+import { Picker } from "@react-native-picker/picker";
 const EventTask = ({ route }) => {
-  const { eventId } = route.params;
+  const { eventId, clubId } = route.params;
   const [title, setTitle] = React.useState("");
   const [userId, setUserId] = React.useState(""); // string
   const [parentId, setParentId] = React.useState(""); // string
@@ -30,6 +32,7 @@ const EventTask = ({ route }) => {
   const [loading, setLoading] = React.useState(false);
   const [attachmentFile, setAttachmentFile] = React.useState(null);
   const formattedDate = dayjs(dueDate).format("YYYY-MM-DDTHH:mm:ss");
+  const [members, setMembers] = React.useState([]);
   const renderLabeledInput = (
     label,
     value,
@@ -73,7 +76,32 @@ const EventTask = ({ route }) => {
       });
     }
   };
+  React.useEffect(() => {
+    const fetchMembers = async () => {
+      if (!clubId) {
+        console.log("❌ Không có clubId, không gọi API members");
+        return;
+      }
+      try {
+        const token = await AsyncStorage.getItem("jwt");
+        const res = await fetchBaseResponse(
+          `/api/memberships/getAllMembers/${clubId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
 
+        console.log("📌 Members:", res.data);
+        if (Array.isArray(res.data)) {
+          setMembers(res.data);
+        }
+      } catch (err) {
+        console.log("❌ Fetch members error:", err);
+      }
+    };
+
+    fetchMembers();
+  }, [clubId]);
   const handleSubmit = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -176,14 +204,21 @@ const EventTask = ({ route }) => {
             <Text style={styles.value}>{eventId}</Text>
           </View>
 
-          {renderLabeledInput(
-            "📝 Tên user theo id",
-            userId,
-            setUserId,
-            "Nhập ID user",
-            false,
-            "numeric"
-          )}
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={userId}
+              onValueChange={(value) => setUserId(value)}
+            >
+              <Picker.Item label="-- Chọn thành viên --" value="" />
+              {members.map((m) => (
+                <Picker.Item
+                  key={m.userId}
+                  label={m.userFullName}
+                  value={m.userId}
+                />
+              ))}
+            </Picker>
+          </View>
           {renderLabeledInput(
             "📝 Tên parent theo id",
             parentId,
