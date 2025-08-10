@@ -6,24 +6,31 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Platform
 } from "react-native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 
-const EventParticipate = ({ navigation }) => {
+const EventParticipate = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { eventId, title } = route.params;
+
   const [data, setData] = React.useState([]);
   const [ticketId, setTicketId] = React.useState("");
-  const [loading, setLoading] = React.useState(false); // 🆕 Loading state
+  const [selectedTicketDetail, setSelectedTicketDetail] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [loadingTickets, setLoadingTickets] = React.useState(true);
+  const [loadingTicketDetail, setLoadingTicketDetail] = React.useState(false);
+
+  // Fetch danh sách vé theo eventId
   const fetchData = async () => {
     const token = await AsyncStorage.getItem("jwt");
+    setLoadingTickets(true);
     try {
       const response = await fetchBaseResponse(
         `/api/tickets/event/${eventId}`,
@@ -37,44 +44,77 @@ const EventParticipate = ({ navigation }) => {
       );
       if (response.status === 200) {
         setData(response.data);
+        if (response.data.length > 0) {
+          setTicketId(response.data[0].ticketId); // auto chọn vé đầu tiên
+        } else {
+          setTicketId(""); // Không có vé
+          setSelectedTicketDetail(null);
+        }
       }
     } catch (error) {
-      const responseData =
-        error?.response?.data && typeof error.response.data === "object"
-          ? error.response.data
-          : error?.data && typeof error.data === "object"
-          ? error.data
-          : error;
-
-      const serverStatus =
-        typeof responseData.status === "number"
-          ? responseData.status
-          : typeof error?.status === "number"
-          ? error.status
-          : null;
-
-      const serverMessage =
-        responseData.message ?? error?.message ?? "Không xác định";
-
-      console.log("🚨 FetchData Error:", serverStatus, serverMessage);
-
-      if (serverStatus === 5003) {
-        Alert.alert("Thông báo", "Sự kiện này không có vé.");
-      } else {
-        Alert.alert("Lỗi", "Không fetching được data");
-      }
+      Alert.alert("Lỗi", "Không lấy được danh sách vé");
+    } finally {
+      setLoadingTickets(false);
     }
   };
+
+  // Fetch chi tiết vé khi ticketId thay đổi
+  const fetchTicketDetail = async () => {
+    if (!ticketId) {
+      setSelectedTicketDetail(null);
+      return;
+    }
+    const token = await AsyncStorage.getItem("jwt");
+    setLoadingTicketDetail(true);
+    try {
+      const response = await fetchBaseResponse(`/api/tickets/${ticketId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (response.status === 200) {
+        setSelectedTicketDetail(response.data);
+      } else {
+        setSelectedTicketDetail(null);
+      }
+    } catch (error) {
+      setSelectedTicketDetail(null);
+    } finally {
+      setLoadingTicketDetail(false);
+    }
+  };
+
+  // Khi ticketId thay đổi thì gọi lấy chi tiết vé
+  React.useEffect(() => {
+    fetchTicketDetail();
+  }, [ticketId]);
 
   React.useEffect(() => {
     fetchData();
   }, []);
+
   const handleOpenPayment = async () => {
+    if (data.length > 0 && !ticketId) {
+      Alert.alert("Lỗi", "Vui lòng chọn vé.");
+      return;
+    }
+
+    if (data.length > 0 && !selectedTicketDetail) {
+      Alert.alert("Lỗi", "Không lấy được thông tin vé.");
+      return;
+    }
+
     const token = await AsyncStorage.getItem("jwt");
-    setLoading(true); // 🆕 Start loading
+    setLoading(true);
     const formData = new FormData();
     formData.append("eventId", eventId);
-    formData.append("ticketId", ticketId);
+
+    if (data.length > 0) {
+      formData.append("ticketId", ticketId);
+    }
+
     try {
       const response = await fetchBaseResponse("/api/registrations/register", {
         method: "POST",
@@ -87,14 +127,22 @@ const EventParticipate = ({ navigation }) => {
 
       if (response.status === 200) {
         Alert.alert("✅ Thành công", "Bạn đã đăng kí sự kiện thành công");
-        navigation.navigate("Event", {
-          screen: "PaymentWebView",
-          params: {
-            registrationId: response.data.registrationId,
-            paymentUrl: response.data.message,
-            qrCode: response.data.qrCode,
-          }
-        });
+
+        if (data.length > 0 && selectedTicketDetail?.price === 0) {
+          navigation.navigate("Home");
+        } else if (data.length > 0) {
+          navigation.navigate("Event", {
+            screen: "PaymentWebView",
+            params: {
+              registrationId: response.data.registrationId,
+              paymentUrl: response.data.message,
+              qrCode: response.data.qrCode
+            }
+          });
+        } else {
+          // Không có vé, chuyển về Main (hoặc bạn có thể điều chỉnh)
+          navigation.navigate("Home");
+        }
       } else {
         throw {
           ...response,
@@ -119,9 +167,6 @@ const EventParticipate = ({ navigation }) => {
 
       const serverMessage =
         responseData.message ?? error?.message ?? "Không xác định";
-      console.log("❌ FULL ERROR:", JSON.stringify(error, null, 2));
-      console.log("📦 serverStatus =", serverStatus);
-      console.log("📦 serverMessage =", serverMessage);
 
       if (serverStatus === 5005) {
         Alert.alert("Thông báo", "⚠️ Bạn đã đăng kí sự kiện này trước đó.");
@@ -140,7 +185,7 @@ const EventParticipate = ({ navigation }) => {
         Alert.alert("Lỗi", "Không đăng kí được sự kiện");
       }
     } finally {
-      setLoading(false); // 🆕 End loading
+      setLoading(false);
     }
   };
 
@@ -148,32 +193,74 @@ const EventParticipate = ({ navigation }) => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        {/* Nút quay về */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.backButtonText}>← Quay về</Text>
+        </TouchableOpacity>
+
         <Text style={styles.title}>🎟️ Đăng ký sự kiện</Text>
         <Text style={styles.title}>Tên sự kiện: {title}</Text>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>🎫 Chọn vé</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              key={ticketId}
-              selectedValue={ticketId}
-              onValueChange={(itemValue) => setTicketId(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="-- Chọn vé --" value="" />
-              {data.map((ticket) => (
-                <Picker.Item
-                  key={ticket.ticketId}
-                  label={`${ticket.name} - ${ticket.price} VNĐ`}
-                  value={ticket.ticketId}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
+
+        {loadingTickets ? (
+          <ActivityIndicator
+            size="large"
+            color="#2563eb"
+            style={{ marginVertical: 20 }}
+          />
+        ) : data.length === 0 ? (
+          <Text
+            style={{
+              textAlign: "center",
+              marginVertical: 20,
+              color: "green",
+              fontSize: 16
+            }}
+          >
+            Sự kiện này không yêu cầu vé, bạn có thể đăng ký ngay.
+          </Text>
+        ) : (
+          <>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>🎫 Chọn vé</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={ticketId}
+                  onValueChange={(itemValue) => setTicketId(itemValue)}
+                  style={styles.picker}
+                >
+                  {data.map((ticket) => (
+                    <Picker.Item
+                      key={ticket.ticketId}
+                      label={`${ticket.name} - ${ticket.price} VNĐ`}
+                      value={ticket.ticketId}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            {loadingTicketDetail ? (
+              <ActivityIndicator size="small" color="#2563eb" />
+            ) : selectedTicketDetail ? (
+              <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
+                <Text style={{ fontWeight: "600", color: "#333" }}>
+                  Mô tả vé:
+                </Text>
+                <Text style={{ color: "#555" }}>
+                  {selectedTicketDetail.description || "(Không có mô tả)"}
+                </Text>
+              </View>
+            ) : null}
+          </>
+        )}
 
         <TouchableOpacity
           style={[styles.button, loading && { opacity: 0.6 }]}
           onPress={handleOpenPayment}
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -210,15 +297,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: "#374151"
   },
-  input: {
-    backgroundColor: "#ffffff",
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+  pickerWrapper: {
+    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    fontSize: 16,
-    color: "#111827"
+    borderColor: "#e5e7eb"
+  },
+  picker: {
+    height: 50,
+    width: "100%"
   },
   button: {
     backgroundColor: "#2563eb",
@@ -242,6 +329,19 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "700"
+  },
+  backButton: {
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignSelf: "flex-start",
+    backgroundColor: "#e2e8f0",
+    borderRadius: 8
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#2563eb",
+    fontWeight: "600"
   }
 });
 

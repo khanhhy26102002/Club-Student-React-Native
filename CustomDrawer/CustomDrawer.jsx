@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { fetchBaseResponse } from "../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 
 export const CustomDrawer = (props) => {
   const navigation = props.navigation;
@@ -87,68 +88,80 @@ export const CustomDrawer = (props) => {
   }
 
   return (
-    <DrawerContentScrollView>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.profileBox}>
-          <View style={styles.avatarBorder}>
-            <Image source={{ uri: userInfo.avatarUrl }} style={styles.avatar} />
+    <DrawerContentScrollView style={{ backgroundColor: "#FFFBEA" }}>
+      <LinearGradient
+        colors={["#f3f4f6", "#fffbe6", "#fdf6fb"]} // Gradient nhẹ từ xám tới vàng nhạt, hồng pastel
+        style={styles.gradientBg}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.profileBox}>
+            <View style={styles.avatarBorder}>
+              <Image
+                source={{ uri: userInfo.avatarUrl }}
+                style={styles.avatar}
+              />
+            </View>
+            <Text style={styles.fullName}>{userInfo.fullName}</Text>
+            <Text style={styles.studentCode}>🎓 {userInfo.studentCode}</Text>
           </View>
-          <Text style={styles.fullName}>{userInfo.fullName}</Text>
-          <Text style={styles.studentCode}>🎓 {userInfo.studentCode}</Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("EditProfile", {})}
-        >
-          <View style={styles.infoBox}>
-            <InfoRow
-              label="Chuyên ngành"
-              value={userInfo.majorName}
-              icon="laptop-outline"
-            />
-            <InfoRow
-              label="Niên khóa"
-              value={yearStatus(userInfo.academicYear)}
-              icon="calendar-outline"
-            />
-            <InfoRow label="Email" value={userInfo.email} icon="mail-outline" />
-          </View>
-        </TouchableOpacity>
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() =>
-              navigation.navigate("Navigation", {
-                screen: "Profile",
-                params: { screen: "Project" }
-              })
-            }
-          >
-            <Ionicons
-              name="folder-outline"
-              size={20}
-              color="#3b82f6"
-              style={styles.icon}
-            />
-            <Text style={styles.actionText}>Xem danh sách dự án</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, styles.logoutButton]}
-            onPress={() => navigation.navigate("Login")}
+            onPress={() => navigation.navigate("EditProfile", {})}
           >
-            <Ionicons
-              name="log-out-outline"
-              size={20}
-              color="#ef4444"
-              style={styles.icon}
-            />
-            <Text style={[styles.actionText, { color: "#ef4444" }]}>
-              {t("title88") || "Đăng xuất"}
-            </Text>
+            <View style={styles.infoBox}>
+              <InfoRow
+                label="Chuyên ngành"
+                value={userInfo.majorName}
+                icon="laptop-outline"
+              />
+              <InfoRow
+                label="Niên khóa"
+                value={yearStatus(userInfo.academicYear)}
+                icon="calendar-outline"
+              />
+              <InfoRow
+                label="Email"
+                value={userInfo.email}
+                icon="mail-outline"
+              />
+            </View>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() =>
+                navigation.navigate("Navigation", {
+                  screen: "Profile",
+                  params: { screen: "Project" }
+                })
+              }
+            >
+              <Ionicons
+                name="folder-outline"
+                size={20}
+                color="#3b82f6"
+                style={styles.icon}
+              />
+              <Text style={styles.actionText}>Xem danh sách dự án</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.logoutButton]}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Ionicons
+                name="log-out-outline"
+                size={20}
+                color="#ef4444"
+                style={styles.icon}
+              />
+              <Text style={[styles.actionText, { color: "#ef4444" }]}>
+                {t("title88") || "Đăng xuất"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </LinearGradient>
     </DrawerContentScrollView>
   );
 };
@@ -167,8 +180,13 @@ const InfoRow = ({ label, value, icon }) => (
 );
 
 const styles = StyleSheet.create({
+  gradientBg: {
+    flex: 1
+  },
   container: {
-    padding: 20
+    flexGrow: 1,
+    paddingVertical: 32,
+    paddingHorizontal: 20
   },
   centerBox: {
     padding: 20,
@@ -184,8 +202,15 @@ const styles = StyleSheet.create({
     color: "#ef4444"
   },
   profileBox: {
+    backgroundColor: "#fff", // Nổi bật avatar trên nền tối
+    borderRadius: 16,
+    padding: 20,
     alignItems: "center",
-    marginBottom: 20
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 4
   },
   avatarBorder: {
     width: 88,
@@ -202,15 +227,15 @@ const styles = StyleSheet.create({
     borderRadius: 40
   },
   fullName: {
+    color: "#22223b",
+    fontWeight: "bold",
     fontSize: 18,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginTop: 10
+    marginTop: 8
   },
   studentCode: {
+    color: "#3b82f6",
     fontSize: 14,
-    color: "#6b7280",
-    marginTop: 4
+    marginBottom: 6
   },
   infoBox: {
     backgroundColor: "#fff",

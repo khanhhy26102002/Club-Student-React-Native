@@ -19,6 +19,7 @@ import Header from "../../../Header/Header";
 import { useNavigation } from "@react-navigation/native";
 // import fetchBaseResponse từ service của bạn
 import Icon from "react-native-vector-icons/Ionicons"; // hoặc Feather, MaterialIcons, etc.
+import { Ionicons } from "@expo/vector-icons";
 const FORMAT_ICON = {
   OFFLINE: "https://img.icons8.com/color/96/000000/conference.png",
   ONLINE: "https://img.icons8.com/color/96/000000/laptop.png"
@@ -52,7 +53,7 @@ export default function EventDetail({ route }) {
           setData(null);
           return;
         }
-        console.log("Response:",publicRes.data);
+        console.log("Response:", publicRes.data);
         let roleName = null;
         const token = await AsyncStorage.getItem("jwt");
         try {
@@ -125,7 +126,7 @@ export default function EventDetail({ route }) {
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
           >
-            <Icon name="arrow-back" size={26} color="#333" />
+            <Ionicons name="arrow-back" size={26} color="#333" />
           </TouchableOpacity>
 
           <View style={[styles.bannerWrap, { backgroundColor: color + "22" }]}>
@@ -179,18 +180,37 @@ export default function EventDetail({ route }) {
           )}
 
           <TouchableOpacity
-            style={[styles.joinBtn, { backgroundColor: color }]}
-            onPress={() =>
-              navigation.navigate("Event", {
-                screen: "EventRegistration",
-                params: {
-                  eventId: data.eventId,
-                  title: data.title
-                }
-              })
-            }
+            style={[
+              styles.joinBtn,
+              {
+                backgroundColor:
+                  data.roleName === "ORGANIZER" ? "#388e3c" : ""
+              }
+            ]}
+            onPress={() => {
+              if (data.roleName === "ORGANIZER") {
+                navigation.navigate("Event", {
+                  screen: "EventRoles",
+                  params: {
+                    eventId: data.eventId
+                  }
+                });
+              } else {
+                navigation.navigate("Event", {
+                  screen: "EventRegistration",
+                  params: {
+                    eventId: data.eventId,
+                    title: data.title
+                  }
+                });
+              }
+            }}
           >
-            <Text style={styles.joinBtnText}>THAM GIA NGAY</Text>
+            <Text style={styles.joinBtnText}>
+              {data.roleName === "ORGANIZER"
+                ? "QUẢN LÝ SỰ KIỆN"
+                : "THAM GIA NGAY"}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>

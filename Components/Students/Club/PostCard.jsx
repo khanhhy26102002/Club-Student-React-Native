@@ -13,7 +13,13 @@ import { fetchBaseResponse } from "../../../utils/api";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function PostCard({ data, navigation, isLeader, onDelete }) {
+export default function PostCard({
+  data,
+  navigation,
+  isLeader,
+  onDelete,
+  clubId
+}) {
   const isEvent = data.type === "event";
 
   const handlePress = () => {
@@ -33,7 +39,7 @@ export default function PostCard({ data, navigation, isLeader, onDelete }) {
   const handleAssignRole = () => {
     navigation.navigate("Event", {
       screen: "EventAssign",
-      params: { eventId: data.eventId, title: data.title }
+      params: { eventId: data.eventId, title: data.title, clubId }
     });
   };
 
