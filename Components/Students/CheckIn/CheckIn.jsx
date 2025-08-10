@@ -1,13 +1,14 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, Button, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import { Camera, useCameraPermissions } from "expo-camera";
+import { Camera, CameraView, useCameraPermissions } from "expo-camera";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { API_URL } from "@env";
 const CheckIn = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = React.useState(false);
   const [showCamera, setShowCamera] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -19,37 +20,42 @@ const CheckIn = () => {
       }
     })();
   }, []);
-  const handleBarCodeScanned = async (type, data) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    const token = await AsyncStorage.getItem("jwt");
+
     try {
-      const response = await fetchBaseResponse(`/api/clubs/checkin`, {
+      setLoading(true);
+
+      const token = await AsyncStorage.getItem("jwt");
+
+      const res = await fetch(`${API_URL}/api/clubs/checkin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ qrCode: data })
+        body: JSON.stringify({
+          qrCode: data // key này phải đúng BE yêu cầu
+        })
       });
-      Alert.alert(
-        "Kết quả check-in",
-        response.message || "Thành công!",
-        [
-          {
-            text: "OK",
-            onPress: () => setScanned(false)
-          }
-        ],
-        {
-          cancelable: false
-        }
-      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.log("❌ API Error:", result);
+        Alert.alert("Lỗi", result.message || "Có lỗi xảy ra");
+        return;
+      }
+
+      console.log("✅ API Success:", result);
     } catch (error) {
-      Alert.alert("Lỗi", "Không thể check-in. Vui lòng thử lại.", [
-        { text: "Thử lại", onPress: () => setScanned(false) }
-      ]);
+      console.error("❌ Fetch Error:", error);
+      Alert.alert("Lỗi", "Không thể kết nối tới server");
+    } finally {
+      setLoading(false);
     }
   };
+
   if (!permission?.granted) {
     return (
       <View style={styles.container}>

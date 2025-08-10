@@ -10,6 +10,7 @@ import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 import { getFirebaseToken } from "./getFirebaseToken";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import CheckIn from "./Components/Students/CheckIn/CheckIn";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -76,7 +77,11 @@ export default function App() {
           component={ForgotPassword}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Organizer" component={StudentOrganizer} />
+        <Stack.Screen
+          name="CHECKIN"
+          component={CheckIn}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

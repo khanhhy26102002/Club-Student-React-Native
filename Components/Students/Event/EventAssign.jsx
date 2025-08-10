@@ -167,6 +167,8 @@ const EventAssign = ({ route, navigation }) => {
         "Đã xảy ra lỗi không xác định.";
       if (fallbackMsg === "You do not have permission to use this") {
         Alert.alert("🚫 Không được phép", "Bạn không có quyền gán vai trò.");
+      } else if (fallbackMsg === "User already has role in event") {
+        Alert.alert("Lỗi", "Bạn đã phân role trong sự kiện này");
       }
     } finally {
       setLoading(false);
