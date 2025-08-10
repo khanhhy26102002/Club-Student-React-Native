@@ -7,7 +7,6 @@ import { useNavigation } from "@react-navigation/native";
 
 import EventStack from "../Components/Students/Event/EventStack";
 import ClubStack from "../Components/Students/Club/ClubStack";
-import ProfileStack from "../Components/Students/Profile/ProfileStack";
 import Homepage from "../Components/Home/Homepage";
 import EventAllTask from "../Components/Students/Event/EventAllTask";
 import { fetchBaseResponse } from "../utils/api";

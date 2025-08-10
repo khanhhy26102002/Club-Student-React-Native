@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Event({ navigation }) {
   const [data, setData] = useState([]);
@@ -102,7 +103,29 @@ export default function Event({ navigation }) {
       <Header />
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
-        <Text style={styles.title}>Danh sách sự kiện</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Danh sách sự kiện</Text>
+          <TouchableOpacity
+            style={styles.registeredBtn}
+            onPress={async () => {
+              const userId = await AsyncStorage.getItem("userId");
+              navigation.navigate("Event", {
+                screen: "History",
+                params: { userId: userId }
+              });
+            }}
+          >
+            <Text style={styles.registeredBtnText}>Đã đăng ký</Text>
+          </TouchableOpacity>
+        </View>
+
         {loading ? (
           <ActivityIndicator
             size="large"
@@ -140,10 +163,30 @@ export default function Event({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 8
+  },
+  registeredBtn: {
+    backgroundColor: "#f57c00",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 10
+  },
+  registeredBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14
+  },
   container: {
     flex: 1,
     backgroundColor: "#fffaf2",
-    marginBottom: -50
+    marginBottom: -50,
+    marginTop: -80
   },
   title: {
     fontSize: 22,
@@ -151,7 +194,8 @@ const styles = StyleSheet.create({
     color: "#f57c00",
     margin: 20,
     marginBottom: 8,
-    letterSpacing: 0.13
+    letterSpacing: 0.13,
+    marginLeft: -10
   },
   card: {
     width: "48%",

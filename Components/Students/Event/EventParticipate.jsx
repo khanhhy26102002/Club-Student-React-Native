@@ -286,7 +286,8 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
     marginBottom: 40,
-    color: "#1f2937"
+    color: "#1f2937",
+    marginTop: 10
   },
   inputGroup: {
     marginBottom: 24
@@ -336,7 +337,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     alignSelf: "flex-start",
     backgroundColor: "#e2e8f0",
-    borderRadius: 8
+    borderRadius: 8,
+    marginTop: -50
   },
   backButtonText: {
     fontSize: 16,
