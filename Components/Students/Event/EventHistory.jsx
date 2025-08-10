@@ -14,12 +14,12 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import QRCode from "react-native-qrcode-svg";
+import { Ionicons } from "@expo/vector-icons";
 
 const EventHistory = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { userId } = route.params;
-
   const [statusFilter, setStatusFilter] = React.useState("COMPLETED");
   const [registeredEvents, setRegisteredEvents] = React.useState([]);
   const [loadingEvents, setLoadingEvents] = React.useState(false);
@@ -115,8 +115,13 @@ const EventHistory = () => {
     <>
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
         <Text style={styles.title}>Lịch sử sự kiện</Text>
-
         <View style={styles.filterGroup}>
           {["COMPLETED", "PENDING", "FAILED"].map((status) => (
             <TouchableOpacity
@@ -226,17 +231,33 @@ const EventHistory = () => {
 export default EventHistory;
 
 const styles = StyleSheet.create({
+  backButton: {
+    backgroundColor: "#f57c00",
+    padding: 8,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    width: 40,
+    height: 40,
+    marginTop: 10,
+    marginLeft: 10
+  },
   container: {
-    padding: 20,
     backgroundColor: "#f8f9fa",
-    flexGrow: 1
+    flexGrow: 1,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#1f3c88",
     marginBottom: 20,
-    textAlign: "center"
+    textAlign: "center",
+    marginTop: -33
   },
   filterGroup: {
     flexDirection: "row",

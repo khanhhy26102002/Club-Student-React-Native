@@ -244,7 +244,10 @@ export default function ClubGroup() {
                 <Ionicons name="arrow-back" size={22} color="#1e3a8a" />
               </TouchableOpacity>
               {/* Info Block dưới banner */}
-              <View style={{ marginTop: 12, paddingHorizontal: 20 }}>
+              <View
+                style={{ marginTop: 12, paddingHorizontal: 20 }}
+                key={clubInfo.clubId}
+              >
                 <Text
                   style={{
                     fontSize: 20,

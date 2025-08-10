@@ -141,7 +141,7 @@ const Club = ({ navigation }) => {
           />
 
           {/* Đang chờ duyệt */}
-          <Text style={[styles.subHeading, { marginTop: 24 }]}>
+          {/* <Text style={[styles.subHeading, { marginTop: 24 }]}>
             Danh sách câu lạc bộ đang chờ duyệt
           </Text>
           <FlatList
@@ -154,7 +154,7 @@ const Club = ({ navigation }) => {
             ListEmptyComponent={
               <Text style={styles.emptyText}>Không có câu lạc bộ nào đang chờ duyệt.</Text>
             }
-          />
+          /> */}
         </ScrollView>
       )}
     </View>

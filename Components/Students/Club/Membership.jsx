@@ -110,14 +110,15 @@ export default function ClubMembersScreen({ navigation, route }) {
 
         <FlatList
           data={filteredMembers}
-          keyExtractor={(item) => item.userId?.toString()}
+          keyExtractor={(item, index) =>
+            item.userId ? item.userId.toString() : `unknown-${index}`
+          }
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={
             <Text style={styles.emptyText}>Chưa có thành viên nào.</Text>
           }
           renderItem={({ item }) => (
             <TouchableOpacity
-              key={item.clubId}
               onPress={() =>
                 navigation.navigate("Club", {
                   screen: "ClubGroupId",
