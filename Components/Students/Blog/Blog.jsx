@@ -102,7 +102,7 @@ const Blog = ({ navigation }) => {
         >
           <Ionicons name="arrow-back" size={20} color="#333" />
           <Text style={[styles.backText, { marginLeft: 25, marginTop: -20 }]}>
-            Quay về trang chủ
+            Quay lại
           </Text>
         </TouchableOpacity>
 

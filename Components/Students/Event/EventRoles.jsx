@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const EventRoles = () => {
   const route = useRoute();
-  const { eventId } = route.params;
+  const { eventId, clubId } = route.params;
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const navigation = useNavigation();
@@ -99,7 +99,14 @@ const EventRoles = () => {
       <Header />
       <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() =>
+            navigation.navigate("Club", {
+              screen: "ClubGroup",
+              params: {
+                clubId: clubId
+              }
+            })
+          }
           style={{
             marginLeft: 16,
             marginTop: 12,

@@ -106,10 +106,12 @@ export default function Event({ navigation }) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Ionicons name="chevron-back" size={24} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Text style={styles.backButtonText}>Quay lại</Text>
         </TouchableOpacity>
+
         <View style={styles.headerRow}>
           <Text style={styles.title}>Danh sách sự kiện</Text>
           <TouchableOpacity
@@ -163,6 +165,28 @@ export default function Event({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f57c00",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginLeft: 5,
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+    width: "30%"
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500",
+    marginLeft: 4
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -186,7 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fffaf2",
     marginBottom: -50,
-    marginTop: -80
+    marginTop: -10
   },
   title: {
     fontSize: 22,
