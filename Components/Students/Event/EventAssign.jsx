@@ -6,24 +6,22 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
-  ActivityIndicator,
-  TextInput
+  ActivityIndicator
 } from "react-native";
 import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import { Picker } from "@react-native-picker/picker";
-// bị lỗi create-event-request
-// lỗi assign-role khi đã làm chủ event là eventId 2
+
 const EventAssign = ({ route, navigation }) => {
   const [selectedUserId, setSelectedUserId] = React.useState(null);
   const [roleName, setRoleName] = React.useState("VOLUNTEER");
   const { eventId, title, clubId } = route.params;
-  console.log("ClubId", clubId);
   const [loading, setLoading] = React.useState(false);
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState([]); // danh sách role đã phân
   const [member, setMember] = React.useState([]);
   const [hasPermission, setHasPermission] = React.useState(false);
+
   React.useEffect(() => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
@@ -33,8 +31,7 @@ const EventAssign = ({ route, navigation }) => {
       }
 
       try {
-        console.log("eventId:", eventId);
-
+        // Kiểm tra quyền của user hiện tại trong event
         const response = await fetchBaseResponse(
           `/api/event-roles/my/${eventId}`,
           {
@@ -46,9 +43,7 @@ const EventAssign = ({ route, navigation }) => {
           }
         );
 
-        console.log("My Role Response:", response);
-
-        if (response.status === 200 && response.data.roleName === "ORGANIZER") {
+        if (response.status === 200) {
           setHasPermission(true);
         } else {
           Alert.alert(
@@ -57,6 +52,7 @@ const EventAssign = ({ route, navigation }) => {
           );
         }
 
+        // Lấy danh sách vai trò đã phân trong event
         const listRes = await fetchBaseResponse(
           `/api/event-roles/event/${eventId}`,
           {
@@ -67,8 +63,6 @@ const EventAssign = ({ route, navigation }) => {
             }
           }
         );
-
-        console.log("List Role Response:", listRes);
 
         if (listRes.status === 200) {
           setData(listRes.data);
@@ -83,6 +77,7 @@ const EventAssign = ({ route, navigation }) => {
 
     fetchData();
   }, [eventId]);
+
   React.useEffect(() => {
     const fetchMembership = async () => {
       if (!clubId) {
@@ -91,6 +86,7 @@ const EventAssign = ({ route, navigation }) => {
       }
 
       const token = await AsyncStorage.getItem("jwt");
+      console.log("Token lấy được:", token);
       if (!token) {
         Alert.alert("Thiếu token", "Vui lòng đăng nhập lại.");
         return;
@@ -98,7 +94,7 @@ const EventAssign = ({ route, navigation }) => {
 
       try {
         const response = await fetchBaseResponse(
-          `/api/memberships/getAllMembers/${clubId}`,
+          `/api/clubs/${clubId}/members`,
           {
             method: "GET",
             headers: {
@@ -108,7 +104,9 @@ const EventAssign = ({ route, navigation }) => {
           }
         );
 
-        console.log("Membership API Response:", response);
+        console.log("API response đầy đủ:", response);
+        console.log("Response data:", response.data);
+        console.log("Response status:", response.status);
 
         if (response.status === 200) {
           setMember(response.data);
@@ -146,19 +144,21 @@ const EventAssign = ({ route, navigation }) => {
         }
       );
 
-      const resStatus = response?.status;
-      const resMessage = response?.message || "";
-
-      if (resStatus === 200) {
+      if (response.status === 200) {
         Alert.alert("🎉 Thành công", "Bạn đã phân role thành công.");
-        navigation.navigate("Event", {
-          screen: "EventTask",
-          params: {
-            eventId: eventId,
-            title: title,
-            clubId: clubId
+        // Làm mới lại danh sách roles sau khi phân
+        setData((prev) => [
+          ...prev,
+          {
+            userId: selectedUserId,
+            roleName,
+            userFullName: member.find((m) => m.userId === selectedUserId)
+              ?.userFullName
           }
-        });
+        ]);
+        setSelectedUserId(null); // reset chọn user
+      } else {
+        Alert.alert("Lỗi", response.message || "Không thể phân vai trò");
       }
     } catch (error) {
       const fallbackMsg =
@@ -169,6 +169,8 @@ const EventAssign = ({ route, navigation }) => {
         Alert.alert("🚫 Không được phép", "Bạn không có quyền gán vai trò.");
       } else if (fallbackMsg === "User already has role in event") {
         Alert.alert("Lỗi", "Bạn đã phân role trong sự kiện này");
+      } else {
+        Alert.alert("Lỗi", fallbackMsg);
       }
     } finally {
       setLoading(false);
@@ -200,7 +202,7 @@ const EventAssign = ({ route, navigation }) => {
               {member.map((m) => (
                 <Picker.Item
                   key={m.userId}
-                  label={`${m.userFullName}`}
+                  label={`${m.fullName}`}
                   value={m.userId}
                 />
               ))}
@@ -243,6 +245,8 @@ const EventAssign = ({ route, navigation }) => {
             </Text>
           )}
         </TouchableOpacity>
+
+        {/* Hiển thị danh sách vai trò đã phân */}
       </ScrollView>
     </>
   );
@@ -277,9 +281,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap" // nếu title quá dài thì tự xuống dòng
+    flexWrap: "wrap"
   },
-
   eventLabel: {
     fontSize: 16,
     fontWeight: "600",

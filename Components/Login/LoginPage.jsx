@@ -16,7 +16,13 @@ import { checkEventRole, fetchBaseResponse } from "../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode"; // dùng đúng export
 import { useRoute } from "@react-navigation/native";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  signInWithCredential
+} from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { API_URL } from "@env";
 const LoginPage = ({ navigation }) => {
   const route = useRoute();
   const { eventId } = route.params || {};
@@ -25,40 +31,55 @@ const LoginPage = ({ navigation }) => {
   const [roleName, setRoleName] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const handleGoogleLogin = async () => {
+  async function onGoogleButtonPress() {
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-
-      const idToken = userInfo.idToken;
-      if (!idToken) {
-        Alert.alert("Lỗi", "Không lấy được mã token từ Google");
-        return;
-      }
-
-      // Gửi token đến API backend để xác thực
-      const response = await fetchBaseResponse("/api/google-login", {
-        method: "POST",
-        data: {
-          token: idToken // hoặc serverAuthCode nếu backend dùng OAuth flow
-        }
+      // Kiểm tra Google Play Services
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true
       });
 
-      // Xử lý lưu token, chuyển trang...
-      const jwt = response?.data?.token;
-      console.log("Token:", jwt);
-      if (jwt) {
-        await AsyncStorage.setItem("jwt", jwt);
-        Alert.alert("Thành công", "Đăng nhập Google thành công!");
-        navigation.navigate("Main");
-      } else {
-        Alert.alert("Lỗi", "Không nhận được JWT từ server");
+      // Đăng nhập Google, lấy token
+      const signInResult = await GoogleSignin.signIn();
+
+      let idToken = signInResult.data?.idToken || signInResult.idToken;
+      if (!idToken) {
+        throw new Error("No ID token found");
       }
+      console.log("IdToken:", idToken);
+      // Gọi API backend của bạn với token Google
+      const response = await fetch(`${API_URL}/api/google-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ idToken }) // hoặc theo API backend yêu cầu
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to login via Google");
+      }
+
+      const data = await response.json();
+      console.log("Backend login response:", data);
+
+      // Lưu token (nếu backend trả token)
+      if (data.token) {
+        await AsyncStorage.setItem("jwt", data.token);
+        // Lưu các thông tin khác nếu cần
+      }
+
+      // Tạo credential Firebase (nếu cần dùng Firebase Auth)
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(getAuth(), googleCredential);
+
+      // Chuyển sang màn hình chính
+      navigation.navigate("Main");
     } catch (error) {
-      console.error("❌ Google Login Error:", error);
-      Alert.alert("Lỗi", error?.message || "Không thể đăng nhập bằng Google");
+      Alert.alert("Lỗi đăng nhập Google", error.message);
+      console.error(error);
     }
-  };
+  }
 
   // tab clubs đang có clubs/public
   const handleLogin = async () => {
@@ -196,7 +217,7 @@ const LoginPage = ({ navigation }) => {
           <Text style={styles.orText}>Hoặc đăng nhập bằng</Text>
           <View style={styles.socialContainer}>
             <TouchableOpacity
-              onPress={handleGoogleLogin}
+              onPress={onGoogleButtonPress}
               style={[styles.socialButton, styles.google]}
               activeOpacity={0.7}
             >

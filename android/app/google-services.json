@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "229693370621",
+    "project_id": "clubsystem-c2b4f",
+    "storage_bucket": "clubsystem-c2b4f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229693370621:android:05cce747d0268b47e50e94",
+        "android_client_info": {
+          "package_name": "com.clubsystem.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGV_6GiDH0GfmVHvHWSGFWgIj63silOac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

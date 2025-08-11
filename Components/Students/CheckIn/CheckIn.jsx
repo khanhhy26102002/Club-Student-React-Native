@@ -1,9 +1,9 @@
 import { Alert, Button, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { Camera, CameraView, useCameraPermissions } from "expo-camera";
-import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
+// kiểm tra camera mà chỉ quét 1 lần
 const CheckIn = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = React.useState(false);
@@ -47,12 +47,13 @@ const CheckIn = () => {
         return;
       }
 
-      console.log("✅ API Success:", result);
+      Alert.alert("Xác nhận", "Bạn đã checkin thành công");
     } catch (error) {
       console.error("❌ Fetch Error:", error);
       Alert.alert("Lỗi", "Không thể kết nối tới server");
     } finally {
       setLoading(false);
+      setScanned(false);
     }
   };
 
