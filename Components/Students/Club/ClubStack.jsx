@@ -16,6 +16,7 @@ import BlogId from "../Blog/BlogId";
 import UpdateBlog from "../Blog/UpdateBlog";
 import TransferLeadership from "./TransferLeadership";
 import ClubPublic from "./ClubPublic";
+import EventIdClub from "../Event/EventIdClub";
 const Stack = createNativeStackNavigator();
 const ClubStack = () => {
   return (
@@ -95,6 +96,11 @@ const ClubStack = () => {
       <Stack.Screen
         name="Transfer"
         component={TransferLeadership}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ClubDetailEvent"
+        component={EventIdClub}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

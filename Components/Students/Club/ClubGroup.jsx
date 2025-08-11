@@ -31,13 +31,12 @@ export default function ClubGroup() {
   const [isEventCreator, setIsEventCreator] = React.useState(false);
   const [memberCount, setMemberCount] = React.useState(0);
   const [isMemberOnly, setIsMemberOnly] = React.useState(false);
+  const [registeredEvents, setRegisteredEvents] = React.useState([]); // danh sách event user đã đăng ký
+
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
-  // cái nút thêm quyền sự kiện là chỉ có organizer
-  // organizer k dc đăng ký sự kiện
-  // cái update trong xem danh sách
-  
+
   const fetchAll = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -95,20 +94,6 @@ export default function ClubGroup() {
         setIsEventCreator(canCreateEvent);
       }
 
-      // Fetch approved members count (nếu muốn dùng thêm)
-      const memberRes = await fetchBaseResponse(
-        `/api/clubs/${clubId}/members`,
-        {
-          headers
-        }
-      );
-      if (memberRes.status === 200) {
-        const approved = (memberRes.data || []).filter(
-          (m) => m.status === "APPROVED"
-        );
-        // Bạn có thể dùng approved.length nếu cần
-      }
-
       // Fetch blogs (API khác cho leader vs member)
       const blogUrl = isClubLeader
         ? `/api/blogs/leader-club`
@@ -136,7 +121,7 @@ export default function ClubGroup() {
         );
       }
 
-      // --- Mới: lấy roleName cho từng event
+      // --- Lấy roleName cho từng event
       const eventsWithRole = await Promise.all(
         eventsRaw.map(async (event) => {
           try {
@@ -158,7 +143,21 @@ export default function ClubGroup() {
         })
       );
 
-      // Gộp blogs và events đã có roleName
+      // Fetch danh sách event user đã đăng ký
+      const registrationRes = await fetchBaseResponse(
+        "/api/registrations/my-buy-events",
+        { headers }
+      );
+      if (
+        registrationRes.status === 200 &&
+        Array.isArray(registrationRes.data)
+      ) {
+        setRegisteredEvents(registrationRes.data);
+      } else {
+        setRegisteredEvents([]);
+      }
+
+      // Gộp blogs và events đã có roleName, lọc 7 ngày gần nhất, sắp xếp mới nhất lên đầu
       const now = new Date();
       const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(now.getDate() - 7);
@@ -395,60 +394,6 @@ export default function ClubGroup() {
                     }
                   />
                 )}
-                {/* {selectedTab === "event" &&
-                  joined &&
-                  isMemberOnly &&
-                  !isLeader && (
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate("Event", {
-                          screen: "EventRegister",
-                          params: { clubId: clubInfo.clubId }
-                        })
-                      }
-                      style={{
-                        width: 400,
-                        height: 120,
-                        backgroundColor: "#1d4ed8",
-                        borderRadius: 20,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginRight: 12,
-                        shadowColor: "#000",
-                        shadowOpacity: 0.1,
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowRadius: 4,
-                        elevation: 4,
-                        marginLeft: -10
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 24,
-                          backgroundColor: "#fff",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginBottom: 8
-                        }}
-                      >
-                        <Text style={{ fontSize: 26, color: "#1d4ed8" }}>
-                          ➕
-                        </Text>
-                      </View>
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: "600",
-                          textAlign: "center",
-                          color: "#fff"
-                        }}
-                      >
-                        Tạo sự kiện
-                      </Text>
-                    </TouchableOpacity>
-                  )} */}
 
                 {selectedTab === "event" &&
                   joined &&
@@ -540,6 +485,11 @@ export default function ClubGroup() {
                   isLeader={isLeader}
                   onDelete={() => fetchAll()}
                   clubId={clubId}
+                  registeredEvents={registeredEvents}
+                  // Set isOrganizer true nếu roleName của event === "ORGANIZER", blog thì false
+                  isOrganizer={
+                    item.type === "event" && item.roleName === "ORGANIZER"
+                  }
                 />
               )}
               scrollEnabled={false}

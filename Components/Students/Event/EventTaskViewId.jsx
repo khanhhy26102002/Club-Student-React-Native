@@ -1,22 +1,30 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert
+} from "react-native";
 import React from "react";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native"; // thêm useNavigation
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
-// hỏi profile trc
-// hỏi cái role event
-// 
+import { Ionicons } from "@expo/vector-icons"; // thêm icon
+
 const getStatusColor = (status) => {
   switch (status) {
     case "TODO":
-      return "#FACC15";
+      return "#FACC15"; // vàng
     case "IN_PROGRESS":
-      return "#3B82F6";
-    case "DONE":
-      return "#10B981";
+      return "#3B82F6"; // xanh biển
+    case "COMPLETED":
+      return "#10B981"; // xanh lá
+    case "CANCELLED":
+      return "#EF4444"; // đỏ
     default:
-      return "#6B7280";
+      return "#6B7280"; // xám
   }
 };
 
@@ -26,52 +34,92 @@ const getStatusLabel = (status) => {
       return "🕐 Chưa làm";
     case "IN_PROGRESS":
       return "🔧 Đang làm";
-    case "DONE":
-      return "✅ Đã hoàn thành";
+    case "COMPLETED":
+      return "✅ Hoàn thành";
+    case "CANCELLED":
+      return "❌ Đã huỷ";
     default:
       return "Không xác định";
   }
 };
 
+const possibleStatuses = ["TODO", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
+
 const EventTaskViewId = () => {
   const route = useRoute();
+  const navigation = useNavigation(); // lấy navigation
   const { eventId, taskId } = route.params;
-  console.log("🧾 eventId:", eventId);
-  console.log("🧾 taskId:", taskId);
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [errorMessage, setErrorMessage] = React.useState(null);
+  const [updating, setUpdating] = React.useState(false);
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem("jwt");
-        const response = await fetchBaseResponse(
-          `/api/tasks/${eventId}/${taskId}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            }
-          }
-        );
-
-        if (response.status === 200 && response.data) {
-          setData(response.data);
-          setErrorMessage(null);
-        } else {
-          setErrorMessage("Không tìm thấy nhiệm vụ hoặc sự kiện.");
-        }
-      } catch (error) {
-        console.error("❌ Fetch task detail error:", error);
-        setErrorMessage("Đã xảy ra lỗi khi tải dữ liệu.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    fetchTaskDetail();
   }, [eventId, taskId]);
+
+  const fetchTaskDetail = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const response = await fetchBaseResponse(
+        `/api/tasks/${eventId}/${taskId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data) {
+        setData(response.data);
+        setErrorMessage(null);
+      } else {
+        setErrorMessage("Không tìm thấy nhiệm vụ hoặc sự kiện.");
+      }
+    } catch (error) {
+      console.error("❌ Fetch task detail error:", error);
+      setErrorMessage("Đã xảy ra lỗi khi tải dữ liệu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTaskStatus = async (newStatus) => {
+    if (newStatus === data.status) {
+      Alert.alert("Thông báo", "Trạng thái này đang được chọn rồi.");
+      return;
+    }
+    setUpdating(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const response = await fetchBaseResponse(`/api/tasks/${taskId}/status`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: newStatus }) // sửa body đúng chuẩn fetch API
+      });
+
+      if (response.status === 200) {
+        Alert.alert("Thành công", "Cập nhật trạng thái thành công.");
+        fetchTaskDetail(); // load lại dữ liệu mới
+      } else {
+        Alert.alert(
+          "Lỗi",
+          `Không thể cập nhật trạng thái. (Mã lỗi: ${response.status})`
+        );
+      }
+    } catch (error) {
+      console.error("❌ Update task status error:", error);
+      Alert.alert("Lỗi", "Đã xảy ra lỗi khi cập nhật trạng thái.");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -111,6 +159,15 @@ const EventTaskViewId = () => {
     <>
       <Header />
       <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#2563EB" />
+          <Text style={styles.backButtonText}>Quay lại</Text>
+        </TouchableOpacity>
+
         <Text style={styles.title}>📋 Chi tiết nhiệm vụ</Text>
         <View style={styles.card}>
           <Text style={styles.taskTitle}>{data.title}</Text>
@@ -130,6 +187,39 @@ const EventTaskViewId = () => {
           </Text>
           <Text style={styles.taskMeta}>📅 Hạn chót: {dueDate}</Text>
           <Text style={styles.taskMeta}>🕓 Tạo lúc: {createdAt}</Text>
+
+          <Text style={[styles.title, { marginTop: 20, fontSize: 18 }]}>
+            Cập nhật trạng thái nhiệm vụ:
+          </Text>
+
+          {possibleStatuses.map((status) => (
+            <TouchableOpacity
+              key={status}
+              style={[
+                styles.statusButton,
+                status === data.status && styles.statusButtonActive
+              ]}
+              onPress={() => updateTaskStatus(status)}
+              disabled={updating}
+            >
+              <Text
+                style={[
+                  styles.statusButtonText,
+                  status === data.status && styles.statusButtonTextActive
+                ]}
+              >
+                {getStatusLabel(status)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
+          {updating && (
+            <ActivityIndicator
+              size="small"
+              color="#2563EB"
+              style={{ marginTop: 10 }}
+            />
+          )}
         </View>
       </View>
     </>
@@ -143,6 +233,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F9FAFB",
     padding: 16
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#2563EB",
+    marginLeft: 6,
+    fontWeight: "600"
   },
   center: {
     flex: 1,
@@ -197,5 +298,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
     marginTop: 4
+  },
+  statusButton: {
+    backgroundColor: "#E5E7EB",
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginVertical: 6,
+    alignItems: "center"
+  },
+  statusButtonActive: {
+    backgroundColor: "#2563EB"
+  },
+  statusButtonText: {
+    color: "#374151",
+    fontWeight: "600"
+  },
+  statusButtonTextActive: {
+    color: "#fff"
   }
 });

@@ -1,4 +1,8 @@
+import { useRoute } from "@react-navigation/native";
 import { useState } from "react";
+import { View } from "react-native";
+import WebView from "react-native-webview";
+import Header from "../../../Header/Header";
 //...
 
 const PaymentWebView = ({ navigation }) => {
