@@ -22,6 +22,7 @@ import {
   signInWithCredential
 } from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { API_URL } from "@env";
 const LoginPage = ({ navigation }) => {
   const route = useRoute();
   const { eventId } = route.params || {};
@@ -32,28 +33,51 @@ const LoginPage = ({ navigation }) => {
 
   async function onGoogleButtonPress() {
     try {
+      // Kiểm tra Google Play Services
       await GoogleSignin.hasPlayServices({
         showPlayServicesUpdateDialog: true
       });
+
+      // Đăng nhập Google, lấy token
       const signInResult = await GoogleSignin.signIn();
 
       let idToken = signInResult.data?.idToken || signInResult.idToken;
       if (!idToken) {
         throw new Error("No ID token found");
       }
+      console.log("IdToken:", idToken);
+      // Gọi API backend của bạn với token Google
+      const response = await fetch(`${API_URL}/api/google-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ idToken }) // hoặc theo API backend yêu cầu
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to login via Google");
+      }
+
+      const data = await response.json();
+      console.log("Backend login response:", data);
+
+      // Lưu token (nếu backend trả token)
+      if (data.token) {
+        await AsyncStorage.setItem("jwt", data.token);
+        // Lưu các thông tin khác nếu cần
+      }
+
+      // Tạo credential Firebase (nếu cần dùng Firebase Auth)
       const googleCredential = GoogleAuthProvider.credential(idToken);
-
-      // Sign-in the user with the credential
       await signInWithCredential(getAuth(), googleCredential);
 
-      // Nếu bạn muốn lưu token hoặc dữ liệu người dùng ở đây, làm thêm
-      // Ví dụ: await AsyncStorage.setItem('jwt', token);
-
-      // Sau khi đăng nhập thành công, chuyển trang Main (hoặc trang bạn muốn)
-      navigation.replace("Main"); // hoặc navigation.navigate('Main')
+      // Chuyển sang màn hình chính
+      navigation.navigate("Main");
     } catch (error) {
       Alert.alert("Lỗi đăng nhập Google", error.message);
+      console.error(error);
     }
   }
 

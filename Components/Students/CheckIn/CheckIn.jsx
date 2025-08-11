@@ -53,6 +53,7 @@ const CheckIn = () => {
       Alert.alert("Lỗi", "Không thể kết nối tới server");
     } finally {
       setLoading(false);
+      setScanned(false);
     }
   };
 
