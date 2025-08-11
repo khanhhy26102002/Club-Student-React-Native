@@ -70,23 +70,21 @@ export default function Event({ navigation }) {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={styles.cardHorizontal}
       activeOpacity={0.85}
       onPress={() =>
         navigation.navigate("Event", {
           screen: "EventId",
-          params: {
-            eventId: item.eventId
-          }
+          params: { eventId: item.eventId }
         })
       }
     >
       <Image
         source={getCoverImg(item.format)}
-        style={{ width: "100%", height: 100 }}
+        style={styles.cardImageHorizontal}
         resizeMode="cover"
       />
-      <View style={{ padding: 8 }}>
+      <View style={styles.cardContentHorizontal}>
         <Text numberOfLines={2} style={styles.cardTitle}>
           {item.title}
         </Text>
@@ -145,11 +143,6 @@ export default function Event({ navigation }) {
             showsVerticalScrollIndicator={false}
             refreshing={loading}
             onRefresh={fetchData}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-              marginBottom: 16
-            }}
             ListEmptyComponent={
               <Text
                 style={{ textAlign: "center", color: "#999", marginTop: 50 }}
@@ -221,16 +214,29 @@ const styles = StyleSheet.create({
     letterSpacing: 0.13,
     marginLeft: -10
   },
-  card: {
-    width: "48%",
+  cardHorizontal: {
+    flexDirection: "row",
     backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
-    elevation: 2
+    elevation: 2,
+    marginBottom: 16,
+    height: 120
+  },
+  cardImageHorizontal: {
+    width: 200,
+    height: "100%",
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10
+  },
+  cardContentHorizontal: {
+    flex: 1,
+    padding: 12,
+    justifyContent: "center"
   },
   cardTitle: {
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 16,
     color: "#333"
   },
   cardDate: {

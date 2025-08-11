@@ -215,6 +215,7 @@ export default function EventDetail({ route }) {
   );
 }
 // thêm text là vui lòng dùng mã qr để checkin, status đã đăng ký
+// hiện popup modal
 // -------- STYLES --------
 const styles = StyleSheet.create({
   loadingContainer: {

@@ -11,6 +11,7 @@ import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 import { getFirebaseToken } from "./getFirebaseToken";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import CheckIn from "./Components/Students/CheckIn/CheckIn";
+import ChangePasswordScreen from "./Components/ChangePassword/ChangePasswordScreen";
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -39,7 +40,7 @@ export default function App() {
       webClientId:
         "229693370621-o5k3ssjmvn9uuol6a9klo71ukc3mvpfe.apps.googleusercontent.com",
       offlineAccess: true,
-      googlePlayServicesAuthVersion: '19.2.0'
+      googlePlayServicesAuthVersion: "19.2.0"
     });
   }, []);
   return (
@@ -81,6 +82,11 @@ export default function App() {
         <Stack.Screen
           name="CHECKIN"
           component={CheckIn}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePasswordScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

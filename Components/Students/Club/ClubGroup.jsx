@@ -34,7 +34,10 @@ export default function ClubGroup() {
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
-
+  // cái nút thêm quyền sự kiện là chỉ có organizer
+  // organizer k dc đăng ký sự kiện
+  // cái update trong xem danh sách
+  
   const fetchAll = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -155,9 +158,6 @@ export default function ClubGroup() {
         })
       );
 
-      console.log("📦 eventsWithRole:", eventsWithRole);
-      console.log("🔎 clubId hiện tại:", clubId);
-
       // Gộp blogs và events đã có roleName
       const now = new Date();
       const sevenDaysAgo = new Date(now);
@@ -230,7 +230,9 @@ export default function ClubGroup() {
     >
       <Header />
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ marginBottom: 100 }}>
+        <ScrollView
+          contentContainerStyle={{ marginBottom: 100, marginTop: -10 }}
+        >
           {clubInfo && (
             <View style={{ marginBottom: 16, position: "relative" }}>
               {/* Banner */}
@@ -266,21 +268,71 @@ export default function ClubGroup() {
               >
                 <Ionicons name="arrow-back" size={22} color="#1e3a8a" />
               </TouchableOpacity>
+
               {/* Info Block dưới banner */}
               <View
                 style={{ marginTop: 12, paddingHorizontal: 20 }}
                 key={clubInfo.clubId}
               >
-                <Text
+                {/* Tên câu lạc bộ + nút tạo sự kiện */}
+                <View
                   style={{
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    color: "#111827",
-                    textAlign: "left"
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 6
                   }}
                 >
-                  {clubInfo.name}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "bold",
+                      color: "#111827",
+                      flexShrink: 1
+                    }}
+                    numberOfLines={1}
+                  >
+                    {clubInfo.name}
+                  </Text>
+
+                  {joined && (isEventCreator || isLeader) && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("Event", {
+                          screen: "EventRegister",
+                          params: { clubId: clubInfo.clubId }
+                        })
+                      }
+                      style={{
+                        backgroundColor: "#1d4ed8",
+                        paddingVertical: 6,
+                        paddingHorizontal: 12,
+                        borderRadius: 8,
+                        shadowColor: "#000",
+                        shadowOpacity: 0.15,
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowRadius: 4,
+                        elevation: 3,
+                        marginTop: 10,
+                        width: 110,
+                        height: 40
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#fff",
+                          fontWeight: "600",
+                          fontSize: 14,
+                          marginTop: 3,
+                          textAlign: "center"
+                        }}
+                      >
+                        Tạo sự kiện
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
                 <Text
                   style={{
                     color: "#6b7280",
@@ -343,7 +395,7 @@ export default function ClubGroup() {
                     }
                   />
                 )}
-                {selectedTab === "event" &&
+                {/* {selectedTab === "event" &&
                   joined &&
                   isMemberOnly &&
                   !isLeader && (
@@ -396,7 +448,7 @@ export default function ClubGroup() {
                         Tạo sự kiện
                       </Text>
                     </TouchableOpacity>
-                  )}
+                  )} */}
 
                 {selectedTab === "event" &&
                   joined &&

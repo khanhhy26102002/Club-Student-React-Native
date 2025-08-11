@@ -126,10 +126,76 @@ const ClubId = ({ navigation }) => {
       return;
     }
 
-    navigation.navigate("Club", {
-      screen: "FormRegister",
-      params: { clubId }
-    });
+    Alert.alert(
+      "Xác nhận đăng ký",
+      "Bạn có muốn đăng ký CLB này không?",
+      [
+        {
+          text: "Hủy",
+          style: "cancel"
+        },
+        {
+          text: "Có",
+          onPress: async () => {
+            try {
+              const response = await fetchBaseResponse(
+                "/api/memberships/membership-register",
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                  },
+                  data: { clubId: clubId }
+                }
+              );
+
+              if (response.status === 200) {
+                Alert.alert(
+                  "✅ Thành công",
+                  "Bạn đã đăng kí thành công câu lạc bộ này"
+                );
+                setIsPending(true);
+                setHasApplied(true);
+                // Gọi lại fetchMembershipStatus nếu muốn đồng bộ
+                // await fetchMembershipStatus();
+              } else {
+                Alert.alert(
+                  "❌ Đăng ký thất bại",
+                  response.message || "Lỗi không xác định"
+                );
+              }
+            } catch (error) {
+              const serverMessage =
+                error.response?.data?.message ||
+                error.message ||
+                "Có lỗi xảy ra.";
+              console.error("❌ Lỗi đăng ký:", serverMessage);
+
+              if (serverMessage.includes("Members of other clubs")) {
+                Alert.alert(
+                  "🚫 Không thể đăng ký",
+                  "Bạn đã là thành viên của một CLB khác. Vui lòng rút khỏi CLB đó trước khi đăng ký."
+                );
+              } else if (
+                serverMessage.includes("already applied") ||
+                error.response?.data?.status === 1004
+              ) {
+                Alert.alert(
+                  "⚠️ Đã đăng ký",
+                  "Bạn đã từng gửi yêu cầu tham gia câu lạc bộ này rồi."
+                );
+                setIsPending(true);
+                setHasApplied(true);
+              } else {
+                Alert.alert("❌ Đăng ký thất bại", serverMessage);
+              }
+            }
+          }
+        }
+      ],
+      { cancelable: false }
+    );
   };
 
   return (

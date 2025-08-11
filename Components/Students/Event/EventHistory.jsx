@@ -15,7 +15,7 @@ import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import QRCode from "react-native-qrcode-svg";
 import { Ionicons } from "@expo/vector-icons";
-
+// bấm vô chi tiết sự kiện
 const EventHistory = () => {
   const navigation = useNavigation();
   const route = useRoute();
