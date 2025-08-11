@@ -1,15 +1,18 @@
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   Dimensions,
   Alert,
-  FlatList
+  Modal,
+  StyleSheet,
+  Image
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
+import QRCode from "react-native-qrcode-svg";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -18,22 +21,41 @@ export default function PostCard({
   navigation,
   isLeader,
   onDelete,
-  clubId
+  clubId,
+  isOrganizer,
+  registeredEvents = []
 }) {
   const isEvent = data.type === "event";
 
-  const handlePress = () => {
-    if (isEvent) {
-      navigation.navigate("Event", {
-        screen: "EventRoles",
-        params: { eventId: data.eventId }
-      });
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrValue, setQrValue] = useState("");
+
+  useEffect(() => {
+    if (isEvent && registeredEvents.length > 0) {
+      const registered = registeredEvents.some(
+        (reg) =>
+          Number(reg.eventId) === Number(data.eventId) &&
+          reg.paymentStatus === "COMPLETED"
+      );
+      setIsRegistered(registered);
     } else {
-      navigation.navigate("Club", {
-        screen: "BlogDetail",
-        params: { blogId: data.blogId }
-      });
+      setIsRegistered(false);
     }
+  }, [registeredEvents, data.eventId, isEvent]);
+
+  const onShowQr = () => {
+    setQrValue(`EventID:${data.eventId}`);
+    setShowQrModal(true);
+  };
+
+  const handlePress = () => {
+    navigation.navigate("Club", {
+      screen: "ClubDetailEvent",
+      params: {
+        eventId: data.eventId
+      }
+    });
   };
 
   const handleAssignRole = () => {
@@ -46,225 +68,270 @@ export default function PostCard({
   const handleUpdate = () => {
     if (isEvent) {
       navigation.navigate("Event", {
-        screen: "UpdateEvent",
+        screen: "EventUpdate",
         params: { eventId: data.eventId }
       });
     } else {
       navigation.navigate("Club", {
-        screen: "UpdateBlog",
-        params: { blogId: data.blogId, clubId: data.clubId }
+        screen: "FormBlog",
+        params: { blogId: data.blogId }
       });
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     Alert.alert(
-      "Xác nhận xoá",
-      `Bạn có chắc chắn muốn xoá ${isEvent ? "sự kiện" : "blog"} này không?`,
+      "Xác nhận",
+      "Bạn có chắc muốn xóa bài viết này?",
       [
-        { text: "Huỷ", style: "cancel" },
+        { text: "Hủy", style: "cancel" },
         {
-          text: "Xoá",
+          text: "Xóa",
           style: "destructive",
           onPress: async () => {
             try {
               const token = await AsyncStorage.getItem("jwt");
-              const headers = { Authorization: `Bearer ${token}` };
-              const endpoint = isEvent
+              const headers = {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              };
+
+              const url = isEvent
                 ? `/api/events/${data.eventId}`
                 : `/api/blogs/${data.blogId}`;
-              const res = await fetchBaseResponse(endpoint, {
+
+              const res = await fetchBaseResponse(url, {
                 method: "DELETE",
                 headers
               });
+
               if (res.status === 200) {
-                Alert.alert("Thành công", "Đã xoá thành công.");
-                if (onDelete) await onDelete();
+                Alert.alert("Thành công", "Xóa thành công.");
+                onDelete();
               } else {
-                throw new Error("Xoá thất bại");
+                Alert.alert("Lỗi", "Không thể xóa bài viết.");
               }
-            } catch (err) {
-              Alert.alert("Lỗi", err.message || "Không thể xoá.");
+            } catch (error) {
+              Alert.alert("Lỗi", "Có lỗi xảy ra.");
             }
           }
         }
-      ]
+      ],
+      { cancelable: true }
     );
   };
 
+  // Xử lý ảnh blog
+  const blogImage =
+    data.thumbnailUrl ||
+    (data.imageUrls && data.imageUrls.length > 0 && data.imageUrls[0]) ||
+    "https://via.placeholder.com/400x200?text=No+Image";
+
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={0.85}
-      style={{
-        width: screenWidth,
-        marginBottom: 12,
-        backgroundColor: "#f9fafb",
-        marginLeft: -15
-      }}
-    >
-      {/* === Nội dung lên đầu === */}
-      <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
-        {/* Tag */}
-        <View
-          style={{
-            backgroundColor: isEvent ? "#e0f2fe" : "#fff7ed",
-            alignSelf: "flex-start",
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 12,
-            marginBottom: 8
-          }}
-        >
-          <Text
-            style={{
-              color: isEvent ? "#0284c7" : "#d97706",
-              fontSize: 12,
-              fontWeight: "600"
-            }}
-          >
-            {isEvent ? "📅 Sự kiện" : "📝 Blog"}
-          </Text>
-        </View>
-
-        {/* Title */}
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: "700",
-            marginBottom: 6,
-            color: "#111827"
-          }}
-          numberOfLines={2}
-        >
-          {data.title}
-        </Text>
-
-        {/* Sub info */}
-        {isEvent ? (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ color: "#374151", marginRight: 6 }}>
-              📍 {data.location}
-            </Text>
-            <Icon name="clock" size={14} color="#6b7280" />
-            <Text style={{ color: "#6b7280", marginLeft: 4 }}>
-              {new Date(data.eventDate).toLocaleDateString()}
-            </Text>
-          </View>
-        ) : (
-          <Text style={{ color: "#4b5563", marginBottom: 6, fontSize: 14 }}>
-            ✍️ {data.authorName} ·{" "}
-            <Text style={{ color: "#6b7280" }}>
-              {new Date(data.createdAt).toLocaleDateString()}
-            </Text>
-          </Text>
-        )}
-
-        {/* Buttons */}
-        {isEvent && (
-          <>
-            <TouchableOpacity
-              style={{
-                marginTop: 12,
-                alignSelf: "flex-start",
-                backgroundColor: "#1877f2",
-                paddingVertical: 8,
-                paddingHorizontal: 18,
-                borderRadius: 20
-              }}
-              onPress={handlePress}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
-                Đăng ký sự kiện
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleAssignRole}
-              style={{
-                marginTop: 10,
-                alignSelf: "flex-start",
-                backgroundColor: "#10b981",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 20
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}>
-                🛡️ Thêm quyền sự kiện
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        {/* Admin Buttons */}
-        {isLeader && (
-          <View
-            style={{
-              flexDirection: "row",
-              marginTop: 10,
-              gap: 10
-            }}
-          >
-            <TouchableOpacity
-              onPress={handleUpdate}
-              style={{
-                backgroundColor: "#0284c7",
-                paddingVertical: 6,
-                paddingHorizontal: 16,
-                borderRadius: 10
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                ✏️ Cập nhật
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleDelete}
-              style={{
-                backgroundColor: "#dc2626",
-                paddingVertical: 6,
-                paddingHorizontal: 16,
-                borderRadius: 10
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>🗑️ Xoá</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {/* === Hình ở cuối === */}
-      {data.thumbnailUrl && (
-        <Image
-          source={{ uri: data.thumbnailUrl }}
-          style={{ width: "100%", height: 220 }}
-          resizeMode="cover"
-        />
-      )}
-
-      {/* Danh sách ảnh nhỏ */}
-      {Array.isArray(data.imageUrls) && data.imageUrls.length > 0 && (
-        <FlatList
-          data={data.imageUrls}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(uri, index) => uri + index}
-          renderItem={({ item }) => (
+    <>
+      <TouchableOpacity
+        onPress={handlePress}
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: 12,
+          marginBottom: 16,
+          overflow: "hidden",
+          shadowColor: "#000",
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 4,
+          width: 410,
+          marginLeft: -12,
+          height: 300
+        }}
+      >
+        <View style={{ padding: 16 }}>
+          {/* Hiển thị ảnh nếu không phải event */}
+          {!isEvent && (
             <Image
-              source={{ uri: item }}
+              source={{ uri: blogImage }}
               style={{
-                width: 450,
-                height: 180,
-                margin: 10,
-                marginLeft: -10
+                width: "100%",
+                height: 150,
+                borderRadius: 12,
+                marginBottom: 12,
+                backgroundColor: "#e5e7eb"
               }}
               resizeMode="cover"
             />
           )}
-        />
-      )}
-    </TouchableOpacity>
+
+          <Text
+            style={{
+              fontWeight: "600",
+              fontSize: 16,
+              marginBottom: 6,
+              color: "#111827"
+            }}
+            numberOfLines={2}
+          >
+            {data.title}
+          </Text>
+
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#6b7280",
+              marginBottom: 12,
+              height: 38,
+              lineHeight: 19
+            }}
+            numberOfLines={2}
+          >
+            {data.description ? data.description.replace(/<[^>]+>/g, "") : ""}
+          </Text>
+
+          {/* Nếu event, show ngày */}
+          {isEvent && (
+            <Text style={{ color: "#2563eb", fontWeight: "600" }}>
+              Ngày diễn ra: {new Date(data.eventDate).toLocaleDateString()}
+            </Text>
+          )}
+
+          {/* Hiện nút đăng ký sự kiện nếu là event, đã join club, và chưa đăng ký */}
+          {isEvent && !isRegistered && !isOrganizer && (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Event", {
+                  screen: "EventRegister",
+                  params: { eventId: data.eventId }
+                })
+              }
+              style={{
+                marginTop: 10,
+                backgroundColor: "#2563eb",
+                paddingVertical: 8,
+                borderRadius: 6,
+                alignItems: "center"
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                Đăng ký sự kiện
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Nút phân quyền nếu là event và isOrganizer */}
+          {isEvent && isOrganizer && (
+            <TouchableOpacity
+              onPress={handleAssignRole}
+              style={{
+                marginTop: 12,
+                backgroundColor: "#f97316",
+                paddingVertical: 8,
+                borderRadius: 6,
+                alignItems: "center",
+                width: 150
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                Phân quyền sự kiện
+              </Text>
+            </TouchableOpacity>
+          )}
+          {isEvent && isOrganizer && (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Event", {
+                  screen: "EventTaskView",
+                  params: {
+                    eventId: data.eventId
+                  }
+                })
+              }
+              style={{
+                marginTop: 12,
+                backgroundColor: "#f97316",
+                paddingVertical: 8,
+                borderRadius: 6,
+                alignItems: "center",
+                width: 150
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                Quản lí task
+              </Text>
+            </TouchableOpacity>
+          )}
+          {/* Nút sửa/xóa nếu là leader */}
+          {/* {isLeader && (
+            <View
+              style={{
+                marginTop: 12,
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 10
+              }}
+            >
+              <TouchableOpacity onPress={handleUpdate}>
+                <Icon name="edit-2" size={22} color="#2563eb" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleDelete}>
+                <Icon name="trash" size={22} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
+          )} */}
+        </View>
+
+        {/* Modal QR code */}
+        <Modal
+          visible={showQrModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowQrModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  marginBottom: 20,
+                  textAlign: "center"
+                }}
+              >
+                Mã QR vé sự kiện
+              </Text>
+              <QRCode value={qrValue} size={200} />
+
+              <TouchableOpacity
+                onPress={() => setShowQrModal(false)}
+                style={styles.closeButton}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Đóng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </TouchableOpacity>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 16,
+    alignItems: "center",
+    width: screenWidth * 0.8
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: "#2563eb",
+    paddingVertical: 10,
+    paddingHorizontal: 40,
+    borderRadius: 12
+  }
+});

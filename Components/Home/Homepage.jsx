@@ -12,7 +12,8 @@ import {
   StatusBar,
   Platform,
   Animated,
-  UIManager
+  UIManager,
+  ActivityIndicator
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../Header/Header";
@@ -59,6 +60,7 @@ const ICON_OPACITY_SCROLL_THRESHOLD = 30;
 export default function Homepage() {
   const navigation = useNavigation();
   const [bannerData, setBannerData] = useState([]);
+  const [period, setPeriod] = useState("week");
   const [bannerIdx, setBannerIdx] = useState(0);
   const intervalRef = React.useRef(null);
   const [user, setUser] = React.useState(null);
@@ -72,7 +74,79 @@ export default function Homepage() {
   const [clubRoles, setClubRoles] = useState({});
   const [membershipStatuses, setMembershipStatuses] = useState({});
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [clubRankings, setClubRankings] = useState([]);
+  const [loadingRankings, setLoadingRankings] = useState(false);
+  const [clubComparison, setClubComparison] = useState([]);
+  const [loadingComparison, setLoadingComparison] = useState(false);
+  const fetchClubComparison = async () => {
+    setLoadingComparison(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const response = await fetchBaseResponse(
+        "/api/statistics/club-comparison",
+        {
+          method: "GET",
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
+      if (response.status === 200) {
+        setClubComparison(response.data || []);
+      } else {
+        console.error("Lỗi fetch club comparison:", response.status);
+      }
+    } catch (error) {
+      console.error("Lỗi gọi API club comparison:", error);
+    } finally {
+      setLoadingComparison(false);
+    }
+  };
+
+  const fetchClubRankings = async (selectedPeriod = "week") => {
+    setLoadingRankings(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const response = await fetchBaseResponse(
+        `/api/statistics/club-rankings?period=${selectedPeriod}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        setClubRankings(response.data || []);
+      } else {
+        console.error("Lỗi fetch club rankings:", response.status);
+      }
+    } catch (error) {
+      console.error("Lỗi gọi API club rankings:", error);
+    } finally {
+      setLoadingRankings(false);
+    }
+  };
+
+  // Gọi API khi mount hoặc khi period thay đổi
+  useEffect(() => {
+    fetchClubRankings(period);
+  }, [period]);
+  useEffect(() => {
+    fetchClubComparison();
+  }, []);
+
+  // UI phần chọn period
+  const periods = [
+    { key: "week", label: "Tuần" },
+    { key: "month", label: "Tháng" },
+    { key: "quarter", label: "Quý" },
+    { key: "year", label: "Năm" }
+  ];
   const headerHeight = scrollY.interpolate({
     inputRange: [0, ICON_OPACITY_SCROLL_THRESHOLD],
     outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
@@ -400,14 +474,19 @@ export default function Homepage() {
 
                 return (
                   <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("Club", {
-                        screen: "ClubId",
-                        params: {
-                          clubId: item.clubId
-                        }
-                      })
-                    }
+                    onPress={() => {
+                      if (isApproved || isLeaderOrMember) {
+                        navigation.navigate("Club", {
+                          screen: "ClubGroup",
+                          params: { clubId: item.clubId }
+                        });
+                      } else {
+                        navigation.navigate("Club", {
+                          screen: "ClubId",
+                          params: { clubId: item.clubId }
+                        });
+                      }
+                    }}
                   >
                     <View style={styles.clubCard}>
                       <Image
@@ -418,49 +497,6 @@ export default function Homepage() {
                       <Text style={styles.clubDescription} numberOfLines={2}>
                         {stripMarkdown(item.description) || "Không có mô tả"}
                       </Text>
-                      {/* 
-                      {isApproved || isLeaderOrMember ? (
-                        <TouchableOpacity
-                          style={styles.groupButton}
-                          onPress={() =>
-                            navigation.navigate("Club", {
-                              screen: "ClubGroup",
-                              params: { clubId: item.clubId }
-                            })
-                          }
-                        >
-                          <Text style={styles.groupButtonText}>
-                            Truy cập nhóm
-                          </Text>
-                        </TouchableOpacity>
-                      ) : isPending ? (
-                        <TouchableOpacity
-                          style={[
-                            styles.joinbtnSmall,
-                            { backgroundColor: "#facc15" }
-                          ]}
-                        >
-                          <Text
-                            style={[styles.joinbtnSmallText, { color: "#000" }]}
-                          >
-                            Đang chờ duyệt
-                          </Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.joinbtnSmall}
-                          onPress={() =>
-                            navigation.navigate("Club", {
-                              screen: "FormRegister",
-                              params: { clubId: item.clubId }
-                            })
-                          }
-                        >
-                          <Text style={styles.joinbtnSmallText}>
-                            Tham gia clb
-                          </Text>
-                        </TouchableOpacity>
-                      )} */}
                     </View>
                   </TouchableOpacity>
                 );
@@ -556,6 +592,118 @@ export default function Homepage() {
                 );
               }}
             />
+          </View>
+          <View style={{ paddingHorizontal: 14 }}>
+            {/* Period Selector */}
+            <View style={styles.periodSelector}>
+              {periods.map(({ key, label }) => (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => setPeriod(key)}
+                  style={[
+                    styles.periodButton,
+                    period === key && styles.periodButtonActive
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.periodButtonText,
+                      period === key && styles.periodButtonTextActive
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Ranking List */}
+            <View style={styles.rankingContainer}>
+              <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
+                Xếp hạng CLB ({period})
+              </Text>
+
+              {loadingRankings ? (
+                <ActivityIndicator size="small" color="#ff6600" />
+              ) : (
+                <FlatList
+                  data={clubRankings}
+                  keyExtractor={(item) => item.clubId.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 14 }}
+                  renderItem={({ item, index }) => {
+                    const isTop1 = index === 0;
+                    const isTop2 = index === 1;
+                    const isTop3 = index === 2;
+
+                    // Màu nền riêng cho top 3
+                    let bgColor = "#fff";
+                    if (isTop1) bgColor = "#ffddc1"; // màu vàng nhạt
+                    else if (isTop2) bgColor = "#d0e6ff"; // màu xanh nhạt
+                    else if (isTop3) bgColor = "#ffd6d6"; // màu đỏ nhạt
+
+                    return (
+                      <View
+                        style={[
+                          styles.rankingCard,
+                          { backgroundColor: bgColor }
+                        ]}
+                      >
+                        <View style={styles.rankCircle}>
+                          <Text style={styles.rankNumber}>{index + 1}</Text>
+                        </View>
+                        <Image
+                          source={{ uri: item.logoUrl }}
+                          style={styles.rankLogo}
+                        />
+                        <Text style={styles.rankClubName} numberOfLines={1}>
+                          {item.clubName}
+                        </Text>
+                        <Text style={styles.rankPoints}>
+                          {item.points} điểm
+                        </Text>
+                      </View>
+                    );
+                  }}
+                />
+              )}
+            </View>
+            <View style={{ marginBottom: 25 }}>
+              <Text style={styles.sectionTitle}>So sánh CLB</Text>
+              {loadingComparison ? (
+                <ActivityIndicator size="small" color="#ff6600" />
+              ) : (
+                <FlatList
+                  horizontal
+                  data={clubComparison}
+                  keyExtractor={(item, index) =>
+                    item.clubId?.toString() || index.toString()
+                  }
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 14 }}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.comparisonCard}
+                      onPress={() => {
+                        navigation.navigate("Club", {
+                          screen: "ClubGroup",
+                          params: { clubId: item.clubId }
+                        });
+                      }}
+                    >
+                      <Text style={styles.comparisonClubName} numberOfLines={1}>
+                        {item.clubName || "Tên CLB"}
+                      </Text>
+                      <Text style={styles.comparisonScore}>
+                        Điểm: {item.totalPoints || 0}
+                      </Text>
+                      {/* Bạn có thể thêm icon, biểu đồ nhỏ hoặc chi tiết khác nếu muốn */}
+                    </TouchableOpacity>
+                  )}
+                />
+              )}
+            </View>
           </View>
         </Animated.ScrollView>
         <TouchableOpacity
@@ -947,5 +1095,134 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777",
     textAlign: "center"
-  }
+  },
+  periodSelector: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10
+  },
+  periodButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginHorizontal: 6,
+    borderRadius: 20,
+    backgroundColor: "#f0f0f0"
+  },
+  periodButtonActive: {
+    backgroundColor: "#ff6600"
+  },
+  periodButtonText: {
+    color: "#555",
+    fontWeight: "500"
+  },
+  periodButtonTextActive: {
+    color: "#fff"
+  },
+  rankingContainer: {
+    marginVertical: 20
+  },
+  rankingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee"
+  },
+  rankNumber: {
+    fontSize: 20,
+    fontWeight: "bold",
+    width: 32,
+    textAlign: "center",
+    color: "#ff6600"
+  },
+  rankLogo: {
+    width: 40,
+    width: 40,
+    height: 40,
+    borderRadius: 20
+  },
+  rankClubName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2E3A59"
+  },
+  rankPoints: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 2
+  },
+  rankingCard: {
+    width: 120,
+    borderRadius: 10,
+    padding: 12,
+    marginRight: 14,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3
+  },
+  rankCircle: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    backgroundColor: "#ff6600",
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+    shadowColor: "#ff6600",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 4
+  },
+  rankNumber: {
+    color: "#fff",
+    fontWeight: "bold"
+  },
+  rankLogo: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginBottom: 8
+  },
+  rankClubName: {
+    fontWeight: "600",
+    fontSize: 14,
+    color: "#2E3A59",
+    textAlign: "center"
+  },
+  rankPoints: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4
+  },
+  comparisonCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    marginRight: 12,
+    width: 140,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  comparisonClubName: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 8,
+    color: ACCENT,
+  },
+  comparisonScore: {
+    fontSize: 14,
+    color: "#555",
+  },
 });

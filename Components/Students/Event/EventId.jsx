@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,34 +11,43 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  Linking
+  Linking,
+  Modal
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import { useNavigation } from "@react-navigation/native";
-// import fetchBaseResponse từ service của bạn
-import Icon from "react-native-vector-icons/Ionicons"; // hoặc Feather, MaterialIcons, etc.
 import { Ionicons } from "@expo/vector-icons";
+
 const FORMAT_ICON = {
   OFFLINE: "https://img.icons8.com/color/96/000000/conference.png",
   ONLINE: "https://img.icons8.com/color/96/000000/laptop.png"
 };
 
 const TYPE_COLOR = {
-  OFFLINE: "#f57c00", // cam đậm
+  OFFLINE: "#f57c00",
   ONLINE: "#f57c00"
 };
 
 export default function EventDetail({ route }) {
-  // Nhận eventId từ navigation param
   const { eventId } = route.params;
   const navigation = useNavigation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  console.log("EventId", eventId);
+  // State modal QR
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // State danh sách event user đã đăng ký
+  const [registeredEvents, setRegisteredEvents] = useState([]);
+
+  // State event user đã đăng ký hiện tại (nếu có)
+  const [myRegistration, setMyRegistration] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Lấy public event
         const publicRes = await fetchBaseResponse(
@@ -53,7 +62,7 @@ export default function EventDetail({ route }) {
           setData(null);
           return;
         }
-        console.log("Response:", publicRes.data);
+
         let roleName = null;
         const token = await AsyncStorage.getItem("jwt");
         try {
@@ -68,9 +77,25 @@ export default function EventDetail({ route }) {
             roleName = myRes.data.roleName;
           }
         } catch (err) {
-          // Không làm gì nếu lỗi, roleName sẽ là null
           console.log("Không lấy được role cho sự kiện", err);
         }
+
+        // Lấy danh sách event user đã đăng ký
+        try {
+          const regRes = await fetchBaseResponse(
+            `/api/registrations/my-buy-events`,
+            {
+              method: "GET",
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          if (regRes.status === 200) {
+            setRegisteredEvents(regRes.data || []);
+          }
+        } catch (err) {
+          console.log("Không lấy được danh sách đăng ký", err);
+        }
+
         const mergedData = { ...publicRes.data, roleName };
         setData(mergedData);
       } catch (error) {
@@ -80,8 +105,19 @@ export default function EventDetail({ route }) {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [eventId]);
+
+  // Kiểm tra event này có trong danh sách đăng ký không
+  useEffect(() => {
+    if (registeredEvents.length && data) {
+      const reg = registeredEvents.find(
+        (item) => item.eventId === data.eventId
+      );
+      setMyRegistration(reg || null);
+    }
+  }, [registeredEvents, data]);
 
   if (loading) {
     return (
@@ -99,7 +135,6 @@ export default function EventDetail({ route }) {
     );
   }
 
-  // Định dạng ngày tiếng Việt
   const formattedDate = new Date(data.eventDate).toLocaleString("vi-VN", {
     weekday: "long",
     year: "numeric",
@@ -109,7 +144,6 @@ export default function EventDetail({ route }) {
     minute: "2-digit"
   });
 
-  // Chọn icon/màu theo format
   const coverImg = FORMAT_ICON[data.format] || FORMAT_ICON.OFFLINE;
   const color = TYPE_COLOR[data.format] || TYPE_COLOR.OFFLINE;
 
@@ -179,22 +213,42 @@ export default function EventDetail({ route }) {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={[
-              styles.joinBtn,
-              {
-                backgroundColor: data.roleName === "ORGANIZER" ? "#388e3c" : ""
-              }
-            ]}
-            onPress={() => {
-              if (data.roleName === "ORGANIZER") {
+          {/* Nếu user có vai trò ORGANIZER */}
+          {data.roleName === "ORGANIZER" && (
+            <TouchableOpacity
+              style={[styles.joinBtn, { backgroundColor: "#388e3c" }]}
+              onPress={() => {
                 navigation.navigate("Event", {
                   screen: "EventRoles",
-                  params: {
-                    eventId: data.eventId
-                  }
+                  params: { eventId: data.eventId }
                 });
-              } else {
+              }}
+            >
+              <Text style={styles.joinBtnText}>Quản lý sự kiện</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Nếu user đã đăng ký event này (myRegistration tồn tại) */}
+          {myRegistration ? (
+            <>
+              <View style={styles.registeredStatusBox}>
+                <Text style={styles.registeredStatusText}>
+                  Bạn đã đăng ký sự kiện này.
+                </Text>
+                <TouchableOpacity
+                  style={styles.qrBtn}
+                  onPress={() => setModalVisible(true)}
+                >
+                  <Ionicons name="qr-code" size={28} color="#f57c00" />
+                  <Text style={styles.qrBtnText}>Xem mã QR checkin</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            // Nếu chưa đăng ký thì hiện nút đăng ký
+            <TouchableOpacity
+              style={styles.joinBtn}
+              onPress={() => {
                 navigation.navigate("Event", {
                   screen: "EventRegistration",
                   params: {
@@ -202,21 +256,50 @@ export default function EventDetail({ route }) {
                     title: data.title
                   }
                 });
-              }
-            }}
+              }}
+            >
+              <Text style={styles.joinBtnText}>Đăng ký</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Modal hiện mã QR */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
           >
-            <Text style={styles.joinBtnText}>
-              {data.roleName === "ORGANIZER" ? "Quản lý sự kiện" : "Đăng ký"}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Mã QR Checkin</Text>
+                {myRegistration && myRegistration.qrCode ? (
+                  <Image
+                    style={styles.qrImage}
+                    source={{
+                      uri: `data:image/png;base64,${myRegistration.qrCode}`
+                    }}
+                  />
+                ) : (
+                  <Text>Không có mã QR</Text>
+                )}
+                <Text style={styles.modalText}>
+                  Vui lòng dùng mã QR để checkin, trạng thái: Đã đăng ký
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.modalCloseBtn}
+                >
+                  <Text style={styles.modalCloseBtnText}>Đóng</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </SafeAreaView>
     </>
   );
 }
-// thêm text là vui lòng dùng mã qr để checkin, status đã đăng ký
-// hiện popup modal
-// -------- STYLES --------
+
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
@@ -234,7 +317,7 @@ const styles = StyleSheet.create({
 
   bannerWrap: {
     width: "100%",
-    height: 220, // hoặc cao hơn tùy ý
+    height: 220,
     marginBottom: 16
   },
   backBtn: {
@@ -377,6 +460,78 @@ const styles = StyleSheet.create({
   joinBtnText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16.5,
+    fontSize: 16.5
+  },
+
+  // Style phần đã đăng ký & nút xem qr
+  registeredStatusBox: {
+    marginHorizontal: 32,
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 25,
+    backgroundColor: "#fff3e0",
+    alignItems: "center",
+    flexDirection: "column",
+    justifyContent: "space-between"
+  },
+  registeredStatusText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#f57c00"
+  },
+  qrBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20
+  },
+  qrBtnText: {
+    marginLeft: 6,
+    color: "#f57c00",
+    fontWeight: "bold",
+    fontSize: 15
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "#00000099",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 22,
+    alignItems: "center",
+    width: "80%"
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#bf360c"
+  },
+  qrImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 15
+  },
+  modalText: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "#6d4c41",
+    marginBottom: 20,
+    fontWeight: "500"
+  },
+  modalCloseBtn: {
+    backgroundColor: "#f57c00",
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    borderRadius: 25
+  },
+  modalCloseBtnText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16
   }
 });
