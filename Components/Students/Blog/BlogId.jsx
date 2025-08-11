@@ -83,7 +83,9 @@ const BlogId = ({ navigation }) => {
       <Header />
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.navigate("Home")}
+        onPress={() => navigation.navigate("Club",{
+          screen:"Blog"
+        })}
       >
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={[styles.backText, { marginLeft: 25, marginTop: -22 }]}>

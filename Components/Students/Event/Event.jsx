@@ -70,23 +70,21 @@ export default function Event({ navigation }) {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.card}
+      style={styles.cardHorizontal}
       activeOpacity={0.85}
       onPress={() =>
         navigation.navigate("Event", {
           screen: "EventId",
-          params: {
-            eventId: item.eventId
-          }
+          params: { eventId: item.eventId }
         })
       }
     >
       <Image
         source={getCoverImg(item.format)}
-        style={{ width: "100%", height: 100 }}
+        style={styles.cardImageHorizontal}
         resizeMode="cover"
       />
-      <View style={{ padding: 8 }}>
+      <View style={styles.cardContentHorizontal}>
         <Text numberOfLines={2} style={styles.cardTitle}>
           {item.title}
         </Text>
@@ -106,10 +104,12 @@ export default function Event({ navigation }) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Ionicons name="chevron-back" size={24} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Text style={styles.backButtonText}>Quay lại</Text>
         </TouchableOpacity>
+
         <View style={styles.headerRow}>
           <Text style={styles.title}>Danh sách sự kiện</Text>
           <TouchableOpacity
@@ -143,11 +143,6 @@ export default function Event({ navigation }) {
             showsVerticalScrollIndicator={false}
             refreshing={loading}
             onRefresh={fetchData}
-            numColumns={2}
-            columnWrapperStyle={{
-              justifyContent: "space-between",
-              marginBottom: 16
-            }}
             ListEmptyComponent={
               <Text
                 style={{ textAlign: "center", color: "#999", marginTop: 50 }}
@@ -163,6 +158,28 @@ export default function Event({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f57c00",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginLeft: 5,
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+    width: "30%"
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500",
+    marginLeft: 4
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -186,7 +203,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fffaf2",
     marginBottom: -50,
-    marginTop: -80
+    marginTop: -10
   },
   title: {
     fontSize: 22,
@@ -197,16 +214,29 @@ const styles = StyleSheet.create({
     letterSpacing: 0.13,
     marginLeft: -10
   },
-  card: {
-    width: "48%",
+  cardHorizontal: {
+    flexDirection: "row",
     backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
-    elevation: 2
+    elevation: 2,
+    marginBottom: 16,
+    height: 120
+  },
+  cardImageHorizontal: {
+    width: 200,
+    height: "100%",
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10
+  },
+  cardContentHorizontal: {
+    flex: 1,
+    padding: 12,
+    justifyContent: "center"
   },
   cardTitle: {
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 16,
     color: "#333"
   },
   cardDate: {

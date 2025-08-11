@@ -166,7 +166,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16
+    marginBottom: 16,
+    textAlign: "center"
   },
   memberItem: {
     flexDirection: "row",

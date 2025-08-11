@@ -1,19 +1,17 @@
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
-import Header from "../../../Header/Header";
-import { useRoute } from "@react-navigation/native";
-import WebView from "react-native-webview";
-import { fetchBaseResponse } from "../../../utils/api"; // tùy đường dẫn bạn
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
+//...
 
 const PaymentWebView = ({ navigation }) => {
   const route = useRoute();
-  const { registrationId, paymentUrl, qrCode } = route.params;
+  const { registrationId, paymentUrl, qrCode, eventId } = route.params;
+
+  const [paymentFinished, setPaymentFinished] = useState(false);
 
   const getQueryParam = (url, key) => {
     const match = url.match(new RegExp("[?&]" + key + "=([^&]+)"));
     return match ? decodeURIComponent(match[1]) : null;
   };
-//deep link 
+
   const notifyBackend = async (orderCode) => {
     try {
       const token = await AsyncStorage.getItem("jwt");
@@ -38,17 +36,23 @@ const PaymentWebView = ({ navigation }) => {
 
     console.log("🌐 Payment redirect URL:", url);
 
-    if (status === "COMPLETED" && cancel === "false") {
+    if ((status === "COMPLETED" || status === "PAID") && cancel === "false") {
+      setPaymentFinished(true); // báo đã thanh toán xong
       notifyBackend(orderCode);
       Alert.alert("✅ Thành công", "Thanh toán thành công!");
-      navigation.navigate("Main");
+      navigation.navigate("Event", {
+        screen: "EventRegistration"
+      });
     } else if (
       status === "CANCELLED" ||
       status === "FAILED" ||
       cancel === "true"
     ) {
+      setPaymentFinished(true); // cũng thoát khi thất bại hoặc hủy
       Alert.alert("❌ Thất bại", "Thanh toán đã bị huỷ hoặc thất bại.");
-      navigation.navigate("Main");
+      navigation.navigate("Event", {
+        screen: "EventRegistration"
+      });
     }
   };
 
@@ -69,7 +73,18 @@ const PaymentWebView = ({ navigation }) => {
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.log("🌐 Đã chặn lỗi WebView:", nativeEvent.description);
-          // ❗ Không cần Alert, lỗi này là do URL giả lập thôi
+
+          if (paymentFinished) {
+            // Nếu đã hoàn thành thanh toán, lỗi loading page do redirect localhost thì cứ tắt WebView
+            navigation.navigate("Event", {
+              screen: "EventRegistration",
+              params: {
+                eventId: eventId
+              }
+            });
+          } else {
+            Alert.alert("Lỗi", "Không thể tải trang thanh toán.");
+          }
         }}
       />
     </View>
@@ -77,11 +92,3 @@ const PaymentWebView = ({ navigation }) => {
 };
 
 export default PaymentWebView;
-
-const styles = StyleSheet.create({
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  }
-});

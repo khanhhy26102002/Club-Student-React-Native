@@ -7,12 +7,13 @@ import {
   View,
   ActivityIndicator,
   Alert,
-  ScrollView,
+  ScrollView
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// sửa lại UI dành cho organizer k dc để nút đăng ký sự kiện
 
 const Club = ({ navigation }) => {
   const [joinedClubs, setJoinedClubs] = React.useState([]);
@@ -33,8 +34,8 @@ const Club = ({ navigation }) => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         });
 
         if (joinedRes?.status === 200) {
@@ -46,8 +47,8 @@ const Club = ({ navigation }) => {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+            "Content-Type": "application/json"
+          }
         });
 
         if (pendingRes?.status === 200) {
@@ -69,7 +70,7 @@ const Club = ({ navigation }) => {
   const handleClubPress = (clubId) => {
     navigation.navigate("Club", {
       screen: "ClubGroup",
-      params: { clubId },
+      params: { clubId }
     });
   };
 
@@ -91,10 +92,7 @@ const Club = ({ navigation }) => {
   );
 
   const renderPendingClubCard = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.card, { opacity: 1 }]}
-      activeOpacity={1}
-    >
+    <TouchableOpacity style={[styles.card, { opacity: 1 }]} activeOpacity={1}>
       <Image
         source={{ uri: item.logoUrl }}
         style={styles.image}
@@ -110,6 +108,13 @@ const Club = ({ navigation }) => {
   return (
     <View style={styles.wrapper}>
       <Header />
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.backButtonText}>← Quay lại</Text>
+      </TouchableOpacity>
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2563eb" />
@@ -127,7 +132,9 @@ const Club = ({ navigation }) => {
             </Text>
           </View>
 
-          <Text style={styles.subHeading}>Danh sách câu lạc bộ đã tham gia</Text>
+          <Text style={styles.subHeading}>
+            Danh sách câu lạc bộ đã tham gia
+          </Text>
           <FlatList
             data={joinedClubs}
             keyExtractor={(item) => item.clubId.toString()}
@@ -136,7 +143,9 @@ const Club = ({ navigation }) => {
             scrollEnabled={false}
             renderItem={renderClubCard}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>Bạn chưa tham gia câu lạc bộ nào.</Text>
+              <Text style={styles.emptyText}>
+                Bạn chưa tham gia câu lạc bộ nào.
+              </Text>
             }
           />
 
@@ -164,44 +173,64 @@ const Club = ({ navigation }) => {
 export default Club;
 
 const styles = StyleSheet.create({
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#f57c00",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginLeft: 16,
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3
+  },
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
   wrapper: {
     flex: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F3F4F6"
   },
   container: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 32
   },
   loadingContainer: {
     marginTop: 32,
-    alignItems: "center",
+    alignItems: "center"
   },
   header: {
-    paddingVertical: 20,
+    paddingVertical: 20
   },
   title: {
     fontSize: 22,
     fontWeight: "800",
     color: "#1E40AF",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 8
   },
   subtitle: {
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
     paddingHorizontal: 12,
-    marginBottom: 16,
+    marginBottom: 16
   },
   subHeading: {
     fontSize: 16,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 12,
+    marginBottom: 12
   },
   row: {
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 16
   },
   card: {
     flex: 0.48,
@@ -213,31 +242,31 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 2
   },
   image: {
     width: 80,
     height: 80,
     borderRadius: 40,
     marginBottom: 10,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: "#E5E7EB"
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: "700",
     color: "#1F2937",
-    textAlign: "center",
+    textAlign: "center"
   },
   pendingLabel: {
     marginTop: 4,
     fontSize: 12,
     color: "#F59E0B",
-    fontStyle: "italic",
+    fontStyle: "italic"
   },
   emptyText: {
     textAlign: "center",
     color: "#9CA3AF",
     fontSize: 13,
-    marginBottom: 16,
-  },
+    marginBottom: 16
+  }
 });

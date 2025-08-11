@@ -528,8 +528,8 @@ export default function Homepage() {
                     activeOpacity={0.85}
                     style={styles.blogCard}
                     onPress={() => {
-                      navigation.navigate("Blog", {
-                        screen: "BlogId",
+                      navigation.navigate("Club", {
+                        screen: "BlogDetail",
                         params: {
                           blogId: item.blogId
                         }
