@@ -26,7 +26,11 @@ const EventHistory = () => {
   const [qrValue, setQrValue] = React.useState(null);
   const [showQRModal, setShowQRModal] = React.useState(false);
   const [firstLoad, setFirstLoad] = React.useState(true);
-
+  const sortedEvents = React.useMemo(() => {
+    return registeredEvents
+      .slice()
+      .sort((a, b) => new Date(b.eventDate) - new Date(a.eventDate));
+  }, [registeredEvents]);
   const fetchEventsByStatus = async (status) => {
     setLoadingEvents(true);
     const token = await AsyncStorage.getItem("jwt");
@@ -121,8 +125,8 @@ const EventHistory = () => {
         >
           <Ionicons name="chevron-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.title}>Lịch sử sự kiện</Text>
-        <View style={styles.filterGroup}>
+        <Text style={styles.title}>Sự kiện đã đăng ký</Text>
+        {/* <View style={styles.filterGroup}>
           {["COMPLETED", "PENDING", "FAILED"].map((status) => (
             <TouchableOpacity
               key={status}
@@ -149,7 +153,7 @@ const EventHistory = () => {
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </View> */}
 
         {loadingEvents ? (
           <ActivityIndicator
@@ -163,7 +167,7 @@ const EventHistory = () => {
           </Text>
         ) : (
           <View style={{ width: "100%", marginBottom: 20 }}>
-            {registeredEvents.map((event) => (
+            {sortedEvents.map((event) => (
               <View key={event.eventId} style={styles.eventCardWrapper}>
                 <TouchableOpacity
                   style={styles.eventCard}
@@ -249,7 +253,7 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: "#f8f9fa",
-    flexGrow: 1,
+    flexGrow: 1
   },
   title: {
     fontSize: 24,

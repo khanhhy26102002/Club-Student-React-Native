@@ -191,7 +191,7 @@ export default function PostCard({
               }}
             >
               <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}>
-                🛡️ Phân quyền
+                🛡️ Thêm quyền sự kiện
               </Text>
             </TouchableOpacity>
           </>

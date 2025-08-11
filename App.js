@@ -37,8 +37,9 @@ export default function App() {
   React.useEffect(() => {
     GoogleSignin.configure({
       webClientId:
-        "660569491893-bqdib599hf583vfpvkmt8bi61d0gooe7.apps.googleusercontent.com",
-      offlineAccess: true
+        "229693370621-o5k3ssjmvn9uuol6a9klo71ukc3mvpfe.apps.googleusercontent.com",
+      offlineAccess: true,
+      googlePlayServicesAuthVersion: '19.2.0'
     });
   }, []);
   return (

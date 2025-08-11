@@ -29,7 +29,7 @@ export default function ClubGroup() {
   const [roleList, setRoleList] = React.useState([]);
   const [isLeader, setIsLeader] = React.useState(false);
   const [isEventCreator, setIsEventCreator] = React.useState(false);
-  const [memberCount, setMemberCount] = React.useState(0); // ✅
+  const [memberCount, setMemberCount] = React.useState(0);
   const [isMemberOnly, setIsMemberOnly] = React.useState(false);
   const route = useRoute();
   const navigation = useNavigation();
@@ -45,6 +45,7 @@ export default function ClubGroup() {
     };
 
     try {
+      // Fetch club info + roles
       const [clubRes, roleRes] = await Promise.all([
         fetchBaseResponse(`/api/clubs/${clubId}`, { headers }),
         fetchBaseResponse(`/api/clubs/my-club-roles`, { headers })
@@ -91,7 +92,7 @@ export default function ClubGroup() {
         setIsEventCreator(canCreateEvent);
       }
 
-      // Fetch approved members count
+      // Fetch approved members count (nếu muốn dùng thêm)
       const memberRes = await fetchBaseResponse(
         `/api/clubs/${clubId}/members`,
         {
@@ -102,9 +103,10 @@ export default function ClubGroup() {
         const approved = (memberRes.data || []).filter(
           (m) => m.status === "APPROVED"
         );
+        // Bạn có thể dùng approved.length nếu cần
       }
 
-      // Fetch blogs (different API for leader vs member)
+      // Fetch blogs (API khác cho leader vs member)
       const blogUrl = isClubLeader
         ? `/api/blogs/leader-club`
         : `/api/blogs/my-clubs`;
@@ -117,7 +119,7 @@ export default function ClubGroup() {
         .map((blog) => ({ ...blog, type: "blog" }));
 
       // Fetch events
-      const eventRes = await fetchBaseResponse(`/api/events/my-events`, {
+      const eventRes = await fetchBaseResponse(`/api/clubs/${clubId}/events`, {
         headers
       });
 
@@ -131,16 +133,37 @@ export default function ClubGroup() {
         );
       }
 
-      const events = eventsRaw.map((event) => ({ ...event, type: "event" }));
-      console.log("📦 eventsRaw:", eventsRaw);
+      // --- Mới: lấy roleName cho từng event
+      const eventsWithRole = await Promise.all(
+        eventsRaw.map(async (event) => {
+          try {
+            const roleRes = await fetchBaseResponse(
+              `/api/event-roles/my/${event.eventId}`,
+              { headers }
+            );
+            if (roleRes.status === 200 && roleRes.data?.roleName) {
+              return {
+                ...event,
+                roleName: roleRes.data.roleName,
+                type: "event"
+              };
+            }
+          } catch (error) {
+            console.warn(`❌ Lỗi lấy role eventId=${event.eventId}:`, error);
+          }
+          return { ...event, roleName: null, type: "event" };
+        })
+      );
+
+      console.log("📦 eventsWithRole:", eventsWithRole);
       console.log("🔎 clubId hiện tại:", clubId);
 
-      // Gộp blogs và events
+      // Gộp blogs và events đã có roleName
       const now = new Date();
       const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(now.getDate() - 7);
 
-      const combined = [...blogs, ...events]
+      const combined = [...blogs, ...eventsWithRole]
         .filter((item) => {
           const createdDate = new Date(item.eventDate || item.createdAt);
           return createdDate >= sevenDaysAgo;
@@ -148,7 +171,7 @@ export default function ClubGroup() {
         .sort((a, b) => {
           const dateA = new Date(a.eventDate || a.createdAt);
           const dateB = new Date(b.eventDate || b.createdAt);
-          return dateA - dateB; // mới nhất lên trước
+          return dateB - dateA; // mới nhất lên trước
         });
 
       setAllData(combined);
@@ -288,7 +311,6 @@ export default function ClubGroup() {
           <View
             style={{
               marginHorizontal: 1,
-              // backgroundColor: "#16a34a",
               shadowColor: "#000",
               shadowOpacity: 0.05,
               shadowRadius: 4,
@@ -325,7 +347,6 @@ export default function ClubGroup() {
                   joined &&
                   isMemberOnly &&
                   !isLeader && (
-                    // 👉 Nếu chỉ là MEMBER, hiển thị nút styled đẹp
                     <TouchableOpacity
                       onPress={() =>
                         navigation.navigate("Event", {
@@ -381,7 +402,6 @@ export default function ClubGroup() {
                   joined &&
                   isEventCreator &&
                   isLeader && (
-                    // 👉 Nếu là CLUBLEADER, giữ nguyên nút mặc định
                     <HorizontalButton
                       icon={
                         <FontAwesome5

@@ -183,8 +183,7 @@ export default function EventDetail({ route }) {
             style={[
               styles.joinBtn,
               {
-                backgroundColor:
-                  data.roleName === "ORGANIZER" ? "#388e3c" : ""
+                backgroundColor: data.roleName === "ORGANIZER" ? "#388e3c" : ""
               }
             ]}
             onPress={() => {
@@ -207,9 +206,7 @@ export default function EventDetail({ route }) {
             }}
           >
             <Text style={styles.joinBtnText}>
-              {data.roleName === "ORGANIZER"
-                ? "QUẢN LÝ SỰ KIỆN"
-                : "THAM GIA NGAY"}
+              {data.roleName === "ORGANIZER" ? "Quản lý sự kiện" : "Đăng ký"}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -217,7 +214,7 @@ export default function EventDetail({ route }) {
     </>
   );
 }
-
+// thêm text là vui lòng dùng mã qr để checkin, status đã đăng ký
 // -------- STYLES --------
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -380,6 +377,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16.5,
-    letterSpacing: 0.18
   }
 });
