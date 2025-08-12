@@ -205,7 +205,7 @@ export default function ClubGroup() {
         shadowOffset: { width: 0, height: 1 },
         shadowRadius: 3,
         elevation: 2,
-        marginLeft: -15
+        marginLeft: -15,
       }}
     >
       <Text style={{ fontSize: 28, marginBottom: 6 }}>{icon}</Text>

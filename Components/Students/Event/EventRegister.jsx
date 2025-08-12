@@ -51,7 +51,7 @@ const EventRegister = ({ navigation }) => {
   const fetchData = async () => {
     const token = await AsyncStorage.getItem("jwt");
     try {
-      const response = await fetchBaseResponse(`/api/clubs/${clubId}`, {
+      const response = await fetchBaseResponse(`/api/clubs/${clubId}/members`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

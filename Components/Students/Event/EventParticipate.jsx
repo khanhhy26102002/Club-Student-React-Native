@@ -136,7 +136,9 @@ const EventParticipate = () => {
             params: {
               registrationId: response.data.registrationId,
               paymentUrl: response.data.message,
-              qrCode: response.data.qrCode
+              qrCode: response.data.qrCode,
+              title,
+              eventId
             }
           });
         } else {
