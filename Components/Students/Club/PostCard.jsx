@@ -142,7 +142,7 @@ export default function PostCard({
           elevation: 4,
           width: 410,
           marginLeft: -12,
-          height: 300
+          height: 210
         }}
       >
         <View style={{ padding: 16 }}>
@@ -218,29 +218,51 @@ export default function PostCard({
 
           {/* Nút phân quyền nếu là event và isOrganizer */}
           {isEvent && isOrganizer && (
-            <TouchableOpacity
-              onPress={handleAssignRole}
-              style={{
-                marginTop: 12,
-                backgroundColor: "#f97316",
-                paddingVertical: 8,
-                borderRadius: 6,
-                alignItems: "center",
-                width: 150
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                Phân quyền sự kiện
-              </Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+              <TouchableOpacity
+                onPress={handleAssignRole}
+                style={{
+                  backgroundColor: "#f97316",
+                  paddingVertical: 8,
+                  borderRadius: 6,
+                  alignItems: "center",
+                  width: 150
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Phân quyền sự kiện
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "EventTaskView",
+                    params: { eventId: data.eventId }
+                  })
+                }
+                style={{
+                  backgroundColor: "#f97316",
+                  paddingVertical: 8,
+                  borderRadius: 6,
+                  alignItems: "center",
+                  width: 150
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Quản lí task
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
           {isEvent && isOrganizer && (
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventTaskView",
+                  screen: "EventRoles",
                   params: {
-                    eventId: data.eventId
+                    eventId: data.eventId,
+                    clubId:clubId
                   }
                 })
               }
@@ -254,7 +276,7 @@ export default function PostCard({
               }}
             >
               <Text style={{ color: "#fff", fontWeight: "600" }}>
-                Quản lí task
+                Chủ quyền sự kiện
               </Text>
             </TouchableOpacity>
           )}

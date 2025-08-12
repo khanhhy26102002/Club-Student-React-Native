@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 const EventRoles = () => {
   const route = useRoute();
   const { eventId, clubId } = route.params;
+  console.log("ClubId", clubId);
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const navigation = useNavigation();
@@ -128,7 +129,8 @@ const EventRoles = () => {
             navigation.navigate("Event", {
               screen: "EventTask",
               params: {
-                eventId: eventId
+                eventId: eventId,
+                clubId: clubId
               }
             })
           }
