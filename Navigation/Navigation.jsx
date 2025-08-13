@@ -3,9 +3,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import EventStack from "../Components/Students/Event/EventStack";
 import ClubStack from "../Components/Students/Club/ClubStack";
 import Homepage from "../Components/Home/Homepage";
-import EventAllTask from "../Components/Students/Event/EventAllTask";
+import EventTaskAll from "../Components/Students/Event/EventTaskAll";
 const Tab = createBottomTabNavigator();
 export default function Navigation() {
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -60,7 +61,8 @@ export default function Navigation() {
       />
       <Tab.Screen
         name="Task"
-        component={EventAllTask}
+        component={EventTaskAll}
+
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

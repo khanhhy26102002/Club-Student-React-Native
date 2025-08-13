@@ -14,9 +14,8 @@ import {
   Animated,
   Modal
 } from "react-native";
-
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-
+import { API_URL } from "@env";
 const COLORS = {
   gradient: ["#43e97b", "#38f9d7", "#2193b0"],
   btn: ["#5EFCE8", "#736EFE"],
@@ -35,7 +34,7 @@ export default function ChangePasswordScreen() {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState(1); // 1: nhập email, 2: nhập otp + new password
   const [otp, setOtp] = useState("");
-  const [newPass, setNewPass] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [msg, setMsg] = useState("");
   const [msgType, setMsgType] = useState("");
@@ -73,14 +72,11 @@ export default function ChangePasswordScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://clubsync.sangnd.click/api/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        }
-      );
+      const res = await fetch(`${API_URL}/api/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
       const data = await res.json();
       if (res.ok) {
         setPopupVisible(true);
@@ -104,37 +100,23 @@ export default function ChangePasswordScreen() {
   const sendNewPassword = async () => {
     setMsg("");
     setMsgType("");
-    if (!otp || !newPass) {
+    if (!otp || !newPassword) {
       setMsg("Vui lòng nhập đủ OTP và mật khẩu mới!");
-      setMsgType("error");
-      triggerFade();
-      return;
-    }
-    // Check mật khẩu mới mạnh
-    if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*.])[A-Za-z\d!@#$%^&*.]{8,}$/.test(
-        newPass
-      )
-    ) {
-      setMsg("Mật khẩu mới yếu: 8 ký tự, hoa, thường, số, ký tự đặc biệt");
       setMsgType("error");
       triggerFade();
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://clubsync.sangnd.click/api/change-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            otp,
-            new_password: newPass
-          })
-        }
-      );
+      const res = await fetch(`${API_URL}/api/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          otp,
+          new_password: newPassword
+        })
+      });
       const data = await res.json();
       if (res.ok) {
         setMsg("🎉 " + (data.message || "Đã đổi mật khẩu thành công!"));
@@ -224,8 +206,6 @@ export default function ChangePasswordScreen() {
                   </TouchableOpacity>
                 </View>
               )}
-
-              {/* Popup: Nhập OTP và mật khẩu mới */}
               <Modal
                 visible={popupVisible}
                 transparent
@@ -240,9 +220,8 @@ export default function ChangePasswordScreen() {
                       <Text style={{ fontWeight: "bold", color: "#2e3fd5" }}>
                         {email}
                       </Text>
-                      .<br />
-                      {"\n"}Vui lòng kiểm tra và nhập mã OTP bên dưới cùng mật
-                      khẩu mới.
+                      Vui lòng kiểm tra và nhập mã OTP bên dưới cùng mật khẩu
+                      mới.
                     </Text>
                     <TextInput
                       style={styles.otpInput}
@@ -268,7 +247,7 @@ export default function ChangePasswordScreen() {
                           placeholderTextColor={COLORS.hint}
                           value={newPass}
                           secureTextEntry={!showNew}
-                          onChangeText={setNewPass}
+                          onChangeText={setNewPassword}
                           autoCapitalize="none"
                         />
                         <TouchableOpacity onPress={() => setShowNew((s) => !s)}>

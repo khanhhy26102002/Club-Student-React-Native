@@ -104,12 +104,13 @@ const LoginPage = ({ navigation }) => {
         const roleName = roles?.[0] || "GUEST";
         const decoded = jwtDecode(token);
         const userId = decoded.sub;
-        const eventId = decoded.sub;
+        const userName = decoded.sub;
+        console.log("Username", userName);
         await AsyncStorage.setItem("jwt", token);
         await AsyncStorage.setItem("role", JSON.stringify(roles));
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("userId", userId);
-
+        await AsyncStorage.setItem("userName", userName);
         setRoleName(roleName);
 
         if (eventId) {
@@ -120,7 +121,7 @@ const LoginPage = ({ navigation }) => {
           }
         }
         console.log("UserId", userId);
-        console.log("EventId",eventId);
+        console.log("EventId", eventId);
         if (roleName === "MEMBER") {
           navigation.replace("Main");
         } else if (roleName === "CHECKIN") {
