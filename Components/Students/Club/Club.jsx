@@ -7,7 +7,8 @@ import {
   View,
   ActivityIndicator,
   Alert,
-  ScrollView
+  ScrollView,
+  SafeAreaView
 } from "react-native";
 import React from "react";
 import Header from "../../../Header/Header";
@@ -106,7 +107,7 @@ const Club = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.wrapper}>
+    <SafeAreaView style={styles.wrapper}>
       <Header />
       <TouchableOpacity
         style={styles.backButton}
@@ -166,7 +167,7 @@ const Club = ({ navigation }) => {
           /> */}
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

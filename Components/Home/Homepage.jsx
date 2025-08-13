@@ -1099,7 +1099,8 @@ const styles = StyleSheet.create({
   periodSelector: {
     flexDirection: "row",
     justifyContent: "center",
-    marginVertical: 10
+    marginVertical: 10,
+    marginTop:100
   },
   periodButton: {
     paddingHorizontal: 16,
