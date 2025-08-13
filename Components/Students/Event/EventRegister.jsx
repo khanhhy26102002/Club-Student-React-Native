@@ -67,9 +67,12 @@ const EventRegister = ({ navigation }) => {
       console.error("Error: ", error);
     }
   };
-  React.useEffect(() => {
-    fetchData();
-  }, [clubId]);
+  React.useEffect(
+    () => {
+      fetchData();
+    },
+    [clubId]
+  );
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -125,9 +128,12 @@ const EventRegister = ({ navigation }) => {
     }
   };
 
-  React.useEffect(() => {
-    if (projectFile) console.log("🖼️ projectFile đã được set:", projectFile);
-  }, [projectFile]);
+  React.useEffect(
+    () => {
+      if (projectFile) console.log("🖼️ projectFile đã được set:", projectFile);
+    },
+    [projectFile]
+  );
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -161,9 +167,11 @@ const EventRegister = ({ navigation }) => {
     placeholder,
     multiline = false,
     keyboardType = "default"
-  ) => (
+  ) =>
     <View style={{ marginBottom: 18 }}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+      </Text>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -173,17 +181,12 @@ const EventRegister = ({ navigation }) => {
         multiline={multiline}
         keyboardType={keyboardType}
       />
-    </View>
-  );
-  const renderLabeledSelect = (
-    label,
-    value,
-    setValue,
-    placeholder,
-    options
-  ) => (
+    </View>;
+  const renderLabeledSelect = (label, value, setValue, placeholder, options) =>
     <View style={{ marginVertical: 10 }}>
-      <Text style={{ fontSize: 16, marginBottom: 15 }}>{label}</Text>
+      <Text style={{ fontSize: 16, marginBottom: 15 }}>
+        {label}
+      </Text>
       <View
         style={{
           borderWidth: 1,
@@ -194,20 +197,19 @@ const EventRegister = ({ navigation }) => {
       >
         <Picker
           selectedValue={value}
-          onValueChange={(itemValue) => setValue(itemValue)}
+          onValueChange={itemValue => setValue(itemValue)}
           style={{ height: 55 }}
         >
-          {options.map((option) => (
+          {options.map(option =>
             <Picker.Item
               label={option.label}
               value={option.value}
               key={option.value}
             />
-          ))}
+          )}
         </Picker>
       </View>
-    </View>
-  );
+    </View>;
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -293,14 +295,13 @@ const EventRegister = ({ navigation }) => {
                   : "Chọn ngày diễn ra"}
               </Text>
             </TouchableOpacity>
-            {showPicker && (
+            {showPicker &&
               <DateTimePicker
                 value={eventDate || new Date()} // fallback nếu eventDate đang null
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onChange}
-              />
-            )}
+              />}
           </View>
           {renderLabeledSelect(
             "🎭 Hình thức",
@@ -323,7 +324,7 @@ const EventRegister = ({ navigation }) => {
           {renderLabeledInput(
             "👥 Số lượng tối đa",
             maximumParticipants.toString(),
-            (text) =>
+            text =>
               setMaximumParticipants(
                 isNaN(parseInt(text)) ? 0 : parseInt(text)
               ),
@@ -399,11 +400,9 @@ const EventRegister = ({ navigation }) => {
             disabled={loading}
             activeOpacity={0.9}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>🚀 Tạo sự kiện ngay</Text>
-            )}
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={styles.buttonText}>🚀 Tạo sự kiện ngay</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>

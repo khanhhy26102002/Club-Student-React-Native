@@ -14,7 +14,7 @@ import {
   Animated,
   ActivityIndicator
 } from "react-native";
-
+import { API_URL } from "@env";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const COLORS = {
@@ -80,18 +80,15 @@ const ChangePasswordScreen = () => {
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        "https://clubsync.sangnd.click/api/change-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            old_password: oldPassword,
-            new_password: newPassword
-          })
-        }
-      );
+      const res = await fetch(`${API_URL}/api/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          old_password: oldPassword,
+          new_password: newPassword
+        })
+      });
       const data = await res.json();
       if (res.ok) {
         setMsg("🎉 " + (data.message || "Đổi mật khẩu thành công!"));
