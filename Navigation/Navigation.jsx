@@ -1,58 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import React, { useState, useEffect, useCallback } from "react";
-import { ActivityIndicator, StyleSheet, View, Text } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-
 import EventStack from "../Components/Students/Event/EventStack";
 import ClubStack from "../Components/Students/Club/ClubStack";
 import Homepage from "../Components/Home/Homepage";
 import EventAllTask from "../Components/Students/Event/EventAllTask";
-import { fetchBaseResponse } from "../utils/api";
-
 const Tab = createBottomTabNavigator();
-
-export default function Navigation({ route }) {
-  const navigation = useNavigation();
-  const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState([]);
-
-  const fetchData = useCallback(async () => {
-    const token = await AsyncStorage.getItem("jwt");
-    try {
-      const response = await fetchBaseResponse(`/api/tasks/allTask`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      if (response.status === 200) {
-        setTasks(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi tải tasks:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const unsubscribe = navigation.addListener("tabPress", fetchData);
-    return unsubscribe;
-  }, [fetchData, navigation]);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#fe8a3c" />
-        <Text>Đang tải dữ liệu...</Text>
-      </View>
-    );
-  }
-
+export default function Navigation() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -108,17 +61,8 @@ export default function Navigation({ route }) {
       <Tab.Screen
         name="Task"
         component={EventAllTask}
-        initialParams={{ eventId: tasks[tasks.length - 1]?.eventId ?? null }}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  }
-});

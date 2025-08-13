@@ -28,7 +28,7 @@ const EventRoles = () => {
       const token = await AsyncStorage.getItem("jwt");
       try {
         const response = await fetchBaseResponse(
-          `/api/event-roles/my/${eventId}`,
+          `/api/event-roles/event/${eventId}`,
           {
             method: "GET",
             headers: {
@@ -93,7 +93,7 @@ const EventRoles = () => {
     </View>
   );
 
-  const listData = data ? [data] : [];
+  const listData = Array.isArray(data) ? data : data ? [data] : [];
 
   return (
     <>
@@ -143,7 +143,7 @@ const EventRoles = () => {
           style={styles.assignButton}
           onPress={() =>
             navigation.navigate("Event", {
-              screen: "EventAllTask",
+              screen: "EventTaskView",
               params: {
                 eventId: eventId
               }
@@ -167,7 +167,10 @@ const EventRoles = () => {
         ) : (
           <FlatList
             data={listData}
-            keyExtractor={(item) => item.userId.toString()}
+            keyExtractor={(item, index) => {
+              if (item.userId) return item.userId.toString();
+              return index.toString();
+            }}
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16 }}
           />
