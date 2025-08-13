@@ -661,7 +661,7 @@ export default function Homepage() {
                           {item.clubName}
                         </Text>
                         <Text style={styles.rankPoints}>
-                          {item.points} điểm
+                          {item.totalPoints} điểm
                         </Text>
                       </View>
                     );
@@ -706,7 +706,7 @@ export default function Homepage() {
             </View>
           </View>
         </Animated.ScrollView>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() =>
             navigation.navigate("Club", {
               screen: "FormClub"
@@ -732,7 +732,7 @@ export default function Homepage() {
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
             + Tạo CLB
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </SafeAreaView>
     </>
   );

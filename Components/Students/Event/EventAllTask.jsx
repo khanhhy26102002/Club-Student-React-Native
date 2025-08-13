@@ -13,13 +13,44 @@ import {
 import { fetchBaseResponse } from "../../../utils/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../../Header/Header";
+import { stripMarkdown } from "../../../stripmarkdown";
 
 const EventAllTask = ({ navigation }) => {
   const route = useRoute();
-  const { eventId } = route.params;
+  const { eventId, taskId } = route.params;
+  console.log("EventId", eventId);
+  console.log("TaskId", taskId);
   const [data, setData] = React.useState([]);
+  const [eventRole, setEventRole] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-  const [roleName, setRoleName] = React.useState(null);
+  const renderStatus = (status) => {
+    let color = "#888"; // mặc định màu xám
+    let label = status || "UNKNOWN";
+
+    switch (status) {
+      case "TODO":
+        color = "#f39c12"; // cam
+        label = "Chưa làm";
+        break;
+      case "DONE":
+        color = "#27ae60"; // xanh lá
+        label = "Hoàn thành";
+        break;
+      case "IN_PROGRESS":
+        color = "#2980b9"; // xanh dương
+        label = "Đang làm";
+        break;
+      default:
+        color = "#888";
+        label = status;
+    }
+
+    return (
+      <Text style={{ color, fontWeight: "bold", fontSize: 13, marginTop: 6 }}>
+        📌 Trạng thái: {label}
+      </Text>
+    );
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -28,36 +59,43 @@ const EventAllTask = ({ navigation }) => {
         try {
           const token = await AsyncStorage.getItem("jwt");
 
-          // Song song gọi 2 API bằng Promise.all
-          const [taskRes, roleRes] = await Promise.all([
-            fetchBaseResponse(`/api/tasks/mytask?eventId=${eventId}`, {
+          // Fetch task data
+          const taskRes = await fetchBaseResponse(
+            `/api/tasks/${eventId}/${taskId}`,
+            {
               method: "GET",
               headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
               }
-            }),
-            fetchBaseResponse(`/api/event-roles/my/${eventId}`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json"
-              }
-            })
-          ]);
+            }
+          );
 
-          // Xử lý dữ liệu task
+          // Fetch event role data
+          const roleRes = await fetchBaseResponse(
+            `/api/event-roles/my/${eventId}`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              }
+            }
+          );
+
           if (taskRes.status === 200) {
-            setData(taskRes.data);
+            const tasks = Array.isArray(taskRes.data)
+              ? taskRes.data
+              : [taskRes.data];
+            setData(tasks);
           } else {
             setData([]);
           }
 
-          // Xử lý role
-          if (roleRes.status === 200 && roleRes.data?.roleName) {
-            setRoleName(roleRes.data.roleName);
+          if (roleRes.status === 200) {
+            setEventRole(roleRes.data);
           } else {
-            setRoleName(null);
+            setEventRole(null);
           }
         } catch (error) {
           if (error.status === 1003) {
@@ -66,55 +104,53 @@ const EventAllTask = ({ navigation }) => {
               error.message || "Không có task trong sự kiện"
             );
             setData([]);
+            setEventRole(null);
           } else {
             console.log("❌ Lỗi khi fetch data:", error);
             Alert.alert("Lỗi", error.message || "Không thể tải dữ liệu.");
+            setEventRole(null);
           }
-          setRoleName(null);
         } finally {
           setLoading(false);
         }
       };
 
       fetchData();
-    }, [eventId])
+    }, [eventId, taskId])
   );
 
-  const renderItem = ({ item }) => {
-    const statusColors = {
-      TODO: "#FF9800",
-      IN_PROGRESS: "#2196F3",
-      DONE: "#4CAF50"
-    };
-
-    return (
-      <View style={styles.taskCard}>
-        <View style={styles.headerRow}>
-          <Text style={styles.taskTitle}>{item.title}</Text>
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: statusColors[item.status] || "#9E9E9E" }
-            ]}
-          >
-            <Text style={styles.statusText}>{item.status}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.taskDesc}>{item.description}</Text>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoText}>📅 {item.eventTitle}</Text>
-          <Text style={styles.infoText}>📌 {item.parentTitle}</Text>
-          <Text style={styles.infoText}>👤 {item.userName}</Text>
-          <Text style={styles.infoText}>📝 {item.parentUserName}</Text>
-          <Text style={styles.dueDate}>
-            ⏰ {new Date(item.dueDate).toLocaleString("vi-VN")}
-          </Text>
+  const renderItem = ({ item }) => (
+    <View style={styles.taskCard}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}
+      >
+        <Text style={styles.taskTitle}>{item.title}</Text>
+        <View style={styles.statusContainer}>
+          <Text style={styles.statusText}>{item.status}</Text>
         </View>
       </View>
-    );
-  };
+
+      <Text style={styles.taskDesc}>{stripMarkdown(item.description)}</Text>
+
+      <View style={styles.infoBox}>
+        <Text style={styles.infoText}>📅 {item.title}</Text>
+        <Text style={styles.infoText}>
+          📌 {stripMarkdown(item.description)}
+        </Text>
+        <Text style={styles.infoText}>👤 {item.assignedUser}</Text>
+        <Text style={styles.infoText}>
+          📝 {new Date(item.createdAt).toLocaleString("vi-VN")}
+        </Text>
+        <Text style={styles.dueDate}>
+          ⏰ {new Date(item.dueDate).toLocaleString("vi-VN")}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.wrapper}>
@@ -132,24 +168,25 @@ const EventAllTask = ({ navigation }) => {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={data}
-            keyExtractor={(item) => item.taskId.toString()}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 80 }}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-
-        {/* Nút Checkin cố định dưới cùng */}
-        {roleName === "CHECKIN" && (
-          <TouchableOpacity
-            style={styles.checkinButton}
-            onPress={() => navigation.navigate("Login", { eventId })}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.checkinText}>📍 Checkin Event</Text>
-          </TouchableOpacity>
+          <>
+            <FlatList
+              data={data}
+              keyExtractor={(item) => item.taskId.toString()}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 80 }}
+              showsVerticalScrollIndicator={false}
+            />
+            {eventRole && eventRole.roleName && (
+              <TouchableOpacity
+                style={styles.checkinButton}
+                onPress={() =>
+                  Alert.alert("Checkin", "Bạn đã checkin sự kiện!")
+                }
+              >
+                <Text style={styles.checkinButtonText}>Checkin</Text>
+              </TouchableOpacity>
+            )}
+          </>
         )}
       </View>
     </SafeAreaView>
@@ -157,19 +194,9 @@ const EventAllTask = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: "#F8F9FA"
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
+  wrapper: { flex: 1, backgroundColor: "#F8F9FA" },
+  container: { flex: 1, paddingHorizontal: 16 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   taskCard: {
     backgroundColor: "#fff",
     padding: 16,
@@ -182,65 +209,37 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginTop: 30
   },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8
-  },
   taskTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-    flex: 1
-  },
-  statusBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 20
-  },
-  statusText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold"
-  },
-  taskDesc: {
-    fontSize: 14,
-    color: "#555",
     marginBottom: 10
   },
-  infoBox: {
-    backgroundColor: "#F1F5F9",
-    padding: 10,
-    borderRadius: 8
+  statusContainer: {
+    backgroundColor: "#fe8a3c", // màu nền cam
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12
   },
-  infoText: {
-    fontSize: 13,
-    color: "#555",
-    marginBottom: 4
+
+  statusText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#fff" // chữ màu trắng cho tương phản
   },
-  dueDate: {
-    fontSize: 13,
-    fontStyle: "italic",
-    color: "#888",
-    marginTop: 4
-  },
+
+  taskDesc: { fontSize: 14, color: "#555", marginBottom: 10 },
+  infoBox: { backgroundColor: "#F1F5F9", padding: 10, borderRadius: 8 },
+  infoText: { fontSize: 13, color: "#555", marginBottom: 4 },
+  dueDate: { fontSize: 13, fontStyle: "italic", color: "#888", marginTop: 4 },
   checkinButton: {
-    position: "absolute",
-    bottom: 20,
-    left: 16,
-    right: 16,
     backgroundColor: "#fe8a3c",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5
+    padding: 14,
+    borderRadius: 10,
+    marginVertical: 20,
+    alignItems: "center"
   },
-  checkinText: {
+  checkinButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16

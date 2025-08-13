@@ -1,8 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Event from "./Event";
 import EventId from "./EventId";
-import FormClub from "../Club/FormClub";
-import FormRegister from "../Club/FormRegister";
 import EventRegister from "./EventRegister";
 import EventParticipate from "./EventParticipate";
 import Payment from "../Payment/Payment";

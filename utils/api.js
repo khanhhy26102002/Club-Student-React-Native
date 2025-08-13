@@ -51,17 +51,19 @@ export const checkEventRole = async (eventId) => {
     const token = await AsyncStorage.getItem("jwt");
     const response = await fetchBaseResponse(`/api/event-roles/my/${eventId}`, {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (response.status === 200) {
-      return response.data.roleName; // "CHECKIN", "LEADER", etc.
+    if (response.status === 200 && response.data?.roleName) {
+      return response.data.roleName;
     }
-    return null;
+    return null; // Không có role
   } catch (error) {
-    console.error("❌ Lỗi checkEventRole:", error);
+    if (error.status === 1002) {
+      console.warn(`User has no role in event ${eventId}`);
+    } else {
+      console.error("❌ Lỗi checkEventRole:", error);
+    }
     return null;
   }
 };

@@ -85,7 +85,7 @@ const EventTask = ({ route }) => {
       try {
         const token = await AsyncStorage.getItem("jwt");
         const res = await fetchBaseResponse(
-          `/api/memberships/getAllMembers/${clubId}`,
+          `/api/clubs/${clubId}/members`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -213,7 +213,7 @@ const EventTask = ({ route }) => {
               {members.map((m) => (
                 <Picker.Item
                   key={m.userId}
-                  label={m.userFullName}
+                  label={m.fullName}
                   value={m.userId}
                 />
               ))}
