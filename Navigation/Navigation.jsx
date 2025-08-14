@@ -15,7 +15,7 @@ export default function Navigation() {
           if (route.name === "Home") iconName = "home";
           else if (route.name === "Club") iconName = "people-outline";
           else if (route.name === "Event") iconName = "remove-circle-sharp";
-          else if (route.name === "Task") iconName = "person-circle-sharp";
+          else if (route.name === "Task") iconName = "checkmark-done-circle-sharp";
           else if (route.name === "Blog") iconName = "document-text-outline";
           const iconSize = focused ? 28 : 24;
           return <Ionicons name={iconName} size={iconSize} color={color} />;
