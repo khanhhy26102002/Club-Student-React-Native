@@ -16,6 +16,8 @@ import {
 } from "react-native";
 import { API_URL } from "@env";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchBaseResponse } from "../../utils/api";
 
 const COLORS = {
   gradient: ["#43e97b", "#38f9d7", "#2193b0"],
@@ -36,9 +38,9 @@ const validatePassword = (pw) =>
   );
 
 const ChangePasswordScreen = () => {
-  const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [msg, setMsg] = useState("");
@@ -56,47 +58,46 @@ const ChangePasswordScreen = () => {
   };
 
   const handleSubmit = async () => {
+    const token = await AsyncStorage.getItem("jwt");
     setMsg("");
     setMsgType("");
-    if (!email || !oldPassword || !newPassword) {
+
+    // Chỉ cần kiểm tra có nhập đầy đủ
+    if (!oldPassword || !newPassword || !confirmPassword) {
       setMsg("Vui lòng nhập đầy đủ thông tin.");
       setMsgType("error");
       triggerFade();
       return;
     }
-    if (!validateEmail(email)) {
-      setMsg("Email không hợp lệ.");
+
+    // Bỏ validatePassword, chỉ check confirm
+    if (newPassword !== confirmPassword) {
+      setMsg("Mật khẩu xác nhận không khớp.");
       setMsgType("error");
       triggerFade();
       return;
     }
-    if (!validatePassword(newPassword)) {
-      setMsg(
-        "Mật khẩu mới yếu: ít nhất 8 ký tự, chữ hoa, thường, số, ký tự đặc biệt."
-      );
-      setMsgType("error");
-      triggerFade();
-      return;
-    }
+
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/change-password`, {
+      const res = await fetchBaseResponse(`/api/change-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          old_password: oldPassword,
-          new_password: newPassword
-        })
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        data: { oldPassword, newPassword, confirmPassword }
       });
-      const data = await res.json();
-      if (res.ok) {
-        setMsg("🎉 " + (data.message || "Đổi mật khẩu thành công!"));
+
+      console.log("Data", res);
+      if (res.status === 200) {
+        setMsg("🎉 " + (res.message || "Đổi mật khẩu thành công!"));
         setMsgType("success");
         setOldPassword("");
         setNewPassword("");
+        setConfirmPassword("");
       } else {
-        setMsg(data.message || "Thay đổi thất bại, vui lòng thử lại!");
+        setMsg(res.message || "Thay đổi thất bại, vui lòng thử lại!");
         setMsgType("error");
       }
     } catch (e) {
@@ -137,28 +138,6 @@ const ChangePasswordScreen = () => {
               <Text style={styles.subtitle}>
                 Nhập email, mật khẩu cũ và mật khẩu mới để cập nhật.
               </Text>
-
-              {/* Nhập Email */}
-              <View style={{ marginBottom: 15, marginTop: 8 }}>
-                <Text style={styles.inputLabel}>Email</Text>
-                <View style={styles.inputWrap}>
-                  <Icon
-                    name="email-outline"
-                    size={21}
-                    color={COLORS.purple}
-                    style={{ marginRight: 8 }}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Nhập email tài khoản"
-                    placeholderTextColor={COLORS.hint}
-                    value={email}
-                    keyboardType="email-address"
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                  />
-                </View>
-              </View>
 
               {/* Mật khẩu cũ */}
               <View style={{ marginBottom: 14 }}>
@@ -216,11 +195,27 @@ const ChangePasswordScreen = () => {
                     />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.hintTxt}>
-                  • 8 ký tự, chữ Hoa, thường, số & ký tự đặc biệt
-                </Text>
               </View>
-
+              <View style={{ marginBottom: 14 }}>
+                <Text style={styles.inputLabel}>Xác nhận mật khẩu mới</Text>
+                <View style={styles.inputWrap}>
+                  <Icon
+                    name="lock-check-outline"
+                    size={21}
+                    color={COLORS.purple}
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nhập lại mật khẩu mới"
+                    placeholderTextColor={COLORS.hint}
+                    value={confirmPassword}
+                    secureTextEntry={true}
+                    onChangeText={setConfirmPassword}
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={handleSubmit}

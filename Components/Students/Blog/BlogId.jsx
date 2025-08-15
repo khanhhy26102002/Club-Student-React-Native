@@ -1,30 +1,35 @@
 import React from "react";
 import {
-  Alert,
-  StyleSheet,
-  Text,
   View,
-  ActivityIndicator,
-  ScrollView,
+  Text,
   Image,
-  Dimensions,
-  TouchableOpacity
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  TextInput,
+  FlatList
 } from "react-native";
+
+import * as Animatable from "react-native-animatable";
 import { useRoute } from "@react-navigation/native";
-import { fetchBaseResponse } from "../../../utils/api";
-import Header from "../../../Header/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
-
-const screenWidth = Dimensions.get("window").width;
-
-const BlogId = ({ navigation }) => {
+import { fetchBaseResponse } from "../../../utils/api";
+import { LinearGradient } from "expo-linear-gradient";
+import Header from "../../../Header/Header";
+export default function BlogId() {
   const route = useRoute();
   const { blogId } = route.params;
 
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
+  const [comments, setComments] = React.useState([]);
+  const [commentLoading, setCommentLoading] = React.useState(true);
+  const [content, setContent] = React.useState("");
+  const [posting, setPosting] = React.useState(false);
+
+  // Fetch blog
   React.useEffect(() => {
     const fetchData = async () => {
       const token = await AsyncStorage.getItem("jwt");
@@ -39,14 +44,12 @@ const BlogId = ({ navigation }) => {
             }
           }
         );
-
         if (!response || !response.data) {
           Alert.alert("Thông báo", "Không có blog nào để hiển thị.");
         } else {
           setData(response.data);
         }
       } catch (error) {
-        console.error("Error:", error);
         if (error?.status === 3001) {
           Alert.alert(
             "🚫 Không thể truy cập",
@@ -62,10 +65,61 @@ const BlogId = ({ navigation }) => {
     fetchData();
   }, [blogId]);
 
+  // Fetch comments
+  const fetchComments = async () => {
+    setCommentLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const res = await fetchBaseResponse(`/api/comment-blogs/blog/${blogId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.status === 200) {
+        setComments(res.data || []);
+      } else {
+        Alert.alert("Lỗi", "Không thể tải bình luận");
+      }
+    } catch (err) {
+      Alert.alert("Lỗi", "Có lỗi xảy ra khi tải bình luận");
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (blogId) fetchComments();
+  }, [blogId]);
+
+  // Post comment
+  const postComment = async () => {
+    if (!content.trim()) return;
+    setPosting(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const res = await fetchBaseResponse(`/api/comment-blogs/create`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        data: { content, blogId }
+      });
+      if (res.status === 200) {
+        setContent("");
+        fetchComments();
+      } else {
+        Alert.alert("Lỗi", "Không thể gửi bình luận");
+      }
+    } catch (err) {
+      Alert.alert("Lỗi", "Có lỗi xảy ra khi gửi bình luận");
+    } finally {
+      setPosting(false);
+    }
+  };
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#6a11cb" />
       </View>
     );
   }
@@ -73,7 +127,7 @@ const BlogId = ({ navigation }) => {
   if (!data) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Không tìm thấy bài viết.</Text>
+        <Text>Không tìm thấy blog!</Text>
       </View>
     );
   }
@@ -81,138 +135,170 @@ const BlogId = ({ navigation }) => {
   return (
     <>
       <Header />
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate("Club",{
-          screen:"Blog"
-        })}
-      >
-        <Ionicons name="arrow-back" size={24} color="black" />
-        <Text style={[styles.backText, { marginLeft: 25, marginTop: -22 }]}>
-          Quay về trang chủ
-        </Text>
-      </TouchableOpacity>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Thumbnail đẹp như banner */}
-        {data.thumbnailUrl && (
-          <Image
-            source={{ uri: data.thumbnailUrl }}
-            style={styles.bannerImage}
-          />
-        )}
-
-        {/* Nội dung chính */}
-        <View style={styles.card}>
-          <Text style={styles.title}>{data.title}</Text>
-
-          <View style={styles.metaWrapper}>
-            <Text style={styles.metaText}>
-              ✍️ {data.authorName || "Không rõ"}
+      <FlatList
+        data={comments}
+        keyExtractor={(item, index) =>
+          item._id ? item._id.toString() : index.toString()
+        }
+        renderItem={({ item }) => (
+          <View style={styles.commentBox}>
+            <Text style={styles.commentUser}>
+              {item.userFullName || "Người dùng"}:
             </Text>
-            <Text style={styles.dot}>•</Text>
-            <Text style={styles.metaText}>
-              📅{" "}
-              {new Date(data.createdAt).toLocaleDateString("vi-VN", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-              })}
-            </Text>
+            <Text>{item.content}</Text>
           </View>
+        )}
+        ListEmptyComponent={
+          <Text style={{ color: "#888" }}>Chưa có bình luận nào.</Text>
+        }
+        ListHeaderComponent={
+          <>
+            {/* Blog card */}
+            <Animatable.View
+              animation="fadeInUp"
+              duration={800}
+              style={styles.card}
+            >
+              <LinearGradient
+                colors={["#6a11cb", "#2575fc"]}
+                style={styles.gradient}
+              >
+                <Image
+                  source={{
+                    uri:
+                      data.thumbnailUrl ||
+                      "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+                  }}
+                  style={styles.image}
+                />
+                <Text style={styles.title}>
+                  {data.title || "Không có tiêu đề"}
+                </Text>
+                <Text style={styles.description} selectable>
+                  {data.content || "Không có nội dung"}
+                </Text>
+              </LinearGradient>
+            </Animatable.View>
 
-          <Text style={styles.content}>{data.content}</Text>
-        </View>
-      </ScrollView>
+            {/* Ô nhập bình luận */}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="Viết bình luận..."
+                value={content}
+                onChangeText={setContent}
+                editable={!posting}
+                multiline
+              />
+              <TouchableOpacity
+                onPress={postComment}
+                disabled={posting || !content.trim()}
+                style={styles.sendBtn}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  {posting ? "..." : "Gửi"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        }
+      />
     </>
   );
-};
-
-export default BlogId;
+}
 
 const styles = StyleSheet.create({
-  backButton: {
-    backgroundColor: "#f0f0f0", // hoặc màu theo chủ đề
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    alignSelf: "flex-start", // để nó không chiếm toàn bộ chiều ngang
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3, // Android shadow
-    marginBottom: 20
-  },
-  backText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "500"
-  },
   container: {
-    backgroundColor: "#f2f4f8",
-    paddingBottom: 40
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
+    padding: 22,
+    backgroundColor: "#F5F7FA",
+    flexGrow: 1,
     alignItems: "center"
   },
   center: {
     flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center"
-  },
-  errorText: {
-    fontSize: 16,
-    color: "#d32f2f"
-  },
-  bannerImage: {
-    width: screenWidth,
-    height: 220,
-    resizeMode: "cover",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginBottom: 16
+    backgroundColor: "#fff"
   },
   card: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: 20,
-    padding: 24,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6
+    width: "100%",
+    borderRadius: 22,
+    shadowColor: "#333",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 7 },
+    shadowRadius: 12,
+    elevation: 10,
+    marginBottom: 24
+  },
+  gradient: {
+    borderRadius: 22,
+    padding: 22,
+    alignItems: "center"
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 16,
+    marginBottom: 18,
+    backgroundColor: "#eee"
   },
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 14,
-    lineHeight: 34
+    color: "#fff",
+    textShadowColor: "#6a11cb60",
+    textShadowOffset: { width: 2, height: 3 },
+    textShadowRadius: 4,
+    marginBottom: 10,
+    letterSpacing: 1,
+    textAlign: "center"
   },
-  metaWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 18
-  },
-  metaText: {
-    fontSize: 14,
-    color: "#6b7280"
-  },
-  dot: {
-    marginHorizontal: 8,
-    fontSize: 16,
-    color: "#9ca3af"
-  },
-  content: {
+  description: {
+    color: "#E2E6EA",
     fontSize: 17,
-    lineHeight: 28,
-    color: "#374151",
-    marginTop: 6
+    textAlign: "center",
+    lineHeight: 24,
+    marginTop: 6,
+    marginBottom: 16
+  },
+  commentBox: {
+    backgroundColor: "#fff",
+    borderRadius: 9,
+    padding: 9,
+    marginBottom: 7,
+    shadowColor: "#aaa",
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 2, height: 2 }
+  },
+  commentUser: {
+    fontWeight: "bold",
+    color: "#3E63DD"
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginTop: 12,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 6,
+    shadowColor: "#888",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+    marginBottom: 10
+  },
+  input: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 85,
+    paddingLeft: 8
+  },
+  sendBtn: {
+    padding: 10,
+    backgroundColor: "#2575fc",
+    borderRadius: 7,
+    marginLeft: 5,
+    justifyContent: "center",
+    alignItems: "center"
   }
 });

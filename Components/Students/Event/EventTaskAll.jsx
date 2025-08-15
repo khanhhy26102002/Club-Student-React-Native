@@ -1,202 +1,149 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
-  StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  StyleSheet
 } from "react-native";
-import { Card, Avatar, useTheme } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchBaseResponse } from "../../../utils/api";
-import { Ionicons } from "@expo/vector-icons";
-import Header from "../../../Header/Header";
+import { Card } from "react-native-paper";
 import moment from "moment";
-import { useNavigation } from "@react-navigation/native";
+import "moment/locale/vi";
+import { fetchBaseResponse } from "../../../utils/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Header from "../../../Header/Header";
 
-const EventTaskAll = () => {
-  const navigation = useNavigation();
-  const [data, setData] = React.useState([]);
-  const [filteredData, setFilteredData] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
-  const [currentUserId, setCurrentUserId] = React.useState(null);
-  const theme = useTheme();
+const EventTaskAll = ({ navigation }) => {
+  const [tasks, setTasks] = useState([]);
+  const [clubs, setClubs] = useState([]);
 
-  // Lấy userId trực tiếp từ AsyncStorage
-  React.useEffect(() => {
-    const getCurrentUserId = async () => {
+  useEffect(() => {
+    const loadData = async () => {
+      const token = await AsyncStorage.getItem("jwt");
       const userId = await AsyncStorage.getItem("userId");
-      if (userId) {
-        setCurrentUserId(parseInt(userId, 10));
+
+      // Lấy danh sách task
+      const taskRes = await fetchBaseResponse("/api/tasks/allTask", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Lấy danh sách club
+      const clubRes = await fetchBaseResponse("/api/clubs/my-clubs", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (clubRes.status === 200) setClubs(clubRes.data);
+
+      if (taskRes.status === 200) {
+        // Lọc task của user hiện tại
+        const allTasks = taskRes.data.filter(
+          (t) => String(t.userId) === String(userId)
+        );
+
+        // Task gần hết hạn (≤ 3 ngày) và chưa DONE
+        const now = moment();
+        const soonTasks = allTasks.filter(
+          (t) =>
+            t.status !== "DONE" &&
+            t.dueDate &&
+            moment(t.dueDate).isBetween(now, now.clone().add(3, "days"))
+        );
+
+        const otherTasks = allTasks.filter((t) => !soonTasks.includes(t));
+
+        // Sắp xếp: gần hết hạn trước → mới tạo sau
+        const sorted = [
+          ...soonTasks.sort((a, b) => moment(a.dueDate) - moment(b.dueDate)),
+          ...otherTasks.sort(
+            (a, b) => moment(b.createdAt) - moment(a.createdAt)
+          )
+        ];
+
+        // Giới hạn hiển thị 5 task
+        setTasks(sorted.slice(0, 3));
       }
     };
-    getCurrentUserId();
+
+    loadData();
   }, []);
 
-  // Fetch task, filter theo userId và gom trùng theo title + eventId
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem("jwt");
-        const response = await fetchBaseResponse(`/api/tasks/allTask`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        if (response.status === 200) {
-          const sortedData = response.data.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-          setData(sortedData);
-
-          // Chỉ hiển thị task của user login
-          const userTasks = sortedData.filter(
-            (task) => task.userId === currentUserId
-          );
-
-          // Gom trùng theo title + eventId
-          const uniqueTasksMap = new Map();
-          userTasks.forEach((task) => {
-            const key = `${task.title}-${task.eventId}`;
-            if (!uniqueTasksMap.has(key)) {
-              uniqueTasksMap.set(key, task);
-            }
-          });
-          const uniqueTasks = Array.from(uniqueTasksMap.values());
-
-          setFilteredData(uniqueTasks);
-        } else {
-          setError(`HTTP Status: ${response.status}`);
-        }
-      } catch (err) {
-        setError(err.message || "Có lỗi xảy ra!");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (currentUserId !== null) fetchData();
-  }, [currentUserId]);
-
-  const renderItem = ({ item }) => (
+  const renderTask = ({ item }) => (
     <TouchableOpacity
-      onPress={() => {
+      onPress={() =>
         navigation.navigate("Event", {
           screen: "EventAllTask",
-          params: { eventId: item.eventId }
-        });
-        console.log("Nhấn vào task:", item.taskId);
-      }}
-      activeOpacity={0.8}
+          params: { eventId: item.eventId, taskId: item.taskId }
+        })
+      }
     >
       <Card style={styles.card}>
         <Card.Title
           title={item.title}
-          subtitle={
-            <>
-              <Text>
-                🕒{" "}
-                {item.dueDate
-                  ? moment(item.dueDate).format("DD/MM/YYYY HH:mm")
-                  : "Không có deadline"}
-              </Text>
-              <Text>📅 {item.eventTitle}</Text>
-              {item.parentTitle && <Text>↳ {item.parentTitle}</Text>}
-            </>
-          }
-          left={(props) => (
-            <Avatar.Icon
-              {...props}
-              icon="checkbox-marked-circle-outline"
-              color={theme.colors.accent}
-              style={styles.icon}
-            />
-          )}
+          subtitle={`📅 ${moment(item.dueDate).format("DD/MM/YYYY HH:mm")} • ${
+            item.eventTitle
+          }`}
         />
         <Card.Content>
-          <Text style={styles.desc}>
-            {item.description || "Không có mô tả."}
-          </Text>
+          <Text>{item.description || "Không có mô tả."}</Text>
         </Card.Content>
       </Card>
     </TouchableOpacity>
   );
 
-  if (loading)
-    return (
-      <ActivityIndicator
-        size="large"
-        color={theme.colors.primary}
-        style={styles.loading}
+  const renderClub = ({ item }) => (
+    <Card style={styles.clubCard}>
+      <Card.Title
+        title={item.name}
+        subtitle={`Vai trò: ${item.role || "Thành viên"}`}
       />
-    );
-
-  if (error)
-    return (
-      <View style={styles.center}>
-        <Ionicons
-          name="alert-circle-outline"
-          size={48}
-          color={theme.colors.error}
-        />
-        <Text style={styles.error}>{error}</Text>
-      </View>
-    );
+    </Card>
+  );
 
   return (
     <>
       <Header />
-      <View style={styles.container}>
-        <Text style={styles.header}>
-          Danh Sách Task ({filteredData.length})
-        </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.sectionTitle}>📌 Câu lạc bộ</Text>
+        <FlatList
+          data={clubs}
+          keyExtractor={(item, index) => `${item.clubId}-${index}`}
+          renderItem={renderClub}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ maxHeight: 120, marginBottom: 10 }}
+        />
 
-        {filteredData.length === 0 ? (
-          <View style={styles.center}>
-            <Ionicons name="infinite-outline" size={40} color="#bbb" />
-            <Text style={styles.emptyText}>Không có công việc nào.</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={filteredData}
-            renderItem={renderItem}
-            keyExtractor={(item, index) =>
-              `${item.title}-${item.eventId}-${item.taskId || index}`
-            }
-            contentContainerStyle={{ paddingBottom: 10 }}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        <Text style={styles.sectionTitle}>🕒 Task của bạn</Text>
+        <FlatList
+          data={tasks}
+          keyExtractor={(item, index) => `${item.taskId}-${index}`}
+          renderItem={renderTask}
+          contentContainerStyle={{ paddingBottom: 16 }}
+        />
       </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 30, paddingHorizontal: 12 },
-  header: {
-    fontSize: 26,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#E65100",
-    marginBottom: 14
+    marginVertical: 10,
+    marginLeft: 10
   },
   card: {
-    marginVertical: 8,
-    borderRadius: 18,
-    elevation: 4,
+    marginHorizontal: 10,
+    marginBottom: 10,
     backgroundColor: "#FFE0B2"
   },
-  desc: { marginTop: 6, color: "#4E342E", fontSize: 15 },
-  icon: { backgroundColor: "#FFCC80" },
-  loading: { flex: 1, justifyContent: "center" },
-  error: { color: "#D84315", marginTop: 12, fontWeight: "600" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyText: { marginTop: 12, color: "#8D6E63", fontSize: 17 }
+  clubCard: {
+    width: 200,
+    marginHorizontal: 10,
+    backgroundColor: "#E1F5FE"
+  }
 });
 
 export default EventTaskAll;

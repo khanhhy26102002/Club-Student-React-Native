@@ -29,7 +29,7 @@ const COLORS = {
 
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-export default function ChangePasswordScreen() {
+export default function ChangePasswordScreen({navigation}) {
   // Form states
   const [email, setEmail] = useState("");
   const [step, setStep] = useState(1); // 1: nhập email, 2: nhập otp + new password
@@ -108,13 +108,13 @@ export default function ChangePasswordScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/change-password`, {
+      const res = await fetch(`${API_URL}/api/verify-reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           otp,
-          new_password: newPassword
+          newPassword
         })
       });
       const data = await res.json();
@@ -125,8 +125,9 @@ export default function ChangePasswordScreen() {
         setStep(1);
         setEmail("");
         setOtp("");
-        setNewPass("");
+        setNewPassword("");
         Alert.alert("Thành công", "Mật khẩu đã đổi, bạn có thể đăng nhập lại!");
+        navigation.navigate("Login");
       } else {
         setMsg(data.message || "Đổi mật khẩu thất bại. Thử lại!");
         setMsgType("error");
@@ -234,7 +235,7 @@ export default function ChangePasswordScreen() {
                     <View style={{ height: 16 }} />
                     <View>
                       <Text style={styles.inputLabel}>Mật khẩu mới</Text>
-                      <View style={styles.inputWrap}>
+                      <View style={styles.passwordInputWrap}>
                         <Icon
                           name="lock-reset"
                           size={21}
@@ -242,10 +243,10 @@ export default function ChangePasswordScreen() {
                           style={{ marginRight: 8 }}
                         />
                         <TextInput
-                          style={styles.input}
+                          style={styles.passwordInput}
                           placeholder="Nhập mật khẩu mới mạnh"
                           placeholderTextColor={COLORS.hint}
-                          value={newPass}
+                          value={newPassword}
                           secureTextEntry={!showNew}
                           onChangeText={setNewPassword}
                           autoCapitalize="none"
@@ -258,9 +259,6 @@ export default function ChangePasswordScreen() {
                           />
                         </TouchableOpacity>
                       </View>
-                      <Text style={styles.hintTxt}>
-                        • 8 ký tự, chữ Hoa, thường, số & ký tự đặc biệt
-                      </Text>
                     </View>
                     <View style={styles.actions}>
                       <TouchableOpacity
@@ -275,7 +273,7 @@ export default function ChangePasswordScreen() {
                       <TouchableOpacity
                         style={styles.confirmBtn}
                         onPress={sendNewPassword}
-                        disabled={loading || !otp || !newPass}
+                        disabled={loading || !otp || !newPassword}
                       >
                         <Text style={{ color: "#fff", fontWeight: "bold" }}>
                           XÁC NHẬN
@@ -294,6 +292,27 @@ export default function ChangePasswordScreen() {
 }
 
 const styles = StyleSheet.create({
+  passwordInput: {
+    flex: 1,
+    height: 55, // cao hơn
+    fontSize: 16,
+    color: "#2b2c5e",
+    letterSpacing: 0.2,
+    paddingHorizontal: 10,
+    width: 500
+  },
+  passwordInputWrap: {
+    flexDirection: "row",
+    borderWidth: 1.3,
+    borderColor: "#ece3ff",
+    alignItems: "center",
+    borderRadius: 10,
+    backgroundColor: "#f7f4ff",
+    paddingHorizontal: 9,
+    paddingVertical: 4, // thêm khoảng cách dọc
+    marginBottom: 14,
+    width: 300
+  },
   bg: { flex: 1 },
   container: {
     paddingHorizontal: 22,
@@ -349,7 +368,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2b2c5e",
     letterSpacing: 0.2,
-    paddingHorizontal: 7
+    paddingHorizontal: 10,
+    width: 500
   },
   btn: {
     flexDirection: "row",
@@ -398,7 +418,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#0008",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   popup: {
     width: 330,
@@ -421,7 +441,7 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   otpInput: {
-    width: 130,
+    width: 200,
     height: 44,
     fontSize: 22,
     fontWeight: "bold",
