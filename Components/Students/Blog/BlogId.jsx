@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import { LinearGradient } from "expo-linear-gradient";
 import Header from "../../../Header/Header";
+import { stripMarkdown } from "../../../stripmarkdown";
 export default function BlogId() {
   const route = useRoute();
   const { blogId } = route.params;
@@ -145,7 +146,7 @@ export default function BlogId() {
             <Text style={styles.commentUser}>
               {item.userFullName || "Người dùng"}:
             </Text>
-            <Text>{item.content}</Text>
+            <Text>{stripMarkdown(item.content)}</Text>
           </View>
         )}
         ListEmptyComponent={

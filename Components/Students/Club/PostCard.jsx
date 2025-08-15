@@ -12,6 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import QRCode from "react-native-qrcode-svg";
+import { stripMarkdown } from "../../../stripmarkdown";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -190,7 +191,7 @@ export default function PostCard({
             }}
             numberOfLines={2}
           >
-            {data.description ? data.description.replace(/<[^>]+>/g, "") : ""}
+            {stripMarkdown(data.description)}
           </Text>
 
           {/* Nếu event, show ngày */}
