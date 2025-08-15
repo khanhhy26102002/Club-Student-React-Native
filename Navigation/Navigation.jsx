@@ -6,7 +6,6 @@ import Homepage from "../Components/Home/Homepage";
 import EventTaskAll from "../Components/Students/Event/EventTaskAll";
 const Tab = createBottomTabNavigator();
 export default function Navigation() {
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -15,7 +14,8 @@ export default function Navigation() {
           if (route.name === "Home") iconName = "home";
           else if (route.name === "Club") iconName = "people-outline";
           else if (route.name === "Event") iconName = "remove-circle-sharp";
-          else if (route.name === "Task") iconName = "checkmark-done-circle-sharp";
+          else if (route.name === "Task")
+            iconName = "checkmark-done-circle-sharp";
           else if (route.name === "Blog") iconName = "document-text-outline";
           const iconSize = focused ? 28 : 24;
           return <Ionicons name={iconName} size={iconSize} color={color} />;
@@ -62,7 +62,6 @@ export default function Navigation() {
       <Tab.Screen
         name="Task"
         component={EventTaskAll}
-
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

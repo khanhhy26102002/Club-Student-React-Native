@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Image
 } from "react-native";
-import Icon from "react-native-vector-icons/Feather";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import QRCode from "react-native-qrcode-svg";

@@ -4,6 +4,8 @@ import { Camera, CameraView, useCameraPermissions } from "expo-camera";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "@env";
 // kiểm tra camera mà chỉ quét 1 lần
+// show ra các task gần hết hạn và show ra các club và sort lại cái task và cái gần hết hạn
+// task thêm quyền tạo task với quản lí
 const CheckIn = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = React.useState(false);

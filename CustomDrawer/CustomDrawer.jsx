@@ -159,6 +159,20 @@ export const CustomDrawer = (props) => {
                 {t("title88") || "Đăng xuất"}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => navigation.navigate("ChangePassword")}
+            >
+              <Ionicons
+                name="key-outline"
+                size={20}
+                color="#f59e0b"
+                style={styles.icon}
+              />
+              <Text style={[styles.actionText, { color: "#f59e0b" }]}>
+                Đổi mật khẩu
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </LinearGradient>
