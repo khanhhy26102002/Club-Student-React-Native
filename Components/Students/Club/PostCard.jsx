@@ -198,8 +198,8 @@ export default function PostCard({
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate("Event", {
-                  screen: "EventRegister",
-                  params: { eventId: data.eventId }
+                  screen: "EventRegistration",
+                  params: { eventId: data.eventId, title: data.title }
                 })
               }
               style={{
@@ -262,7 +262,7 @@ export default function PostCard({
                   screen: "EventRoles",
                   params: {
                     eventId: data.eventId,
-                    clubId:clubId
+                    clubId: clubId
                   }
                 })
               }

@@ -22,7 +22,7 @@ const CheckIn = () => {
   }, []);
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-
+    console.log("QRCode", data);
     try {
       setLoading(true);
 
