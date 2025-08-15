@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity
 } from "react-native";
-import { Card, Avatar, useTheme, FAB, Chip } from "react-native-paper";
+import { Card, Avatar, useTheme } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,14 +21,25 @@ const EventTaskAll = () => {
   const [filteredData, setFilteredData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-  const [userNameFilter, setUserNameFilter] = React.useState(""); // UserName để filter
+  const [currentUserId, setCurrentUserId] = React.useState(null);
   const theme = useTheme();
 
+  // Lấy userId trực tiếp từ AsyncStorage
+  React.useEffect(() => {
+    const getCurrentUserId = async () => {
+      const userId = await AsyncStorage.getItem("userId");
+      if (userId) {
+        setCurrentUserId(parseInt(userId, 10));
+      }
+    };
+    getCurrentUserId();
+  }, []);
+
+  // Fetch task, filter theo userId và gom trùng theo title + eventId
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         const token = await AsyncStorage.getItem("jwt");
-
         const response = await fetchBaseResponse(`/api/tasks/allTask`, {
           method: "GET",
           headers: {
@@ -38,13 +49,27 @@ const EventTaskAll = () => {
         });
 
         if (response.status === 200) {
-          // Sắp xếp giảm dần theo createdAt
           const sortedData = response.data.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           );
-
           setData(sortedData);
-          setFilteredData(sortedData);
+
+          // Chỉ hiển thị task của user login
+          const userTasks = sortedData.filter(
+            (task) => task.userId === currentUserId
+          );
+
+          // Gom trùng theo title + eventId
+          const uniqueTasksMap = new Map();
+          userTasks.forEach((task) => {
+            const key = `${task.title}-${task.eventId}`;
+            if (!uniqueTasksMap.has(key)) {
+              uniqueTasksMap.set(key, task);
+            }
+          });
+          const uniqueTasks = Array.from(uniqueTasksMap.values());
+
+          setFilteredData(uniqueTasks);
         } else {
           setError(`HTTP Status: ${response.status}`);
         }
@@ -55,31 +80,19 @@ const EventTaskAll = () => {
       }
     };
 
-    fetchData();
-  }, []);
-
-  // Lọc theo userName
-  const handleFilterByUserName = (userName) => {
-    setUserNameFilter(userName);
-    if (!userName) {
-      setFilteredData(data);
-    } else {
-      setFilteredData(data.filter((task) => task.userName === userName));
-    }
-  };
+    if (currentUserId !== null) fetchData();
+  }, [currentUserId]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => {
         navigation.navigate("Event", {
           screen: "EventAllTask",
-          params: {
-            eventId: item.eventId
-          }
+          params: { eventId: item.eventId }
         });
         console.log("Nhấn vào task:", item.taskId);
       }}
-      activeOpacity={0.8} // hiệu ứng nhấn
+      activeOpacity={0.8}
     >
       <Card style={styles.card}>
         <Card.Title
@@ -135,38 +148,13 @@ const EventTaskAll = () => {
       </View>
     );
 
-  // Lấy danh sách userName duy nhất từ data
-  const uniqueUserNames = [...new Set(data.map((t) => t.userName))];
-
   return (
     <>
       <Header />
       <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <Text style={styles.header}>
-            Danh Sách Task ({filteredData.length})
-          </Text>
-        </View>
-
-        <View style={styles.filterRow}>
-          <Chip
-            selected={userNameFilter === ""}
-            onPress={() => handleFilterByUserName("")}
-            style={styles.chip}
-          >
-            Tất cả
-          </Chip>
-          {uniqueUserNames.map((name) => (
-            <Chip
-              key={name}
-              selected={userNameFilter === name}
-              onPress={() => handleFilterByUserName(name)}
-              style={styles.chip}
-            >
-              {name}
-            </Chip>
-          ))}
-        </View>
+        <Text style={styles.header}>
+          Danh Sách Task ({filteredData.length})
+        </Text>
 
         {filteredData.length === 0 ? (
           <View style={styles.center}>
@@ -177,7 +165,9 @@ const EventTaskAll = () => {
           <FlatList
             data={filteredData}
             renderItem={renderItem}
-            keyExtractor={(item) => item.taskId.toString()}
+            keyExtractor={(item, index) =>
+              `${item.title}-${item.eventId}-${item.taskId || index}`
+            }
             contentContainerStyle={{ paddingBottom: 10 }}
             showsVerticalScrollIndicator={false}
           />
@@ -188,63 +178,25 @@ const EventTaskAll = () => {
 };
 
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 20
-  },
+  container: { flex: 1, paddingTop: 30, paddingHorizontal: 12 },
   header: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#E65100",
-    marginLeft: 8 // tạo khoảng cách giữa icon và chữ
-  },
-  container: {
-    flex: 1,
-    paddingTop: 30,
-    paddingHorizontal: 12
-  },
-  header: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#E65100", // cam đậm
-    marginBottom: 14,
-    textAlign: "left",
-    marginTop: -25
-  },
-  filterRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 10 },
-  chip: {
-    marginRight: 8,
-    marginBottom: 8,
-    backgroundColor: "#FFE0B2", // chip nền cam nhạt
-    borderColor: "#FB8C00",
-    borderWidth: 1
+    marginBottom: 14
   },
   card: {
     marginVertical: 8,
     borderRadius: 18,
     elevation: 4,
-    backgroundColor: "#FFE0B2" // card nhạt cam
+    backgroundColor: "#FFE0B2"
   },
-  desc: {
-    marginTop: 6,
-    color: "#4E342E", // nâu đậm
-    fontSize: 15
-  },
-  icon: {
-    backgroundColor: "#FFCC80" // icon nền cam nhạt
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 38,
-    backgroundColor: "#FB8C00", // cam sáng
-    elevation: 8
-  },
+  desc: { marginTop: 6, color: "#4E342E", fontSize: 15 },
+  icon: { backgroundColor: "#FFCC80" },
   loading: { flex: 1, justifyContent: "center" },
-  error: { color: "#D84315", marginTop: 12, fontWeight: "600" }, // đỏ cam
+  error: { color: "#D84315", marginTop: 12, fontWeight: "600" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  emptyText: { marginTop: 12, color: "#8D6E63", fontSize: 17 } // nâu nhạt
+  emptyText: { marginTop: 12, color: "#8D6E63", fontSize: 17 }
 });
 
 export default EventTaskAll;
