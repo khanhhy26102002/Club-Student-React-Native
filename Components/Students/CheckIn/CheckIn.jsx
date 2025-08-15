@@ -22,7 +22,8 @@ const CheckIn = () => {
   }, []);
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    console.log("QRCode", data);
+    console.log("QRCode type:", type);
+    console.log("QRCode raw data:", data);
     try {
       setLoading(true);
 
@@ -47,7 +48,7 @@ const CheckIn = () => {
         return;
       }
 
-      Alert.alert("Xác nhận", "Bạn đã checkin thành công");
+      Alert.alert("Xác nhận", result.message);
     } catch (error) {
       console.error("❌ Fetch Error:", error);
       Alert.alert("Lỗi", "Không thể kết nối tới server");
