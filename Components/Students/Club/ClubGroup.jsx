@@ -101,7 +101,7 @@ export default function ClubGroup() {
 
       const blogRes = await fetchBaseResponse(blogUrl, { headers });
       const blogsRaw = Array.isArray(blogRes?.data) ? blogRes.data : [];
-
+      console.log("BlogRes",blogRes.data);
       const blogs = blogsRaw
         .filter((blog) => Number(blog.clubId) === Number(clubId))
         .map((blog) => ({ ...blog, type: "blog" }));

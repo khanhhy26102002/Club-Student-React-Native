@@ -14,6 +14,7 @@ import Header from "../../../Header/Header";
 import { fetchBaseResponse } from "../../../utils/api";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { stripMarkdown } from "../../../stripmarkdown";
 
 const { width } = Dimensions.get("window");
 const CARD_MARGIN = 8;
@@ -72,7 +73,7 @@ const Blog = ({ navigation }) => {
           {formatDate(item.createdAt)}
         </Text>
         <Text style={styles.description} numberOfLines={2}>
-          {item.content}
+          {stripMarkdown(item.content)}
         </Text>
         <TouchableOpacity
           style={styles.button}

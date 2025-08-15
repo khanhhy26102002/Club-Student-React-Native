@@ -49,12 +49,21 @@ export default function PostCard({
   };
 
   const handlePress = () => {
-    navigation.navigate("Club", {
-      screen: "ClubDetailEvent",
-      params: {
-        eventId: data.eventId
-      }
-    });
+    if (isEvent) {
+      navigation.navigate("Club", {
+        screen: "ClubDetailEvent",
+        params: {
+          eventId: data.eventId
+        }
+      });
+    } else {
+      navigation.navigate("Club", {
+        screen: "BlogDetail", // hoặc tên màn blog detail bạn đang dùng
+        params: {
+          blogId: data.blogId
+        }
+      });
+    }
   };
 
   const handleAssignRole = () => {
@@ -145,7 +154,6 @@ export default function PostCard({
         }}
       >
         <View style={{ padding: 16 }}>
-          {/* Hiển thị ảnh nếu không phải event */}
           {!isEvent && (
             <Image
               source={{ uri: blogImage }}
