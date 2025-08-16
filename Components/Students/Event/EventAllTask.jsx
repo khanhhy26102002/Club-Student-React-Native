@@ -10,8 +10,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  Button,
-  ScrollView
+  Button
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { fetchBaseResponse } from "../../../utils/api";
@@ -24,7 +23,6 @@ import axios from "axios";
 const EventAllTask = ({ navigation }) => {
   const route = useRoute();
   const { eventId, taskId } = route.params || {};
-  console.log("TaskId", taskId);
   const [data, setData] = useState([]);
   const [eventRole, setEventRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,16 +33,17 @@ const EventAllTask = ({ navigation }) => {
   const [filesMap, setFilesMap] = useState({});
   const [postingMap, setPostingMap] = useState({});
   const flatListRef = React.useRef(null);
+
   const handleUpdateStatus = async (taskId, newStatus) => {
     try {
       const token = await AsyncStorage.getItem("jwt");
       const res = await fetchBaseResponse(`/api/tasks/${taskId}/status`, {
-        method: "PUT", // axios dùng chữ thường
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        data: JSON.stringify(newStatus) // 👈 chỉ gửi raw string thôi
+        data: JSON.stringify(newStatus)
       });
 
       if (res.status === 200) {
@@ -108,7 +107,6 @@ const EventAllTask = ({ navigation }) => {
           setData(Array.isArray(taskRes.data) ? taskRes.data : [taskRes.data]);
           if (roleRes.status === 200) setEventRole(roleRes.data);
 
-          // nạp comment cho tất cả task
           (Array.isArray(taskRes.data) ? taskRes.data : [taskRes.data]).forEach(
             (t) => loadComments(t.taskId)
           );
@@ -229,42 +227,32 @@ const EventAllTask = ({ navigation }) => {
         </View>
 
         {renderStatus(item.status)}
+
+        {/* 4 nút status */}
         <View style={{ flexDirection: "row", marginTop: 8, flexWrap: "wrap" }}>
           <TouchableOpacity
-            style={[
-              styles.statusButton,
-              { backgroundColor: "#ff7043" } // TODO - cam nhạt
-            ]}
+            style={[styles.statusButton, { backgroundColor: "#ff7043" }]}
             onPress={() => handleUpdateStatus(item.taskId, "TODO")}
           >
             <Text style={styles.statusButtonText}>Chưa làm</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.statusButton,
-              { backgroundColor: "#42a5f5" } // IN_PROGRESS - xanh biển nhạt
-            ]}
+            style={[styles.statusButton, { backgroundColor: "#42a5f5" }]}
             onPress={() => handleUpdateStatus(item.taskId, "IN_PROGRESS")}
           >
             <Text style={styles.statusButtonText}>Đang làm</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.statusButton,
-              { backgroundColor: "#66bb6a" } // COMPLETED - xanh lá nhạt
-            ]}
+            style={[styles.statusButton, { backgroundColor: "#66bb6a" }]}
             onPress={() => handleUpdateStatus(item.taskId, "COMPLETED")}
           >
             <Text style={styles.statusButtonText}>Hoàn thành</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.statusButton,
-              { backgroundColor: "#ef5350" } // CANCELLED - đỏ nhạt
-            ]}
+            style={[styles.statusButton, { backgroundColor: "#ef5350" }]}
             onPress={() => handleUpdateStatus(item.taskId, "CANCELLED")}
           >
             <Text style={styles.statusButtonText}>Hủy</Text>
@@ -360,22 +348,14 @@ const EventAllTask = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
           />
         )}
-        {eventRole?.roleName === "CHECKIN" && (
-          <TouchableOpacity
-            style={styles.checkinButton}
-            onPress={() => navigation.navigate("Login", { eventId })}
-          >
-            <Text style={styles.checkinButtonText}>Checkin</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, marginBottom: -10 },
-  container: { flex: 1, paddingHorizontal: 16, marginBottom: -100 },
+  wrapper: { flex: 1, marginBottom: -80 },
+  container: { flex: 1, paddingHorizontal: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   taskCard: {
     backgroundColor: "#FFE0B2",
@@ -420,7 +400,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
-    marginRight: 6
+    marginRight: 6,
+    marginBottom: 6
   },
   statusButtonText: {
     color: "#fff",
