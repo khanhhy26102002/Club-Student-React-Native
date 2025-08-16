@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,7 +19,6 @@ const screenWidth = Dimensions.get("window").width;
 export default function PostCard({
   data,
   navigation,
-  isLeader,
   onDelete,
   clubId,
   isOrganizer,

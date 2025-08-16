@@ -22,6 +22,7 @@ import { fetchBaseResponse } from "../../utils/api";
 import { useNavigation } from "@react-navigation/native";
 import { stripMarkdown } from "../../stripmarkdown";
 import dayjs from "dayjs";
+import { FontAwesome } from "@expo/vector-icons";
 const ACCENT = "#2E3A59";
 // thanh ở trên thu gọn lại còn thanh search
 // bỏ cái nút đang chờ duyệt ở trang home
@@ -83,7 +84,7 @@ export default function Homepage() {
     try {
       const token = await AsyncStorage.getItem("jwt");
       const response = await fetchBaseResponse(
-        "/api/statistics/club-comparison",
+        "/api/statistics/member-rankings",
         {
           method: "GET",
           headers: {
@@ -427,14 +428,6 @@ export default function Homepage() {
           </TouchableOpacity>
 
           {/* Check-in box */}
-          <TouchableOpacity style={styles.checkinBox} activeOpacity={0.9}>
-            <Image
-              source={{
-                uri: "https://img.icons8.com/color/96/000000/attendance-mark.png"
-              }}
-              style={{ width: 33, height: 33 }}
-            />
-          </TouchableOpacity>
 
           {/* Danh sách CLB gợi ý */}
           <View style={{ marginBottom: 10 }}>
@@ -503,10 +496,26 @@ export default function Homepage() {
               }}
             />
           </View>
-
-          {/* Sự kiện sắp tới */}
           <View style={{ marginBottom: 25 }}>
-            <Text style={styles.sectionTitle}>Sự kiện sắp tới</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 14
+              }}
+            >
+              <Text style={styles.sectionTitle}>Sự kiện sắp tới</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Event", {
+                    screen: "EventStack"
+                  })
+                }
+              >
+                <Text style={styles.viewAllText}>Xem tất cả</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList
               horizontal
               data={event.slice(0, 4)}
@@ -550,7 +559,25 @@ export default function Homepage() {
             />
           </View>
           <View style={{ marginBottom: 25 }}>
-            <Text style={styles.sectionTitle}>Blog nổi bật</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: 14
+              }}
+            >
+              <Text style={styles.sectionTitle}>Blog nổi bật</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Club", {
+                    screen: "Blog"
+                  })
+                }
+              >
+                <Text style={styles.viewAllText}>Xem tất cả</Text>
+              </TouchableOpacity>
+            </View>
             <FlatList
               horizontal
               data={blog.slice(0, 4)} // blogs là array chứa danh sách blog
@@ -620,7 +647,7 @@ export default function Homepage() {
             {/* Ranking List */}
             <View style={styles.rankingContainer}>
               <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
-                Xếp hạng CLB ({period})
+                Top câu lạc bộ ({period})
               </Text>
 
               {loadingRankings ? (
@@ -670,7 +697,7 @@ export default function Homepage() {
               )}
             </View>
             <View style={{ marginBottom: 25 }}>
-              <Text style={styles.sectionTitle}>So sánh CLB</Text>
+              <Text style={styles.sectionTitle}>Top thành viên</Text>
               {loadingComparison ? (
                 <ActivityIndicator size="small" color="#ff6600" />
               ) : (
@@ -681,24 +708,80 @@ export default function Homepage() {
                     item.clubId?.toString() || index.toString()
                   }
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingHorizontal: 14 }}
-                  renderItem={({ item }) => (
+                  contentContainerStyle={{
+                    paddingHorizontal: 14,
+                    paddingTop: 10
+                  }}
+                  renderItem={({ item, index }) => (
                     <TouchableOpacity
-                      style={styles.comparisonCard}
-                      onPress={() => {
-                        navigation.navigate("Club", {
-                          screen: "ClubGroup",
-                          params: { clubId: item.clubId }
-                        });
-                      }}
+                      style={{ marginRight: 12 }}
                     >
-                      <Text style={styles.comparisonClubName} numberOfLines={1}>
-                        {item.clubName || "Tên CLB"}
-                      </Text>
-                      <Text style={styles.comparisonScore}>
-                        Điểm: {item.totalPoints || 0}
-                      </Text>
-                      {/* Bạn có thể thêm icon, biểu đồ nhỏ hoặc chi tiết khác nếu muốn */}
+                      <LinearGradient
+                        colors={["#ffd699", "#ff6600"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{
+                          borderRadius: 16,
+                          padding: 12,
+                          width: 140,
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 3 },
+                          shadowOpacity: 0.3,
+                          shadowRadius: 4,
+                          elevation: 4,
+                          position: "relative"
+                        }}
+                      >
+                        {index < 3 && (
+                          <View
+                            style={{
+                              position: "absolute",
+                              top: -6,
+                              right: -6,
+                              backgroundColor: "#fff",
+                              borderRadius: 12,
+                              padding: 4,
+                              flexDirection: "row",
+                              alignItems: "center"
+                            }}
+                          >
+                            <FontAwesome
+                              name="trophy"
+                              size={14}
+                              color="#ff6600"
+                            />
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                fontWeight: "bold",
+                                marginLeft: 2
+                              }}
+                            >
+                              {index + 1}
+                            </Text>
+                          </View>
+                        )}
+
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontWeight: "600",
+                            color: "#fff",
+                            marginBottom: 6
+                          }}
+                          numberOfLines={1}
+                        >
+                          {item.fullName || "Tên Thành Viên"}
+                        </Text>
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            color: "#fff"
+                          }}
+                        >
+                          Điểm: {item.totalPoints || 0}
+                        </Text>
+                      </LinearGradient>
                     </TouchableOpacity>
                   )}
                 />
@@ -1100,7 +1183,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
-    marginTop:100
+    marginTop: 40
   },
   periodButton: {
     paddingHorizontal: 16,
@@ -1214,16 +1297,16 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
   comparisonClubName: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 8,
-    color: ACCENT,
+    color: ACCENT
   },
   comparisonScore: {
     fontSize: 14,
-    color: "#555",
-  },
+    color: "#555"
+  }
 });

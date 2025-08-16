@@ -15,6 +15,8 @@ import EventTaskView from "./EventTaskView";
 import EventTaskViewId from "./EventTaskViewId";
 import EventAllTask from "./EventAllTask";
 import EventTaskAll from "./EventTaskAll";
+import EventFeedback from "./EventFeedback";
+import EventAllFeedback from "./EventAllFeedback";
 const Stack = createNativeStackNavigator();
 const EventStack = () => {
   return (
@@ -35,6 +37,8 @@ const EventStack = () => {
       <Stack.Screen name="EventTaskViewId" component={EventTaskViewId} />
       <Stack.Screen name="EventAllTask" component={EventAllTask} />
       {/* <Stack.Screen name="EventTaskAll" component={EventTaskAll} /> */}
+      <Stack.Screen name="EventFeedback" component={EventFeedback} />
+      <Stack.Screen name="EventAllFeedback" component={EventAllFeedback} />
     </Stack.Navigator>
   );
 };

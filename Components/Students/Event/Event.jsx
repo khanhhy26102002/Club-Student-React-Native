@@ -31,7 +31,19 @@ export default function Event({ navigation }) {
           "Content-Type": "application/json"
         }
       });
-      const events = Array.isArray(response.data) ? response.data : [];
+
+      let events = Array.isArray(response.data) ? response.data : [];
+
+      // Gom các sự kiện trùng dựa trên eventId
+      const uniqueEventsMap = {};
+      events.forEach((e) => {
+        const key = e.eventId || `${e.title}-${e.eventDate}`;
+        if (!uniqueEventsMap[key]) {
+          uniqueEventsMap[key] = e;
+        }
+      });
+      events = Object.values(uniqueEventsMap);
+
       setData(events);
     } catch (error) {
       Alert.alert("Lỗi", error.message || "Đã xảy ra lỗi khi tải dữ liệu.");
@@ -70,28 +82,42 @@ export default function Event({ navigation }) {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      style={styles.cardHorizontal}
-      activeOpacity={0.85}
       onPress={() =>
         navigation.navigate("Event", {
           screen: "EventId",
-          params: { eventId: item.eventId }
+          params: {
+            eventId: item.eventId
+          }
         })
       }
     >
-      <Image
-        source={getCoverImg(item.format)}
-        style={styles.cardImageHorizontal}
-        resizeMode="cover"
-      />
-      <View style={styles.cardContentHorizontal}>
-        <Text numberOfLines={2} style={styles.cardTitle}>
-          {item.title}
-        </Text>
-        <Text style={styles.cardDate}>{formatDay(item.eventDate)}</Text>
-        {item.location && (
-          <Text style={styles.cardLocation}>{item.location}</Text>
-        )}
+      <View style={styles.cardHorizontal}>
+        <Image
+          source={getCoverImg(item.format)}
+          style={styles.cardImageHorizontal}
+          resizeMode="cover"
+        />
+        <View style={styles.cardContentHorizontal}>
+          <Text numberOfLines={2} style={styles.cardTitle}>
+            {item.title}
+          </Text>
+          <Text style={styles.cardDate}>{formatDay(item.eventDate)}</Text>
+          {item.location && (
+            <Text style={styles.cardLocation}>{item.location}</Text>
+          )}
+
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() =>
+              navigation.navigate("Event", {
+                screen: "EventFeedback",
+                params: { eventId: item.eventId }
+              })
+            }
+          >
+            <Text style={styles.primaryBtnText}>Xem đánh giá</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -103,27 +129,38 @@ export default function Event({ navigation }) {
         <StatusBar barStyle="dark-content" />
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}
+          style={[styles.primaryBtn, styles.backButton]}
           activeOpacity={0.8}
         >
           <Ionicons name="chevron-back" size={22} color="#fff" />
-          <Text style={styles.backButtonText}>Quay lại</Text>
+          <Text style={styles.primaryBtnText}>Quay lại</Text>
         </TouchableOpacity>
 
         <View style={styles.headerRow}>
           <Text style={styles.title}>Danh sách sự kiện</Text>
-          <TouchableOpacity
-            style={styles.registeredBtn}
-            onPress={async () => {
-              const userId = await AsyncStorage.getItem("userId");
-              navigation.navigate("Event", {
-                screen: "History",
-                params: { userId: userId }
-              });
-            }}
-          >
-            <Text style={styles.registeredBtnText}>Đã đăng ký</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", marginLeft: -10 }}>
+            <TouchableOpacity
+              style={[styles.primaryBtn, { marginRight: 8 }]}
+              onPress={() =>
+                navigation.navigate("Event", { screen: "EventAllFeedback" })
+              }
+            >
+              <Text style={styles.primaryBtnText}>Sự kiện đã đánh giá</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={async () => {
+                const userId = await AsyncStorage.getItem("userId");
+                navigation.navigate("Event", {
+                  screen: "History",
+                  params: { userId }
+                });
+              }}
+            >
+              <Text style={styles.primaryBtnText}>Đã đăng ký</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {loading ? (
@@ -135,8 +172,8 @@ export default function Event({ navigation }) {
         ) : (
           <FlatList
             data={data}
-            keyExtractor={(item, index) =>
-              item.eventId?.toString() || index.toString()
+            keyExtractor={(item) =>
+              item.eventId?.toString() || Math.random().toString()
             }
             renderItem={renderItem}
             contentContainerStyle={{ padding: 16, paddingBottom: 42 }}
@@ -158,52 +195,20 @@ export default function Event({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f57c00",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    marginLeft: 5,
-    marginTop: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3, // Android shadow
-    width: "30%"
-  },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "500",
-    marginLeft: 4
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginHorizontal: 20,
-    marginBottom: 8
-  },
-  registeredBtn: {
-    backgroundColor: "#f57c00",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginTop: 10
-  },
-  registeredBtnText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14
-  },
   container: {
     flex: 1,
     backgroundColor: "#fffaf2",
     marginBottom: -50,
     marginTop: -10
+  },
+  headerRow: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginBottom: 8,
+    marginTop: -50,
+    marginLeft: 80
   },
   title: {
     fontSize: 22,
@@ -212,7 +217,7 @@ const styles = StyleSheet.create({
     margin: 20,
     marginBottom: 8,
     letterSpacing: 0.13,
-    marginLeft: -10
+    marginLeft: 16
   },
   cardHorizontal: {
     flexDirection: "row",
@@ -221,7 +226,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     elevation: 2,
     marginBottom: 16,
-    height: 120
+    height: 140
   },
   cardImageHorizontal: {
     width: 200,
@@ -234,19 +239,30 @@ const styles = StyleSheet.create({
     padding: 12,
     justifyContent: "center"
   },
-  cardTitle: {
+  cardTitle: { fontWeight: "600", fontSize: 16, color: "#333" },
+  cardDate: { fontSize: 12, color: "#666", marginTop: 4 },
+  cardLocation: { fontSize: 12, color: "#aaa", marginTop: 2 },
+
+  primaryBtn: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: "#f57c00",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  primaryBtnText: {
+    color: "#fff",
     fontWeight: "600",
-    fontSize: 16,
-    color: "#333"
-  },
-  cardDate: {
     fontSize: 12,
-    color: "#666",
-    marginTop: 4
+    marginLeft: 4
   },
-  cardLocation: {
-    fontSize: 12,
-    color: "#aaa",
-    marginTop: 2
+  backButton: {
+    width: "30%",
+    marginLeft: 5,
+    marginTop: 10,
+    justifyContent: "center"
   }
 });
