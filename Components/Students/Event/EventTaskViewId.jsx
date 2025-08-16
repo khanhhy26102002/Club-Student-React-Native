@@ -92,21 +92,32 @@ const EventTaskViewId = () => {
       Alert.alert("Thông báo", "Trạng thái này đang được chọn rồi.");
       return;
     }
+
     setUpdating(true);
     try {
       const token = await AsyncStorage.getItem("jwt");
+      console.log("🔹 updateTaskStatus token:", token);
+      console.log("🔹 updateTaskStatus URL:", `/api/tasks/${taskId}/status`);
+      console.log("🔹 updateTaskStatus payload:", { status: newStatus });
+
       const response = await fetchBaseResponse(`/api/tasks/${taskId}/status`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ status: newStatus }) // sửa body đúng chuẩn fetch API
+        data: JSON.stringify(newStatus) // gửi object trực tiếp, không stringify
       });
+
+      console.log("🔹 updateTaskStatus response:", response);
 
       if (response.status === 200) {
         Alert.alert("Thành công", "Cập nhật trạng thái thành công.");
-        fetchTaskDetail(); // load lại dữ liệu mới
+        // cập nhật local state trực tiếp để UI nhanh phản hồi
+        setData((prev) => ({
+          ...prev,
+          status: newStatus
+        }));
       } else {
         Alert.alert(
           "Lỗi",
@@ -115,7 +126,10 @@ const EventTaskViewId = () => {
       }
     } catch (error) {
       console.error("❌ Update task status error:", error);
-      Alert.alert("Lỗi", "Đã xảy ra lỗi khi cập nhật trạng thái.");
+      Alert.alert(
+        "Lỗi",
+        error.message || "Đã xảy ra lỗi khi cập nhật trạng thái."
+      );
     } finally {
       setUpdating(false);
     }
@@ -199,7 +213,7 @@ const EventTaskViewId = () => {
                 styles.statusButton,
                 status === data.status && styles.statusButtonActive
               ]}
-              onPress={() => updateTaskStatus(status)}
+              onPress={() => updateTaskStatus(status)} // chỉ truyền status
               disabled={updating}
             >
               <Text

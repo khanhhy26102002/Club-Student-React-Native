@@ -45,6 +45,7 @@ const getStatusLabel = (status) => {
 
 const EventTaskView = ({ navigation }) => {
   const { eventId } = useRoute().params;
+  console.log("EventId", eventId);
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [errorMessage, setErrorMessage] = React.useState(null);
