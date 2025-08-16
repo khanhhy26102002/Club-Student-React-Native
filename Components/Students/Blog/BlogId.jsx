@@ -10,7 +10,6 @@ import {
   TextInput,
   FlatList
 } from "react-native";
-
 import * as Animatable from "react-native-animatable";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,15 +20,12 @@ import { stripMarkdown } from "../../../stripmarkdown";
 export default function BlogId() {
   const route = useRoute();
   const { blogId } = route.params;
-
   const [data, setData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-
   const [comments, setComments] = React.useState([]);
   const [commentLoading, setCommentLoading] = React.useState(true);
   const [content, setContent] = React.useState("");
   const [posting, setPosting] = React.useState(false);
-
   // Fetch blog
   React.useEffect(() => {
     const fetchData = async () => {
@@ -176,7 +172,7 @@ export default function BlogId() {
                   {data.title || "Không có tiêu đề"}
                 </Text>
                 <Text style={styles.description} selectable>
-                  {data.content || "Không có nội dung"}
+                  {stripMarkdown(data.content) || "Không có nội dung"}
                 </Text>
               </LinearGradient>
             </Animatable.View>

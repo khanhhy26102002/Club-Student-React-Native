@@ -12,7 +12,8 @@ import {
   Alert,
   Platform,
   Linking,
-  Modal
+  Modal,
+  TextInput
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
@@ -35,14 +36,16 @@ const TYPE_COLOR = {
 export default function EventDetail({ route }) {
   const { eventId } = route.params;
   const navigation = useNavigation();
+  console.log("EventId", eventId);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // State modal QR
   const [modalVisible, setModalVisible] = useState(false);
-
-  // State event user đã đăng ký hiện tại (nếu có)
   const [myRegistration, setMyRegistration] = useState(null);
+
+  const [rating, setRating] = useState(0);
+  const [comments, setComments] = useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,7 +53,6 @@ export default function EventDetail({ route }) {
       try {
         const token = await AsyncStorage.getItem("jwt");
 
-        // Lấy public event
         const publicRes = await fetchBaseResponse(
           `/api/events/public/${eventId}`,
           {
@@ -65,7 +67,6 @@ export default function EventDetail({ route }) {
         }
 
         let roleName = null;
-        // Lấy role user trên event
         try {
           const myRes = await fetchBaseResponse(
             `/api/event-roles/my/${eventId}`,
@@ -81,7 +82,6 @@ export default function EventDetail({ route }) {
           console.log("Không lấy được role cho sự kiện", err);
         }
 
-        // Lấy QR / đăng ký event hiện tại
         try {
           const qrRes = await fetchBaseResponse(
             `/api/registrations/myqr?eventId=${eventId}`,
@@ -92,7 +92,6 @@ export default function EventDetail({ route }) {
           );
           if (qrRes.status === 200) {
             setMyRegistration({ qrCode: qrRes.data });
-            console.log("QR code set:", qrRes.data);
           }
         } catch (err) {
           console.log("Không lấy được QR/đăng ký event", err);
@@ -102,7 +101,7 @@ export default function EventDetail({ route }) {
         setData(mergedData);
       } catch (error) {
         Alert.alert("Lỗi", "Không lấy được event theo id");
-        console.error("📦 fetch error: ", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -139,15 +138,55 @@ export default function EventDetail({ route }) {
   const coverImg = FORMAT_ICON[data.format] || FORMAT_ICON.OFFLINE;
   const color = TYPE_COLOR[data.format] || TYPE_COLOR.OFFLINE;
 
+  const handleSubmitFeedback = async () => {
+    if (!rating) {
+      Alert.alert("Thông báo", "Vui lòng chọn số sao đánh giá");
+      return;
+    }
+
+    setFeedbackSubmitting(true);
+    try {
+      const token = await AsyncStorage.getItem("jwt");
+      const res = await fetchBaseResponse("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        data: { eventId, rating, comments }
+      });
+
+      console.log("Res", res.data);
+
+      // Xử lý lỗi Event chưa hoàn tất
+      if (res.status === 9001 || res.error === "EVENT_NOT_COMPLETED") {
+        Alert.alert("Lỗi", "Sự kiện chưa hoàn tất, không thể gửi feedback.");
+        return;
+      }
+
+      if (res.status === 200) {
+        Alert.alert("Thành công", "Cảm ơn bạn đã gửi feedback!");
+        setRating(0);
+        setComments("");
+      } else {
+        Alert.alert("Lỗi", res.message || "Không gửi được feedback");
+      }
+    } catch (err) {
+      console.error(err);
+      if (err.message === "Event not completed") {
+        Alert.alert("Lỗi", "Sự kiện chưa diễn ra nên bạn chưa đánh giá được");
+      }
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Header />
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff8f1" }}>
         <StatusBar barStyle="dark-content" />
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 36 }}
-        >
+        <ScrollView contentContainerStyle={{ paddingBottom: -40 }}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
@@ -205,7 +244,6 @@ export default function EventDetail({ route }) {
             </TouchableOpacity>
           )}
 
-          {/* Nếu user có vai trò ORGANIZER */}
           {data.roleName === "ORGANIZER" && (
             <TouchableOpacity
               style={[styles.joinBtn, { backgroundColor: "#388e3c" }]}
@@ -220,7 +258,6 @@ export default function EventDetail({ route }) {
             </TouchableOpacity>
           )}
 
-          {/* Nếu user đã đăng ký event này */}
           {myRegistration ? (
             <View style={styles.registeredStatusBox}>
               <Text style={styles.registeredStatusText}>
@@ -229,7 +266,6 @@ export default function EventDetail({ route }) {
               <TouchableOpacity
                 style={styles.qrBtn}
                 onPress={() => {
-                  console.log("QR code: ", myRegistration?.qrCode); // xem base64
                   if (!myRegistration?.qrCode) {
                     Alert.alert("Chưa có mã QR");
                     return;
@@ -258,7 +294,49 @@ export default function EventDetail({ route }) {
             </TouchableOpacity>
           )}
 
-          {/* Modal hiện mã QR */}
+          {myRegistration && (
+            <View
+              style={{ marginHorizontal: 23, marginTop: 20, marginBottom: 30 }}
+            >
+              <Text
+                style={{ fontSize: 16, fontWeight: "700", marginBottom: 10 }}
+              >
+                Đánh giá sự kiện
+              </Text>
+
+              <View style={{ flexDirection: "row", marginBottom: 12 }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                    <Ionicons
+                      name={rating >= star ? "star" : "star-outline"}
+                      size={28}
+                      color="#f57c00"
+                      style={{ marginRight: 6 }}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TextInput
+                value={comments}
+                onChangeText={setComments}
+                placeholder="Nhập bình luận..."
+                multiline
+                style={styles.commentInput}
+              />
+
+              <TouchableOpacity
+                onPress={handleSubmitFeedback}
+                disabled={feedbackSubmitting}
+                style={styles.feedbackBtn}
+              >
+                <Text style={styles.feedbackBtnText}>
+                  {feedbackSubmitting ? "Đang gửi..." : "Gửi feedback"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <Modal
             animationType="slide"
             transparent={true}
@@ -270,10 +348,10 @@ export default function EventDetail({ route }) {
                 <Text style={styles.modalTitle}>Mã QR Checkin</Text>
                 {myRegistration && myRegistration.qrCode ? (
                   <QRCode
-                    value={myRegistration.qrCode} // giá trị QR, có thể là chuỗi Base64 hoặc text
-                    size={200} // kích thước QR
-                    color="#000" // màu QR
-                    backgroundColor="#fff" // nền QR
+                    value={myRegistration.qrCode}
+                    size={200}
+                    color="#000"
+                    backgroundColor="#fff"
                   />
                 ) : (
                   <Text>Không có mã QR</Text>
@@ -311,11 +389,7 @@ const styles = StyleSheet.create({
   },
   errorText: { color: "#e55", fontSize: 16, fontWeight: "bold" },
 
-  bannerWrap: {
-    width: "100%",
-    height: 220,
-    marginBottom: 16
-  },
+  bannerWrap: { width: "100%", height: 220, marginBottom: 16 },
   backBtn: {
     position: "absolute",
     top: Platform.OS === "android" ? 10 : 20,
@@ -325,12 +399,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 30
   },
-
-  bannerImg: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover"
-  },
+  bannerImg: { width: "100%", height: "100%", resizeMode: "cover" },
   tagRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -373,11 +442,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     marginLeft: 8
   },
-  roleTagText: {
-    color: "#ef6c00",
-    fontWeight: "bold",
-    fontSize: 13
-  },
+  roleTagText: { color: "#ef6c00", fontWeight: "bold", fontSize: 13 },
   title: {
     fontSize: 21,
     fontWeight: "bold",
@@ -400,12 +465,8 @@ const styles = StyleSheet.create({
     fontSize: 13.8,
     marginTop: 2
   },
-  infoVal: {
-    color: "#4e342e",
-    fontSize: 15,
-    marginBottom: 5,
-    marginLeft: 3
-  },
+  infoVal: { color: "#4e342e", fontSize: 15, marginBottom: 5, marginLeft: 3 },
+
   descLabel: {
     fontWeight: "700",
     color: "#f57c00",
@@ -422,6 +483,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontWeight: "400"
   },
+
   fileBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -436,96 +498,85 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2
   },
-  fileBtnText: {
-    color: "#f57c00",
-    fontWeight: "bold",
-    fontSize: 15.2
-  },
+  fileBtnText: { fontSize: 15, color: "#bf360c", fontWeight: "600" },
+
   joinBtn: {
-    marginHorizontal: 32,
-    marginTop: 12,
-    borderRadius: 25,
-    alignItems: "center",
-    paddingVertical: 14,
     backgroundColor: "#f57c00",
-    shadowColor: "#fb8c00",
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 3
+    marginHorizontal: 23,
+    borderRadius: 25,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginBottom: 10
   },
-  joinBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16.5
-  },
+  joinBtnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 
   registeredStatusBox: {
-    marginHorizontal: 32,
-    marginTop: 20,
-    padding: 14,
-    borderRadius: 25,
+    marginHorizontal: 23,
+    marginTop: 10,
+    padding: 16,
     backgroundColor: "#fff3e0",
-    alignItems: "center",
-    flexDirection: "column",
-    justifyContent: "space-between"
+    borderRadius: 14,
+    alignItems: "center"
   },
-  registeredStatusText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#f57c00"
-  },
+  registeredStatusText: { fontSize: 15, color: "#4e342e", marginBottom: 10 },
   qrBtn: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#ffe8d0",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20
+  },
+  qrBtnText: { color: "#ef6c00", fontWeight: "600", marginLeft: 8 },
+
+  commentInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 60,
+    marginBottom: 12
+  },
+  feedbackBtn: {
+    backgroundColor: "#f57c00",
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: "center",
     marginTop: 20
   },
-  qrBtnText: {
-    marginLeft: 6,
-    color: "#f57c00",
-    fontWeight: "bold",
-    fontSize: 15
-  },
+  feedbackBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "#00000099",
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)"
   },
   modalContent: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 22,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 25,
     alignItems: "center",
-    width: "80%"
+    width: "85%"
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: 15,
     color: "#bf360c"
   },
-  qrImage: {
-    width: 220,
-    height: 200,
-    marginBottom: 15
-  },
   modalText: {
-    fontSize: 15,
-    textAlign: "center",
-    color: "#6d4c41",
-    marginBottom: 20,
-    fontWeight: "500"
+    fontSize: 14,
+    color: "#4e342e",
+    marginTop: 12,
+    textAlign: "center"
   },
   modalCloseBtn: {
+    marginTop: 20,
     backgroundColor: "#f57c00",
     paddingVertical: 10,
-    paddingHorizontal: 28,
+    paddingHorizontal: 30,
     borderRadius: 25
   },
-  modalCloseBtnText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16
-  }
+  modalCloseBtnText: { color: "#fff", fontSize: 16, fontWeight: "bold" }
 });
