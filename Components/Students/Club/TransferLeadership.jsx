@@ -42,7 +42,7 @@ export default function TransferLeadership() {
     }
   };
 
-  const handleTransfer = async (memberId) => {
+  const handleTransfer = async (newLeaderId) => {
     Alert.alert(
       "Xác nhận",
       "Bạn chắc chắn muốn chuyển quyền lãnh đạo cho người này?",
@@ -59,11 +59,11 @@ export default function TransferLeadership() {
 
             try {
               const res = await fetchBaseResponse(
-                `/api/clubs/${clubId}/transfer-leader`,
+                `/api/clubs/${clubId}/change-leader/${newLeaderId}`,
                 {
                   method: "PUT",
                   headers,
-                  data: { newLeaderId: memberId }
+                  data: { newLeaderId: newLeaderId }
                 }
               );
 
@@ -75,7 +75,7 @@ export default function TransferLeadership() {
               }
             } catch (err) {
               console.error(err);
-              Alert.alert("❌ Lỗi", "Không thể chuyển quyền");
+              Alert.alert("❌ Lỗi", err.message);
             }
           }
         }
