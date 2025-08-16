@@ -26,29 +26,6 @@ import { FontAwesome } from "@expo/vector-icons";
 const ACCENT = "#2E3A59";
 // thanh ở trên thu gọn lại còn thanh search
 // bỏ cái nút đang chờ duyệt ở trang home
-const indicators = [
-  {
-    id: "i1",
-    label: "Đang tham gia",
-    count: 2,
-    icon: "https://img.icons8.com/color/48/000000/combo-chart--v2.png",
-    bg: "#e0feee"
-  },
-  {
-    id: "i2",
-    label: "Sự kiện tuần này",
-    count: 4,
-    icon: "https://img.icons8.com/color/48/000000/appointment-reminders.png",
-    bg: "#ffeadb"
-  },
-  {
-    id: "i3",
-    label: "Điểm CLB",
-    count: 68,
-    icon: "https://img.icons8.com/color/48/000000/prize.png",
-    bg: "#f5f2ff"
-  }
-];
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -382,17 +359,16 @@ export default function Homepage() {
           {/* Chỉ số tổng quan */}
           <Animated.View style={[styles.header, { height: headerHeight }]}>
             <Animated.View style={[styles.iconRow, { opacity: iconOpacity }]}>
-              {indicators.map((item) => (
+              {clubRankings.slice(0, 3).map((club) => (
                 <View
-                  key={item.id}
-                  style={[styles.indicatorCard, { backgroundColor: item.bg }]}
+                  key={club.clubId}
+                  style={[styles.indicatorCard, { backgroundColor: "#E5E7EB" }]} // màu nền tùy ý
                 >
-                  <Image
-                    source={{ uri: item.icon }}
-                    style={{ width: 26, height: 26, marginBottom: 3 }}
-                  />
-                  <Text style={styles.indicatorCount}>{item.count}</Text>
-                  <Text style={styles.indicatorLabel}>{item.label}</Text>
+                  <Text style={styles.indicatorCount}>#{club.rank}</Text>
+                  <Text style={styles.indicatorLabel}>{club.clubName}</Text>
+                  <Text style={styles.indicatorPoints}>
+                    {club.totalPoints} pts
+                  </Text>
                 </View>
               ))}
             </Animated.View>
@@ -713,9 +689,7 @@ export default function Homepage() {
                     paddingTop: 10
                   }}
                   renderItem={({ item, index }) => (
-                    <TouchableOpacity
-                      style={{ marginRight: 12 }}
-                    >
+                    <TouchableOpacity style={{ marginRight: 12 }}>
                       <LinearGradient
                         colors={["#ffd699", "#ff6600"]}
                         start={{ x: 0, y: 0 }}
@@ -823,6 +797,13 @@ export default function Homepage() {
 
 // ---------- STYLE ----------
 const styles = StyleSheet.create({
+  indicatorPoints: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#111827",
+    marginTop: 2,
+    textAlign: "center"
+  },
   header: {
     paddingHorizontal: 16,
     paddingTop: -1,
@@ -959,9 +940,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.17,
     shadowRadius: 7,
     shadowOffset: { width: 0, height: 3 },
-    paddingVertical: 10 // giảm chiều cao thẻ
+    paddingVertical: 10, // giảm chiều cao thẻ
+    marginTop: -20
   },
-  indicatorCount: { fontSize: 14, fontWeight: "bold", color: "#21ad93" },
+  indicatorCount: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#21ad93",
+    marginTop: -10
+  },
   indicatorLabel: {
     fontSize: 12,
     color: "#467e74",
