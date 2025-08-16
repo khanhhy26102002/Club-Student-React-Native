@@ -15,7 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchBaseResponse } from "../../../utils/api";
 import Header from "../../../Header/Header";
 import { Ionicons } from "@expo/vector-icons";
-
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 export default function Event({ navigation }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -115,7 +115,13 @@ export default function Event({ navigation }) {
               })
             }
           >
-            <Text style={styles.primaryBtnText}>Xem đánh giá</Text>
+            <MaterialIcons
+              name="rate-review"
+              size={20}
+              color="#fff"
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.primaryBtnText}>Đánh giá</Text>
           </TouchableOpacity>
         </View>
       </View>

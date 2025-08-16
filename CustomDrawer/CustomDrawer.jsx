@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import React from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -86,6 +87,30 @@ export const CustomDrawer = (props) => {
       </DrawerContentScrollView>
     );
   }
+  const handleLogout = async () => {
+    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất không?", [
+      {
+        text: "Hủy",
+        style: "cancel"
+      },
+      {
+        text: "Đăng xuất",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await AsyncStorage.clear(); // Xoá tất cả token/user data
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Login" }] // Điều hướng về Login
+            });
+          } catch (err) {
+            console.error("Lỗi khi đăng xuất:", err);
+            Alert.alert("Lỗi", "Không thể đăng xuất lúc này.");
+          }
+        }
+      }
+    ]);
+  };
 
   return (
     <DrawerContentScrollView style={{ backgroundColor: "#FFFBEA" }}>
@@ -147,7 +172,7 @@ export const CustomDrawer = (props) => {
 
             <TouchableOpacity
               style={[styles.actionButton, styles.logoutButton]}
-              onPress={() => navigation.navigate("Login")}
+              onPress={handleLogout}
             >
               <Ionicons
                 name="log-out-outline"

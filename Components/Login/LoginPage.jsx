@@ -1,4 +1,4 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   View,
@@ -232,6 +232,19 @@ const LoginPage = ({ navigation }) => {
               />
               <Text style={styles.socialText}>Google</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Main")} // Chuyển về màn hình Home
+              style={[styles.socialButton, styles.homeButton]}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="home"
+                size={24}
+                color="#fff"
+                style={styles.icon}
+              />
+              <Text style={styles.socialText}>Trang chủ</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -246,6 +259,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 40
   },
+  homeButton: {
+  backgroundColor: "#0ea5e9" // màu xanh chủ đạo
+},
   forgotWrapper: {
     alignItems: "flex-end",
     marginBottom: 14
