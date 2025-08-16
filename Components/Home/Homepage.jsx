@@ -357,7 +357,7 @@ export default function Homepage() {
             />
           </View>
           {/* Chỉ số tổng quan */}
-          <Animated.View style={[styles.header, { height: headerHeight }]}>
+          {/* <Animated.View style={[styles.header, { height: headerHeight }]}>
             <Animated.View style={[styles.iconRow, { opacity: iconOpacity }]}>
               {clubRankings.slice(0, 3).map((club) => (
                 <View
@@ -372,7 +372,7 @@ export default function Homepage() {
                 </View>
               ))}
             </Animated.View>
-          </Animated.View>
+          </Animated.View> */}
         </LinearGradient>
         <Animated.ScrollView
           style={{ flex: 1 }}
@@ -812,7 +812,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 1,
     marginTop: -5,
     borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 30
+    borderBottomRightRadius: 30,
   },
   iconRow: {
     flexDirection: "row",
