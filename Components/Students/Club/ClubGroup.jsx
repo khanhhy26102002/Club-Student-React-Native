@@ -36,7 +36,7 @@ export default function ClubGroup() {
   const route = useRoute();
   const navigation = useNavigation();
   const { clubId } = route.params;
-
+  console.log("ClubId",clubId);
   const fetchAll = async () => {
     setLoading(true);
     const token = await AsyncStorage.getItem("jwt");

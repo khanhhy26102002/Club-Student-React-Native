@@ -19,6 +19,7 @@ const ClubGroupId = ({ navigation }) => {
   const [data, setData] = React.useState(null);
   const route = useRoute();
   const { clubId, userId } = route.params;
+  console.log("UserId", userId);
   const [clubRole, setClubRole] = React.useState(null);
 
   React.useEffect(() => {
@@ -125,16 +126,10 @@ const ClubGroupId = ({ navigation }) => {
       >
         {/* Cover + Avatar */}
         <View>
-          <Image
-            source={{ uri: "https://source.unsplash.com/800x400/?club" }}
-            style={styles.coverImage}
-          />
+          <Image source={{ uri: data.avatarUrl }} style={styles.coverImage} />
           <View style={styles.avatarWrapper}>
             <View style={styles.avatarBorder}>
-              <Image
-                source={{ uri: "https://i.pravatar.cc/150?img=16" }}
-                style={styles.avatar}
-              />
+              <Image source={{ uri: data.avatarUrl }} style={styles.avatar} />
             </View>
           </View>
         </View>
