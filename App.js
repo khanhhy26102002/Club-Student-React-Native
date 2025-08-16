@@ -6,7 +6,6 @@ import LoginPage from "./Components/Login/LoginPage";
 import RegisterPage from "./Components/Register/RegisterPage";
 import React from "react";
 import * as Notifications from "expo-notifications";
-import StudentOrganizer from "./Components/StudentOrganizer/StudentOrganizer";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 import { getFirebaseToken } from "./getFirebaseToken";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
